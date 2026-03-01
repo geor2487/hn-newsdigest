@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#08080e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>{{ page.title | default: site.title }}</title>
+    <meta name="description" content="{{ site.description }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>▲</text></svg>">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Fira+Code:wght@300;400;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* === Reset & Variables === */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #08080e;
+            --surface: #111119;
+            --elevated: #1a1a26;
+            --text: #e2dfd9;
+            --text-2: #8a8580;
+            --text-3: #4a4540;
+            --accent: #ff6633;
+            --accent-dim: rgba(255, 102, 51, 0.10);
+            --accent-glow: rgba(255, 102, 51, 0.25);
+            --border: #1a1a28;
+            --border-2: #282838;
+            --radius: 10px;
+            --radius-sm: 6px;
+        }
+
+        html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+        body {
+            font-family: 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.85;
+            font-size: 15px;
+            min-height: 100vh;
+            min-height: 100dvh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+
+        /* === Grain Overlay === */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            opacity: 0.025;
+            pointer-events: none;
+            z-index: 9999;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 200px 200px;
+        }
+
+        /* === Accent Bar (top) === */
+        .accent-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #ff9955, var(--accent), #ff9955, var(--accent));
+            background-size: 300% 100%;
+            animation: barSlide 4s linear infinite;
+            z-index: 200;
+        }
+        @keyframes barSlide {
+            0% { background-position: 0% 0; }
+            100% { background-position: 300% 0; }
+        }
+
+        /* === Header === */
+        .header {
+            position: sticky;
+            top: 3px;
+            z-index: 100;
+            background: rgba(8, 8, 14, 0.82);
+            backdrop-filter: blur(24px) saturate(1.4);
+            -webkit-backdrop-filter: blur(24px) saturate(1.4);
+            border-bottom: 1px solid var(--border);
+        }
+        .header-inner {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: opacity 0.2s;
+        }
+        .logo:hover { opacity: 0.8; }
+        .logo-icon {
+            color: var(--accent);
+            font-size: 16px;
+            line-height: 1;
+            filter: drop-shadow(0 0 6px var(--accent-glow));
+        }
+        .logo-text {
+            font-family: 'Major Mono Display', monospace;
+            color: var(--text);
+            font-size: 15px;
+            letter-spacing: 2px;
+        }
+        .header-sub {
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            color: var(--text-3);
+            letter-spacing: 1px;
+        }
+
+        /* === Main Content === */
+        .content {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 36px 20px 100px;
+        }
+
+        /* === Typography === */
+        .content h1 {
+            font-family: 'Fira Code', monospace;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+            animation: fadeUp 0.5s ease both;
+        }
+        .content > p:first-of-type {
+            color: var(--text-2);
+            font-size: 14px;
+            margin-bottom: 36px;
+            animation: fadeUp 0.5s ease 0.05s both;
+        }
+        .content h2 {
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 48px 0 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .content p {
+            margin-bottom: 14px;
+            word-break: break-word;
+        }
+        .content a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .content a:hover {
+            border-bottom-color: var(--accent);
+        }
+        .content strong {
+            font-weight: 600;
+            color: var(--text);
+        }
+        .content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.88em;
+            background: var(--surface);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+        .content hr {
+            border: none;
+            height: 1px;
+            background: var(--border);
+            margin: 40px 0;
+        }
+
+        /* === Index — Digest Links === */
+        .content > ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .content > ul > li {
+            animation: fadeUp 0.4s ease both;
+        }
+        .content > ul > li:nth-child(1) { animation-delay: 0.08s; }
+        .content > ul > li:nth-child(2) { animation-delay: 0.12s; }
+        .content > ul > li:nth-child(3) { animation-delay: 0.16s; }
+        .content > ul > li:nth-child(4) { animation-delay: 0.20s; }
+        .content > ul > li:nth-child(5) { animation-delay: 0.24s; }
+        .content > ul > li:nth-child(6) { animation-delay: 0.28s; }
+        .content > ul > li:nth-child(7) { animation-delay: 0.32s; }
+        .content > ul > li:nth-child(8) { animation-delay: 0.36s; }
+        .content > ul > li:nth-child(9) { animation-delay: 0.40s; }
+        .content > ul > li:nth-child(10) { animation-delay: 0.44s; }
+
+        .content > ul > li > a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            text-decoration: none;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            transition: all 0.25s ease;
+        }
+        .content > ul > li > a::before {
+            content: '▸';
+            color: var(--text-3);
+            transition: color 0.25s, transform 0.25s;
+            flex-shrink: 0;
+        }
+        .content > ul > li > a:hover {
+            background: var(--elevated);
+            border-color: var(--accent);
+            transform: translateX(4px);
+            box-shadow: -3px 0 0 var(--accent), 0 2px 16px rgba(0,0,0,0.25);
+        }
+        .content > ul > li > a:hover::before {
+            color: var(--accent);
+            transform: translateX(2px);
+        }
+
+        /* === Digest — Article Cards === */
+        .digest-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: 2px var(--radius) var(--radius) 2px;
+            padding: 28px 24px;
+            margin: 20px 0;
+            animation: fadeUp 0.5s ease both;
+            animation-delay: var(--i, 0s);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .digest-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 32px rgba(0,0,0,0.3), -3px 0 0 var(--accent);
+        }
+        .digest-card h2 {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.3px;
+            text-transform: none;
+            border-bottom: none;
+            margin: 0 0 18px;
+            padding: 0;
+            line-height: 1.5;
+        }
+        .digest-card p {
+            font-size: 14.5px;
+            line-height: 1.85;
+            color: var(--text);
+        }
+
+        /* Metadata lines (原題, URL, HN) */
+        .digest-card .meta-line {
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            color: var(--text-2);
+            margin-bottom: 6px;
+            line-height: 1.6;
+            word-break: break-all;
+        }
+        .digest-card .meta-line strong {
+            color: var(--text-3);
+            font-weight: 500;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .digest-card .meta-line a {
+            color: var(--text-2);
+            font-size: 12px;
+        }
+        .digest-card .meta-line a:hover {
+            color: var(--accent);
+        }
+
+        /* Stats line (スコア / コメント / 合計) */
+        .digest-card .stats-line {
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            background: var(--accent-dim);
+            border: 1px solid var(--border-2);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            margin: 14px 0 20px;
+            color: var(--text-2);
+        }
+        .digest-card .stats-line strong {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        /* Section labels (ざっくり言うと etc.) */
+        .digest-card .section-label {
+            margin-top: 22px;
+            margin-bottom: 6px;
+        }
+        .digest-card .section-label strong {
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+            background: var(--accent-dim);
+            padding: 3px 10px;
+            border-radius: 4px;
+        }
+
+        /* Comment lists inside cards */
+        .digest-card ul {
+            list-style: none;
+            margin: 8px 0 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .digest-card li {
+            position: relative;
+            padding: 12px 16px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            border-left: 2px solid var(--border-2);
+            font-size: 13.5px;
+            line-height: 1.75;
+            color: var(--text-2);
+            transition: border-color 0.2s;
+        }
+        .digest-card li:hover {
+            border-left-color: var(--accent);
+        }
+
+        /* === Glossary Section === */
+        .content > h2:last-of-type {
+            margin-top: 56px;
+        }
+
+        /* === Footer === */
+        .footer {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 28px 20px;
+            border-top: 1px solid var(--border);
+        }
+        .footer p {
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            color: var(--text-3);
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        /* === Scrollbar === */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+        /* === Selection === */
+        ::selection { background: var(--accent); color: #fff; }
+
+        /* === Animations === */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* === Desktop === */
+        @media (min-width: 640px) {
+            body { font-size: 16px; }
+            .content { padding: 48px 32px 120px; }
+            .digest-card { padding: 32px 28px; }
+            .content h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="accent-bar" aria-hidden="true"></div>
+
+    <header class="header">
+        <div class="header-inner">
+            <a href="{{ '/' | relative_url }}" class="logo" aria-label="HN Digest Home">
+                <span class="logo-icon" aria-hidden="true">▲</span>
+                <span class="logo-text">hn digest</span>
+            </a>
+            <span class="header-sub" aria-hidden="true">daily · 日本語</span>
+        </div>
+    </header>
+
+    <main class="content">
+        {{ content }}
+    </main>
+
+    <footer class="footer">
+        <p>powered by claude code &times; hacker news api</p>
+    </footer>
+
+    <script>
+    (function() {
+        var c = document.querySelector('.content');
+        if (!c) return;
+        var h2s = c.querySelectorAll('h2');
+        var idx = 0;
+
+        for (var i = 0; i < h2s.length; i++) {
+            var h2 = h2s[i];
+            if (!/^\d/.test(h2.textContent.trim())) continue;
+
+            var card = document.createElement('article');
+            card.className = 'digest-card';
+            card.style.setProperty('--i', (idx * 0.07) + 's');
+            idx++;
+
+            h2.parentNode.insertBefore(card, h2);
+            card.appendChild(h2);
+
+            while (card.nextElementSibling &&
+                   card.nextElementSibling.tagName !== 'H2' &&
+                   !card.nextElementSibling.classList.contains('digest-card')) {
+                card.appendChild(card.nextElementSibling);
+            }
+        }
+
+        /* Classify content inside cards */
+        var cards = document.querySelectorAll('.digest-card');
+        for (var ci = 0; ci < cards.length; ci++) {
+            var ps = cards[ci].querySelectorAll('p');
+            for (var pi = 0; pi < ps.length; pi++) {
+                var p = ps[pi];
+                var s = p.querySelector('strong');
+                var txt = p.textContent;
+
+                if (s && /^(原題|URL|HN)/.test(s.textContent)) {
+                    p.classList.add('meta-line');
+                } else if (txt.indexOf('スコア') !== -1 && txt.indexOf('コメント') !== -1) {
+                    p.classList.add('stats-line');
+                } else if (s && p.childNodes.length <= 2 && /[:：]$/.test(s.textContent.trim())) {
+                    p.classList.add('section-label');
+                }
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

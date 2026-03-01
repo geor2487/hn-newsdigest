@@ -1,12 +1,9 @@
 ---
 layout: default
-title: HN Digest - Hacker News 日本語ダイジェスト
+title: HN Digest
 ---
 
-# HN Digest
-
-Hacker Newsのトップ記事を毎日日本語で要約しています。
-IT初学者にもわかりやすいように、専門用語には解説をつけています。
+毎日更新 — Hacker Newsのトップ記事を日本語で要約
 
 ## 最新のダイジェスト
 
