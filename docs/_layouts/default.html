@@ -461,7 +461,7 @@
                     p.classList.add('meta-line');
                 } else if (txt.indexOf('スコア') !== -1 && txt.indexOf('コメント') !== -1) {
                     p.classList.add('stats-line');
-                } else if (s && p.childNodes.length <= 2 && /[:：]$/.test(s.textContent.trim())) {
+                } else if (s && s === p.firstElementChild && /[:：]$/.test(s.textContent.trim())) {
                     p.classList.add('section-label');
                 }
             }
