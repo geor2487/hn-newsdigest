@@ -12,11 +12,14 @@ import urllib.request
 import urllib.error
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import datetime
+
 HN_API_BASE = "https://hacker-news.firebaseio.com/v0"
 TOP_STORIES_URL = f"{HN_API_BASE}/topstories.json"
 ITEM_URL_TEMPLATE = f"{HN_API_BASE}/item/{{}}.json"
 HN_ITEM_PAGE = "https://news.ycombinator.com/item?id={}"
-NUM_STORIES = 30
+MAX_FETCH = 200  # フィルタ前に取得する最大件数
+HOURS_WINDOW = 24  # 直近何時間以内の記事を対象にするか
 
 
 def fetch_json(url: str) -> dict | list | None:
@@ -52,7 +55,7 @@ def main():
         print("Error: Failed to fetch top stories", file=sys.stderr)
         sys.exit(1)
 
-    story_ids = story_ids[:NUM_STORIES]
+    story_ids = story_ids[:MAX_FETCH]
     stories = []
 
     with ThreadPoolExecutor(max_workers=10) as executor:
@@ -62,10 +65,15 @@ def main():
             if result:
                 stories.append(result)
 
+    # 直近24時間以内の記事のみに絞り込む
+    now = datetime.datetime.now().timestamp()
+    cutoff = now - HOURS_WINDOW * 3600
+    stories = [s for s in stories if s["time"] >= cutoff]
+
     stories.sort(key=lambda x: x["score"] + x["comments"], reverse=True)
 
     output = {
-        "fetched_at": __import__("datetime").datetime.now().isoformat(),
+        "fetched_at": datetime.datetime.now().isoformat(),
         "count": len(stories),
         "stories": stories,
     }
