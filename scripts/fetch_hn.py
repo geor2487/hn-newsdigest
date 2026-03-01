@@ -4,6 +4,8 @@ Hacker News トップ記事取得スクリプト
 Firebase API を使ってトップ30記事の詳細を取得し、JSON で出力する。
 """
 
+from __future__ import annotations
+
 import json
 import sys
 import urllib.request
