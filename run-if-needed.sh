@@ -38,7 +38,8 @@ echo "$(date): ダイジェスト生成開始..." >> "$LOG_FILE"
 
 # --- Claude Codeでダイジェスト生成 ---
 # ※ claudeのパスは `which claude` の結果に置き換える
-claude -p "$(cat $HOME/.claude/commands/hn.md)" >> "$LOG_FILE" 2>&1
+# --dangerously-skip-permissions: 自動実行時は対話的な権限確認ができないため必要
+claude -p "$(cat $HOME/hn-digest/.claude/commands/hn.md)" --dangerously-skip-permissions >> "$LOG_FILE" 2>&1
 
 # --- ファイル生成確認 ---
 if [ ! -f "$OUTPUT_FILE" ]; then
