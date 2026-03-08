@@ -7,6 +7,7 @@ title: HN Digest
 
 ## 最新のダイジェスト
 
+- [3/9](digests/2026-03-09.md)
 - [3/6](digests/2026-03-06.md)
 - [3/5](digests/2026-03-05.md)
 - [3/4](digests/2026-03-04.md)
