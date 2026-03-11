@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>HN Digest — 3/6</title>
+<meta name="description" content="Hacker Newsの最新記事を日本語で毎日まとめています">
+<link rel="icon" href="/hn-newsdigest/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/hn-newsdigest/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ========== Reset & Base ========== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'DM Sans', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background-color: #0c0d12;
+    color: #c8cad0;
+    line-height: 1.8;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(249, 115, 22, 0.35);
+    color: #fff;
+  }
+
+  /* ========== Progress Bar ========== */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f97316, #fb923c);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.15s ease-out;
+  }
+
+  /* ========== Mini Header ========== */
+  .mini-header {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #777b88;
+    letter-spacing: 0.05em;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    user-select: none;
+  }
+
+  /* ========== Home Button ========== */
+  .home-btn {
+    position: fixed;
+    top: 12px;
+    left: 20px;
+    z-index: 900;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #555a6a;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .home-btn:hover {
+    color: #f97316;
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  /* ========== Scroll Container ========== */
+  .carousel {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    height: 100vh;
+    width: 100vw;
+    scrollbar-width: none;
+  }
+
+  .carousel::-webkit-scrollbar { display: none; }
+
+  /* ========== Slide ========== */
+  .slide {
+    flex: 0 0 100vw;
+    min-width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 32px 100px;
+    position: relative;
+  }
+
+  .slide--article { justify-content: center; }
+
+  .slide-inner {
+    max-width: 640px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+  }
+
+  .slide-inner::-webkit-scrollbar { width: 4px; }
+  .slide-inner::-webkit-scrollbar-track { background: transparent; }
+  .slide-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  /* ========== Article Layout: content + glossary sidebar ========== */
+  .article-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    max-width: 960px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+  }
+
+  .article-main {
+    flex: 1;
+    min-width: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+    padding-right: 8px;
+  }
+
+  .article-main::-webkit-scrollbar { width: 4px; }
+  .article-main::-webkit-scrollbar-track { background: transparent; }
+  .article-main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  .article-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+  }
+
+  .article-sidebar::-webkit-scrollbar { width: 3px; }
+  .article-sidebar::-webkit-scrollbar-track { background: transparent; }
+  .article-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-term {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .sidebar-term:hover {
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  .sidebar-term .term-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #fb923c;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-term .term-desc {
+    font-size: 0.78rem;
+    color: #777b88;
+    line-height: 1.6;
+  }
+
+  /* ========== Title Slide ========== */
+  .slide--title { text-align: center; }
+
+  .slide--title h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    color: #ecedf2;
+  }
+
+  .slide--title h1 span { color: #f97316; }
+
+  .slide--title p {
+    font-size: 1.1rem;
+    color: #777b88;
+    line-height: 1.9;
+  }
+
+  .slide--title .date-badge {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 6px 18px;
+    border-radius: 24px;
+    margin-bottom: 24px;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(251, 146, 60, 0.15);
+  }
+
+  .slide--title .article-count {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    letter-spacing: 0.05em;
+  }
+
+  .slide--title .arrow-hint {
+    margin-top: 48px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    animation: pulse-hint 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-hint {
+    0%, 100% { opacity: 0.5; transform: translateX(0); }
+    50% { opacity: 1; transform: translateX(6px); }
+  }
+
+  /* ========== Article Slide ========== */
+  .slide--article .article-number {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 4px 12px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    letter-spacing: 0.06em;
+    border: 1px solid rgba(251, 146, 60, 0.12);
+  }
+
+  .slide--article h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: #ecedf2;
+    letter-spacing: -0.01em;
+  }
+
+  .slide--article .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    color: #555a6a;
+  }
+
+  .slide--article .meta-row a {
+    color: #f97316;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .slide--article .meta-row a:hover {
+    color: #fb923c;
+    text-decoration: underline;
+  }
+
+  .slide--article .stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .slide--article .stats .stat {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 6px 14px;
+    border-radius: 8px;
+    color: #888d9e;
+    font-weight: 500;
+  }
+
+  .slide--article .stats .stat strong {
+    color: #f97316;
+    font-weight: 700;
+  }
+
+  .slide--article .section-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #f97316;
+    margin-bottom: 6px;
+    margin-top: 20px;
+  }
+
+  .slide--article p {
+    font-size: 0.95rem;
+    color: #a0a4b2;
+    margin-bottom: 12px;
+    line-height: 1.9;
+  }
+
+  /* ========== Comments (open by default) ========== */
+  .slide--article details {
+    margin-top: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .slide--article details + details { margin-top: 8px; }
+
+  .slide--article summary {
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #c8cad0;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+    transition: background 0.15s;
+    list-style: none;
+  }
+
+  .slide--article summary::-webkit-details-marker { display: none; }
+
+  .slide--article summary::before {
+    content: '− ';
+    font-weight: 700;
+    color: #f97316;
+    margin-right: 4px;
+  }
+
+  .slide--article details:not([open]) summary::before { content: '+ '; }
+
+  .slide--article summary:hover {
+    background: rgba(249, 115, 22, 0.06);
+  }
+
+  .slide--article details ul {
+    list-style: none;
+    padding: 12px 16px;
+  }
+
+  .slide--article details li {
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .slide--article details li:last-child { border-bottom: none; }
+
+  /* Details with plain paragraph (no list) */
+  .slide--article details > p {
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+  }
+
+  /* ========== Navigation Arrows ========== */
+  .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 800;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #888d9e;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .nav-arrow:hover {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);
+  }
+
+  .nav-arrow:active { transform: translateY(-50%) scale(0.92); }
+
+  .nav-arrow--left { left: 20px; }
+  .nav-arrow--right { right: 20px; }
+
+  .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+
+  /* ========== Navigation Dots ========== */
+  .nav-dots {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 800;
+    display: flex;
+    gap: 10px;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 10px 18px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: none;
+    padding: 0;
+  }
+
+  .nav-dot:hover { background: rgba(255, 255, 255, 0.3); }
+
+  .nav-dot.active {
+    background: #f97316;
+    width: 28px;
+    border-radius: 5px;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+  }
+
+  /* ========== Inline Glossary (mobile) ========== */
+  .inline-glossary .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 10px;
+  }
+
+  .inline-glossary .inline-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .inline-glossary .inline-term {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+
+  .inline-glossary .inline-term .term-name {
+    font-weight: 600;
+    color: #fb923c;
+  }
+
+  .inline-glossary .inline-term .term-desc {
+    color: #777b88;
+    margin-top: 2px;
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 960px) {
+    .article-sidebar { display: none; }
+    .inline-glossary {
+      display: block !important;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  @media (min-width: 961px) {
+    .inline-glossary { display: none !important; }
+  }
+
+  @media (max-width: 700px) {
+    .slide { padding: 50px 20px 90px; }
+    .slide--title h1 { font-size: 2rem; }
+    .slide--article h2 { font-size: 1.25rem; }
+    .nav-arrow { width: 40px; height: 40px; font-size: 1rem; }
+    .nav-arrow--left { left: 10px; }
+    .nav-arrow--right { right: 10px; }
+    .home-btn .home-btn-text { display: none; }
+    .nav-dots { gap: 6px; padding: 8px 12px; }
+    .nav-dot { width: 8px; height: 8px; }
+    .nav-dot.active { width: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Mini Header -->
+<div class="mini-header" id="miniHeader"></div>
+
+<!-- Home Button -->
+<a href="/hn-newsdigest/" class="home-btn" aria-label="ホームに戻る">
+  <span>&#8592;</span>
+  <span class="home-btn-text">HN Digest</span>
+</a>
+
+<!-- Navigation Arrows -->
+<button class="nav-arrow nav-arrow--left hidden" id="arrowLeft" aria-label="前のスライド">&#8592;</button>
+<button class="nav-arrow nav-arrow--right" id="arrowRight" aria-label="次のスライド">&#8594;</button>
+
+<!-- Carousel Container -->
+<div class="carousel" id="carousel"></div>
+
+<!-- Navigation Dots -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- Hidden source content rendered by Jekyll/kramdown -->
+<div id="source" data-title="HN Digest — 3/6" style="display:none">
+<h1 id="hn-digest--36">HN Digest — 3/6</h1>
+
+<h2 id="1-wikipediaが読み取り専用モードに--管理者アカウントの大量侵害を受けて">1. Wikipediaが読み取り専用モードに — 管理者アカウントの大量侵害を受けて</h2>
+
+<p><strong>原題</strong>: Wikipedia was in read-only mode following mass admin account compromise
+<strong>URL</strong>: https://www.wikimediastatus.net
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47263323
+<strong>スコア</strong>: 858 / <strong>コメント</strong>: 286件 / <strong>合計</strong>: 1144</p>
+
+<p><strong>ざっくり言うと:</strong>
+Wikipediaを運営するWikimedia財団のサービスが一時的に読み取り専用モードになった。原因は、管理者アカウントが大量に侵害されたこと。攻撃者は古典的なXSSワーム（XSS: Webページに悪意のあるスクリプトを注入する攻撃手法）を使い、MediaWikiのJavaScript機能を悪用してウイルスのように感染を広げた。現在は復旧済みで、編集機能も再開されている。</p>
+
+<p><strong>もう少し詳しく:</strong>
+この事件の背景には、Wikimedia財団のセキュリティエンジニアが実施したテストがある。このエンジニアは、大量のユーザースクリプト（ユーザーが自分のWikipedia体験をカスタマイズするために書いたJavaScript）を読み込むテストを行っていた。問題は、テスト用のスクリプトを自分で作るのではなく、ランダムなユーザースクリプトをそのまま読み込んでしまったこと。この中に悪意のあるスクリプトが含まれていた。</p>
+
+<p>このワームは非常に巧妙で、MediaWiki:Common.js（全ユーザーに適用されるスクリプト）やUser:Common.js（個人スクリプト）に自身を注入して永続化し、jQueryを使って感染の痕跡を隠し、20個のランダムな記事に巨大な画像と追加のXSSスクリプトを埋め込んだ。さらに管理者権限を持つアカウントが感染した場合は、Special:Nukeページ（大量削除機能）を使って記事を削除するという動作もあった。調査によると、このワームのルーツは2023年にロシア語の代替Wikiプロジェクトを攻撃したグループに遡る可能性がある。</p>
+
+<p><strong>なぜ注目？:</strong>
+Wikipediaは世界最大のオンライン百科事典であり、そのインフラへの攻撃は広範な影響を持つ。今回の事件は、ユーザー生成スクリプトを信頼して実行することのリスクを浮き彫りにした。特に、セキュリティエンジニア自身がランダムなスクリプトを本番環境で実行してしまったという点は、セキュリティ業界でも驚きをもって受け止められている。データベースの履歴そのものが感染の配布経路になっているため、クリーンアップは非常に困難だという指摘もある。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「このワームの動作を分析したが、非常に洗練されている。Common.jsへの注入、jQuery によるUI隠蔽、管理者権限でのNuke利用など多層的」（nhubbard）— 技術的な分析
+- 「ワームはroot権限を取ったわけではないので、直近のスナップショットがあればフォレンジック自体はそこまで悪夢にはならないはず」（Kiboneu）— 復旧の見通しに楽観的
+- 「MediaWikiがJavaScriptの埋め込みを許可していることは以前から危険だと思っていた。今回それが証明された」（varun_ch）— 長年の懸念が現実に
+- 「Phabricatorのチケットが公開されていて、経緯が詳しくわかる」（tux3）— 透明性を評価
+- 「ロシア語Wikipediaのディスコードチャットでの調査が有用。2023年の攻撃との関連性が指摘されている」（wikiperson26）— コミュニティ調査の貢献
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「セキュリティエンジニアがランダムなユーザースクリプトを本番環境で実行するとは信じられない。テスト用スクリプトを自分で作るべきだった」（tux3）— 手順の杜撰さを批判
+- 「これはWikimedia財団の組織的な問題を示している。セキュリティテストの基本的なプロトコルが守られていない」（複数ユーザー）— 組織体制への疑問
+- 「データベース履歴が感染の配布経路になっているので、クリーンアップは悪夢になる」（nhubbard）— 復旧の難しさを指摘
+- 「そもそもMediaWikiでJavaScriptを自由に埋め込める仕組み自体が設計上の問題」（varun_ch）— アーキテクチャの根本的な問題
+- 「Wikimediaは寄付でこれだけの資金を得ているのに、こんな初歩的なミスを許すのか」（複数ユーザー）— 資金と品質のギャップ
+
+</details>
+
+<hr />
+
+<h2 id="2-gpt-54が登場--openaiの新フラッグシップモデル">2. GPT-5.4が登場 — OpenAIの新フラッグシップモデル</h2>
+
+<p><strong>原題</strong>: GPT-5.4
+<strong>URL</strong>: https://openai.com/index/introducing-gpt-5-4/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47265045
+<strong>スコア</strong>: 571 / <strong>コメント</strong>: 503件 / <strong>合計</strong>: 1074</p>
+
+<p><strong>ざっくり言うと:</strong>
+OpenAIが新しいフラッグシップモデル「GPT-5.4」を発表した。ChatGPTでは「GPT-5.4 Thinking」として利用可能になっている。最大の目玉は100万トークン（約75万語分）のコンテキストウィンドウ（コンテキストウィンドウ: AIが一度に処理できるテキストの長さ）で、従来の約20万トークンから大幅に拡大された。また同時にGPT-5.3 Instantという高速版もリリースされている。</p>
+
+<p><strong>もう少し詳しく:</strong>
+GPT-5.4のAPI（API: ソフトウェア同士がやり取りするための窓口）価格は入力100万トークンあたり2.50ドル、出力100万トークンあたり15ドルで、AnthropicのOpus 4.6（入力5ドル、出力25ドル）と比較して大幅に安い設定になっている。100万トークンのコンテキストウィンドウは、20万トークンを超えても追加料金がかからない点も特徴的。</p>
+
+<p>OpenAIのモデルラインナップは現在、GPT-5.1、GPT-5.2、GPT-5.4の3つの価格帯を持ち、さらにCodex（コーディング特化）が5.3、Instantも5.3というバージョン番号になっている。バージョン番号が機能ラインをまたいで飛び飛びになっており、命名規則がかなり混乱しているとの声が多い。初期ユーザーからは、GPT-5.4の文章品質は非常に高く、分析が的確で人間らしい表現ができるという好意的な評価が出ている。</p>
+
+<p><strong>なぜ注目？:</strong>
+100万トークンという巨大なコンテキストウィンドウは、書籍丸ごとや大規模なコードベースをAIに一度に読み込ませることを可能にする。開発者にとっては実用的な革新だ。一方、Anthropic（Claude）は3つのモデルをシンプルな価格帯で提供しているのに対し、OpenAIの命名はますます複雑化しているという批判は根強い。AI業界の競争が激化する中、価格と性能のバランスがどう推移するかに注目が集まっている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「1つのプロンプトしか試していないが、GPT-5.4の文章は非常に思慮深く、正確で、驚くほど明瞭。5.3-Codexとは別次元」（creamyhorror）— 品質への高評価
+- 「目玉機能は100万トークンのコンテキストウィンドウ。20万トークン超でも追加料金なし」（minimaxir）— コスト効率を評価
+- 「GPT-5.4は入力2.50ドル/出力15ドルで、Opus 4.6の入力5ドル/出力25ドルよりかなり安い」（minimaxir）— 価格競争力
+- 「推論モードを使うと本当にじっくり考えてくれる。分析タスクに最適」（creamyhorror）— 推論能力の向上
+- 「ブログ記事の下に『Ask ChatGPT』ボックスがあるが、リンクを送ると『外部URLにはアクセスできません』と言われる。面白い皮肉だ」（Philip-J-Fry）— ユーモラスな指摘
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「OpenAIのモデル命名はめちゃくちゃ。5.1、5.2、5.4と飛び、Codexが5.3、Instantも5.3。Anthropicの3モデル3価格帯のシンプルさを見習ってほしい」（__jl__）— 命名の混乱を批判
+- 「8ヶ月も混乱なしの命名を維持していたのに、今日で台無し」（kgeist）— 皮肉交じりの指摘
+- 「Google はプレビューモデルしか出さない。最後のGA版は2.5。開発者として困る」（__jl__）— 業界全体の問題
+- 「ブログの『Ask ChatGPT』ボタンが、自分のブログ記事すら読めないのは恥ずかしい」（Philip-J-Fry）— 製品の不整合
+- 「バージョン番号が異なるモデルラインをまたいでジャンプしていて、もはや何が何だかわからない」（複数ユーザー）— 開発者の混乱
+
+</details>
+
+<hr />
+
+<h2 id="3-良いソフトウェアは止まりどきを知っている">3. 良いソフトウェアは「止まりどき」を知っている</h2>
+
+<p><strong>原題</strong>: Good software knows when to stop
+<strong>URL</strong>: https://ogirardot.writizzy.com/p/good-software-knows-when-to-stop
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47261561
+<strong>スコア</strong>: 320 / <strong>コメント</strong>: 174件 / <strong>合計</strong>: 494</p>
+
+<p><strong>ざっくり言うと:</strong>
+「ls」コマンド（ファイル一覧を表示するLinuxの基本コマンド）がある日突然「AI搭載のスマートリスティングシステムに進化しました！」と表示し始める…という架空のシナリオから始まるこのブログ記事は、「良いソフトウェアは自分の役割を理解し、余計なことをしない」というメッセージを伝えている。機能を追加し続けるのではなく、「完成した」と言える勇気が大事だという主張だ。</p>
+
+<p><strong>もう少し詳しく:</strong>
+記事は、ソフトウェア開発における「フィーチャークリープ」（機能の肥大化）の問題を取り上げている。冒頭の架空のAI搭載lsコマンドは風刺だが、現実世界でも多くのソフトウェアが不要な機能を追加し続けて複雑化している。著者は「良いソフトウェアは自分が何のために存在するかを知っていて、すべてをやろうとしない」と主張する。</p>
+
+<p>この考え方は「UNIX哲学」（各ツールは一つのことをうまくやるべき）に通じるもので、lsやcatのような基本コマンドが何十年もほぼ変わらず使われ続けていることがその証拠だ。記事では、機能追加の要求に対して「ユーザーが求めているものを作るな、その裏にある本当の問題を理解しろ」というアドバイスも紹介されている。World of Warcraftの「クラシック版」を求めるユーザーの声をBlizzardが長年無視し、最終的に大ヒットしたエピソードも引き合いに出されている。</p>
+
+<p><strong>なぜ注目？:</strong>
+AI時代において「あらゆるものにAIを組み込もう」という流れが加速する中、この記事は冷静なカウンターポイントとなっている。EvernoteやDropboxが2012年には完璧だったのに、機能追加を重ねて既存ユーザーを混乱させた事例は多くの開発者の共感を呼んでいる。「完成したソフトウェア」という概念を正当化し、バグ修正とセキュリティアップデートだけに集中する文化を広めるべきだという声が高まっている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「『完成した』ソフトウェアを正当化すべき。バグ修正とセキュリティ更新だけに集中する文化を広めよう」（wenbin）— 機能追加への歯止めを提案
+- 「Sublime Textが最高の例。AIを入れようとせず、一つのことを極めている」（muppetman）— 具体的な成功例
+- 「Javaの標準JSONライブラリがメンテナンスモードなのを最初は『死んでいる』と思ったが、実は『完成している』ということだった」（motoboi）— メンテナンスモードの再評価
+- 「ユーザーの要望をそのまま実装するのではなく、本質的な問題を理解すべき。WoWクラシックの例は秀逸」（john_strinlai）— ユーザー要望の扱い方
+- 「コマンドラインオプションの肥大化に関するDan Luuの記事と通じるものがある」（teddyh）— 関連する議論
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「理想論としては正しいが、ビジネスとしては機能追加しないと成長を示せず、投資を受けられない」（複数ユーザー）— ビジネスの現実との乖離
+- 「WoWクラシックの例は逆にユーザーの要望を聞くべきだったケースでは？記事の主張と矛盾している」（複数ユーザー）— 論理の整合性への疑問
+- 「lsだって実際には長年にわたってオプションが増え続けている。『変わっていない』は幻想」（複数ユーザー）— 前提への反論
+- 「ソフトウェアが完成したら開発者は何をして食べていくのか。持続可能性の観点が抜けている」（複数ユーザー）— 経済的持続性の問題
+- 「冒頭のAI風刺は面白いが、記事全体としては既に何度も語られてきた話の焼き直し」（複数ユーザー）— 新規性の欠如
+
+</details>
+
+<hr />
+
+<h2 id="4-githubのissueタイトルで4000台の開発者マシンが侵害された">4. GitHubのIssueタイトルで4,000台の開発者マシンが侵害された</h2>
+
+<p><strong>原題</strong>: A GitHub Issue Title Compromised 4k Developer Machines
+<strong>URL</strong>: https://grith.ai/blog/clinejection-when-your-ai-tool-installs-another
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47263595
+<strong>スコア</strong>: 300 / <strong>コメント</strong>: 68件 / <strong>合計</strong>: 368</p>
+
+<p><strong>ざっくり言うと:</strong>
+AIコーディングツール「Cline」のnpmパッケージ（npm: JavaScriptのパッケージ管理システム）が侵害され、約4,000台の開発者のマシンに「OpenClaw」という別のAIエージェントが無断でインストールされた。攻撃の起点は、GitHubのIssueタイトルに仕込まれたプロンプトインジェクション（プロンプトインジェクション: AIに偽の指示を読み込ませる攻撃手法）。AIトリアージボット（トリアージ: 優先順位をつけて振り分けること）がこの偽の指示を本物と解釈して実行してしまった。</p>
+
+<p><strong>もう少し詳しく:</strong>
+攻撃は5つの段階で構成されていた。まず、ClineはAnthropicのclaude-code-actionを使ったAIトリアージワークフローを持っていたが、設定で全GitHubユーザーからのIssueトリガーを許可していた。攻撃者はIssueタイトルに「パフォーマンスレポート」に見せかけた指示を埋め込み、AIに特定のGitHubリポジトリからパッケージをインストールさせた。</p>
+
+<p>AIボットはこれを正当な指示と解釈し、npm installを実行。リンク先は「glthub-actions/cline」というタイポスクワッティング（typosquatting: 本物に似たURLやパッケージ名を使う攻撃）のリポジトリで、preinstallスクリプトがリモートのシェルスクリプトを取得・実行した。このスクリプトは「Cacheract」というGitHub Actionsキャッシュポイズニングツールを展開し、10GB以上のキャッシュを汚染。最終的にnpmの公開トークンが盗まれ、正規のclineパッケージにバックドアが仕込まれた。</p>
+
+<p><strong>なぜ注目？:</strong>
+この事件はAIツールのセキュリティにおける根本的な課題を示している。AIボットが信頼できない入力（GitHubのIssueタイトル）をそのまま実行してしまう構造的な問題は、AIの普及とともに深刻化するリスクだ。GitHubのissuesトリガーは一見無害に見えるが、pull_request_targetと同様に危険だという指摘も重要。npmの<code class="language-plaintext highlighter-rouge">ignore-scripts=true</code>設定を使っていれば防げたという点も覚えておくべきだろう。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「攻撃チェーンの詳細な解説として有用。5つの脆弱性が連鎖する様子がよくわかる」（複数ユーザー）— 技術的な解説の質
+- 「npm configでignore-scripts=trueにしていれば防げた。全開発者が設定すべき」（theteapot）— 具体的な防御策
+- 「GitHubのissuesトリガーがpull_request_targetと同じくらい危険だということをもっと広めるべき」（pzmarzly）— セキュリティ意識の向上
+- 「攻撃に使われたIssueタイトルの実物が公開されていて教育的」（varenc）— 具体的な攻撃例の共有
+- 「この種の攻撃は今後AIツールの普及とともに増えるだろう。早期に警鐘を鳴らす意味がある」（複数ユーザー）— 予防的な警告
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「この記事は既に公開されている一次情報の焼き直しで、新しい情報はない。元の研究者の記事を読むべき」（jonchurch_）— オリジナリティの欠如
+- 「数年前なら『ソフトウェアをインストールした時点で侵害された』と言っていただろう。AIに任意のコード実行をさせること自体が根本問題」（recursive）— AI活用の構造的リスク
+- 「4,000ダウンロードを『4,000台侵害』と言うのは誇張。CI環境での自動ダウンロードも含まれる」（複数ユーザー）— 数字の正確性への疑問
+- 「Clineがそもそも全ユーザーからのトリガーを許可していた設定が杜撰すぎる」（複数ユーザー）— 基本的なセキュリティ設定の問題
+- 「プロンプトインジェクションは根本的に解決困難な問題で、パッチを当てても別の方法で再発する」（複数ユーザー）— 問題の根深さ
+
+</details>
+
+<hr />
+
+<h2 id="5-ブランドの時代--ポールグレアムが語る機能からブランドへ">5. ブランドの時代 — ポール・グレアムが語る「機能からブランドへ」</h2>
+
+<p><strong>原題</strong>: The Brand Age
+<strong>URL</strong>: https://paulgraham.com/brandage.html
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47264756
+<strong>スコア</strong>: 189 / <strong>コメント</strong>: 176件 / <strong>合計</strong>: 365</p>
+
+<p><strong>ざっくり言うと:</strong>
+Y Combinator創設者のポール・グレアムが、スイスの時計産業を題材に「ブランドの時代」について論じた新エッセイ。1970年代にクォーツ危機（クォーツ: 水晶振動子を使った安価で正確な時計技術）と日本メーカーの台頭で壊滅的打撃を受けたスイス時計産業が、「精密機器メーカー」から「高級ブランド」に転身して生き残った歴史を描いている。機能的価値が消えた後、ブランド価値だけが残る世界の問題点を指摘している。</p>
+
+<p><strong>もう少し詳しく:</strong>
+グレアムは、1970年代にスイス時計産業を襲った3つの災害を解説する。日本メーカーとの競争激化、ブレトンウッズ体制（戦後の固定為替レート制度）の崩壊によるスイスフラン高騰、そしてクォーツムーブメントの登場だ。スイスフランは0.228ドルから0.625ドルに急騰し、スイス時計はアメリカ人にとって2.7倍も高価になった。</p>
+
+<p>生き残った高級ブランドは「人工的な希少性」を作り出した。パテック・フィリップのノーチラスを買うには、何年もかけて別のモデルを購入して「忠誠心」を証明し、さらにウェイティングリストで待つ必要がある。グレアムはこれを「ブランド時代の最も極端な現象」と呼び、機能ではなくブランドだけで定義される世界は、人間心理の最悪の部分に依存していると批判している。</p>
+
+<p><strong>なぜ注目？:</strong>
+このエッセイはテック業界にも直接関係する。Apple製品やテスラなど、機能面では競合と差がなくなりつつもブランド力で高い価格を維持している製品は多い。グレアムの「ブランドだけで定義される世界は奇妙で悪い世界だ」という主張は、AI時代にソフトウェアのコモディティ化（差別化が難しくなること）が進む中、テック企業のポジショニングについて考えさせられる内容だ。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「パテック・フィリップの購入プロセスは『奇妙なゲーム。唯一の勝ち方はプレイしないこと』だ」（jgrahamc）— 人工的希少性への皮肉
+- 「カルヴィンとホッブズの漫画が完璧な要約。『ブランド品を着るのは企業の広告塔になること』」（ploden）— 風刺の的確さ
+- 「歴史的に興味深い事実：スイスが時計大国になったのは、カルヴァン派が宝飾品を禁止したから。時計だけは『教会に遅れないため』に許された」（d_burfoot）— 歴史的文脈
+- 「昨日のMacBook Neo発表動画は製品自体より映像制作の質が高い。人は実はマーケティングにお金を払いたいのだ」（dworks）— 現代の具体例
+- 「ブランドと実用性の関係について、非常に考えさせられるエッセイ」（複数ユーザー）— 思考の触媒として評価
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「『ブランドだけの世界は奇妙で悪い世界だ』は極端すぎる。高級時計には職人技という本物の価値がある」（Traster）— 芸術的価値の無視を批判
+- 「グレアムは自分自身がブランドの恩恵を受けているのに、ブランドを批判するのは矛盾では」（複数ユーザー）— 自己矛盾の指摘
+- 「フェラーリの購入制限など、他業界でも同じ現象がある。時計だけの話ではない」（jgrahamc）— 議論の範囲が狭い
+- 「これは結局『お金持ちの消費』の話であり、ほとんどの人には関係ない」（複数ユーザー）— 一般的な関連性への疑問
+- 「エッセイとしての主張が散漫で、最終的に何を言いたいのかが不明瞭」（複数ユーザー）— 構成への批判
+
+</details>
+
+<hr />
+
+<h2 id="6-jido-20--elixirのaiエージェントフレームワーク">6. Jido 2.0 — ElixirのAIエージェントフレームワーク</h2>
+
+<p><strong>原題</strong>: Show HN: Jido 2.0, Elixir Agent Framework
+<strong>URL</strong>: https://jido.run/blog/jido-2-0-is-here
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47263036
+<strong>スコア</strong>: 229 / <strong>コメント</strong>: 52件 / <strong>合計</strong>: 281</p>
+
+<p><strong>ざっくり言うと:</strong>
+Elixir（関数型プログラミング言語）で書かれたAIエージェントフレームワーク「Jido」のバージョン2.0がリリースされた。開発者は18ヶ月をかけて1.0を作り直し、よりシンプルなAPIを提供。BEAM（Elixirが動くランタイム環境で、大量の並行処理が得意）がAIエージェントシステムに最適だという賭けに出ている。</p>
+
+<p><strong>もう少し詳しく:</strong>
+Jidoの開発者は、TypeScriptのエージェントフレームワークを「おもちゃ」と評している。シングルスレッドのイベントループ（一度に一つの処理しかできない仕組み）でPromise（非同期処理の仕組み）を使って複数のエージェントを扱おうとするのは限界があるという主張だ。Pythonも長時間の稼働には弱い。一方、BEAMは元々電話交換機のために設計されたランタイムで、大量の軽量プロセスを同時実行し、障害が起きても自動復旧する仕組みが組み込まれている。</p>
+
+<p>Jido 2.0の設計思想は「エージェントはデータ」。状態、アクション、ツールを持つ構造体で、GenServer（BEAMの汎用サーバープロセス）の中で実行できる。すべてはcmd/2という単一の関数を通じて流れ、副作用は「ディレクティブ」という型付きデータ構造として記述される。これによりテストやデバッグが容易になる。1.0は過度に抽象化されすぎていたが、2.0ではフィードバックを反映してシンプルに再設計された。</p>
+
+<p><strong>なぜ注目？:</strong>
+AIエージェント開発はPythonやTypeScriptが主流だが、Elixir/BEAMの並行処理能力は理論的にはエージェントシステムに最適。「正しい技術が正しい問題に出会った」好例になる可能性がある。ただし、Elixirのエコシステムの小ささが採用の障壁になっているという現実的な指摘もある。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「月1回チェックしているプロジェクト。BEAMはエージェントフレームワークに完璧にフィットする」（mmcclure）— 長期的な注目
+- 「自分はGenServerとObanの組み合わせでエージェントフレームワークを自作していたが、これで楽になりそう」（neya）— 実務での需要
+- 「『データと純粋関数』へのフォーカスが最初から明確で好感が持てる」（kzemek）— 設計思想の評価
+- 「Elixir/BEAMがAIのオーケストレーション系ワークロードに出てくるのは新鮮で嬉しい」（sbuttgereit）— エコシステムの広がり
+- 「サイトがHN効果でダウンしている。archive.orgのバックアップあり」（klocksib）— 人気の証拠
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「BEAMがロケーション透過性を提供するという誤解がある。ノード障害やローリングデプロイ時のロバスト性が欠けている」（kzemek）— 技術的な限界の指摘
+- 「コードサンプルのHTMLエスケープが壊れている。&amp;quot;が表示されている」（mmcclure）— ドキュメントの品質問題
+- 「Elixirのエコシステムが小さすぎて、実用的な選択肢になりにくい」（複数ユーザー）— エコシステムの課題
+- 「TypeScriptを『おもちゃ』と呼ぶのは挑発的すぎる。実際に大規模で動いている例は多い」（複数ユーザー）— 他言語への批判が過激
+- 「OpenAIのSymphonyなど類似プロジェクトとの違いが明確ではない」（sbuttgereit）— 差別化の不明瞭さ
+
+</details>
+
+<hr />
+
+<h2 id="7-firefoxクラッシュの10はメモリのビットフリップが原因">7. Firefoxクラッシュの10%はメモリのビットフリップが原因</h2>
+
+<p><strong>原題</strong>: 10% of Firefox crashes are caused by bitflips
+<strong>URL</strong>: https://mas.to/@gabrielesvelto/116171750653898304
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47252971
+<strong>スコア</strong>: 193 / <strong>コメント</strong>: 79件 / <strong>合計</strong>: 272</p>
+
+<p><strong>ざっくり言うと:</strong>
+Mozillaのエンジニア、ガブリエレ・スヴェルトが、Firefoxのクラッシュレポートの約10%がソフトウェアのバグではなく、ハードウェアの不具合（メモリのビットフリップ）に起因することを発見した。ビットフリップとは、コンピュータのメモリ内の0と1が宇宙線や電気的なノイズによって勝手に反転してしまう現象のこと。数年前にこの検出方法を設計し、昨年からクラッシュ後にメモリテストを実行する仕組みを導入した結果、確信を得たという。</p>
+
+<p><strong>もう少し詳しく:</strong>
+メモリのビットフリップは珍しいように聞こえるが、実は日常的に起きている。Guild Wars（オンラインゲーム）の開発者は2004年の時点で、毎フレーム（約60FPS）ランダムなメモリを割り当てて計算し、既知の正解と比較するシステムを実装していた。その結果、約1,000台に1台のコンピュータがこのテストに失敗していた。</p>
+
+<p>この問題の根本的な解決策はECC（Error-Correcting Code）メモリ（エラーを自動的に検出・修正するメモリ）だが、一般消費者向けPCではECCメモリがほとんど採用されていない。サーバー用途では当たり前なのに、コンシューマー向けではLED付きの光るメモリのほうが安く手に入るという皮肉な状況だ。DDR5規格（最新のメモリ規格）では一部のECC機能が標準搭載されているため、今後は状況が改善される可能性がある。</p>
+
+<p><strong>なぜ注目？:</strong>
+ソフトウェアエンジニアはバグを探すとき、自分のコードに問題があると考えるのが普通だが、実は10台に1台のクラッシュはハードウェアの問題だった、という発見は衝撃的。Go言語のツールチェーンでも同様のテレメトリシステムが導入されており、クラッシュデータの収集がバグ修正に大きく貢献しているという事例も紹介されている。ECCメモリの普及が進まない現状への問題提起としても重要だ。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Guild Warsでは2004年に同様のシステムを実装済み。1,000台に1台がメモリテストに失敗していた」（netcoyote）— 歴史的な先行事例
+- 「Go言語のツールチェーンにも同様のテレメトリを導入した。1,000人に1人しか有効にしていないのに数百のバグを発見できた」（adonovan）— 他プロジェクトでの成功例
+- 「DDR5にはある程度のECCが標準搭載されているので、DDR4とDDR5のビットフリップ率を比較してみたい」（bhelkey）— 技術的な興味
+- 「ECCメモリは1GBを超えた時点で標準にすべきだった」（Animats）— 業界への提言
+- 「ユーザーのマシンで実行されるメモリテストの設計は非常にエレガント」（複数ユーザー）— 手法への評価
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「10%という数字は怪しい。Chromium系ブラウザではそこまでクラッシュしないのに、なぜFirefoxだけ？」（shevy-java）— 数字への懐疑
+- 「ビットフリップが本当にクラッシュの原因なのか、それともクラッシュ後にメモリが壊れているだけなのか、因果関係が不明」（複数ユーザー）— 因果関係の疑問
+- 「ECCメモリが高価なのは市場の問題であり、技術的には解決済み。消費者が求めないから安くならない」（複数ユーザー）— 市場構造の問題
+- 「LEDメモリが安くてECCメモリが高いという比較は不公平。用途が違う」（複数ユーザー）— 比較の妥当性
+- 「サンプルサイズや検出方法の詳細がMastodonの短いスレッドだけでは不十分」（複数ユーザー）— データの不足
+
+</details>
+
+<hr />
+
+<h2 id="8-米国税関がオンライン広告エコシステムを利用して人々の移動を追跡">8. 米国税関がオンライン広告エコシステムを利用して人々の移動を追跡</h2>
+
+<p><strong>原題</strong>: CBP tapped into the online advertising ecosystem to track peoples’ movements
+<strong>URL</strong>: https://www.404media.co/cbp-tapped-into-the-online-advertising-ecosystem-to-track-peoples-movements/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47249387
+<strong>スコア</strong>: 173 / <strong>コメント</strong>: 89件 / <strong>合計</strong>: 262</p>
+
+<p><strong>ざっくり言うと:</strong>
+米国税関・国境警備局（CBP）が、オンライン広告のエコシステム（広告配信のために収集される位置情報やデバイスデータの仕組み）を利用して、人々の正確な移動履歴を追跡していたことが内部文書で明らかになった。ゲームアプリ、出会い系アプリ、フィットネストラッカーなどの一般的なアプリから吸い上げられたデータが、政府の監視目的で使われていた。</p>
+
+<p><strong>もう少し詳しく:</strong>
+この文書は404 Mediaが入手した国土安全保障省（DHS）の内部資料に基づいている。オンライン広告のエコシステムでは、アプリがユーザーの位置情報やデバイスIDを広告ネットワークに送信しており、CBPはこのデータを購入して監視に使用していた。移民税関捜査局（ICE）も同様のツールを購入しており、近隣全体の携帯電話の動きを監視する能力を持っていた。</p>
+
+<p>アイルランド市民自由評議会のジョニー・ライアンは、この種のデータを「すべての人がどこにいて、何を読み、見て、聞いているかを追跡するための金鉱」と表現している。ただし、広告業界で実際にこのデータを扱う人物は、位置データの精度は「かなり不正確」で、OSやブラウザが位置情報をロックダウンしているため、多くの場合はIPアドレスからの大まかな推測に過ぎないとも指摘している。約70名の議員がDHSの監督機関にICEの位置データ購入に関する新たな調査を求めている。</p>
+
+<p><strong>なぜ注目？:</strong>
+広告テクノロジーが政府の監視ツールになりうるという問題は、プライバシーの観点から極めて重要。裁判所の令状なしに位置データを購入できてしまう法的グレーゾーンが存在する。テック業界の開発者としては、自分が作るアプリがどのようにユーザーデータを広告ネットワークに流しているかを意識すべき警鐘となっている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「広告を積極的にブロックする決断を後悔したことは一度もない。ブロックできないデバイスは避けている」（Zak）— 個人の防衛策
+- 「Cory Doctorowの2007年の小説『Scroogled』が現実になった。生活は芸術を模倣する」（orthoxerox）— 予言的なフィクション
+- 「スマホに26個のアプリしか入れず、NextDNSで追跡をブロックしている。これが現実的にできる最善策」（cdrnsf）— 実践的な対策の共有
+- 「この報道が約70名の議員による調査要求につながった」（記事内）— 報道の社会的インパクト
+- 「archive.mdのリンクあり」（ece）— 全文閲覧の方法を共有
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「広告ネットワークの位置データは実際にはかなり不正確。OS・ブラウザは位置情報をかなり守っている。記者はデータの質を誇張しがち」（legitster）— 精度への反論
+- 「広告業界は自社データの質を誇張する傾向がある。政府に売る時も同じ過大評価が入っている」（legitster）— データ品質の過大評価
+- 「404 Mediaは購読が必要で全文が読めない。情報の民主化を訴えるメディアが有料壁の裏側にあるのは皮肉」（複数ユーザー）— アクセスの制限
+- 「位置追跡が嫌ならスマホを持たなければいい、という極論もある」（複数ユーザー）— 現実的な代替案の不足
+- 「政府がデータを購入すること自体は合法。問題は法律の側にある」（複数ユーザー）— 法的枠組みの問題
+
+</details>
+
+<hr />
+
+<h2 id="9-世界初--航空機と静止衛星間のギガビットレーザー通信に成功">9. 世界初 — 航空機と静止衛星間のギガビットレーザー通信に成功</h2>
+
+<p><strong>原題</strong>: World-first gigabit laser link between aircraft and geostationary satellite
+<strong>URL</strong>: https://www.esa.int/Applications/Connectivity_and_Secure_Communications/World-first_gigabit-per-second_laser_link_between_aircraft_and_geostationary_satellite
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47208341
+<strong>スコア</strong>: 161 / <strong>コメント</strong>: 61件 / <strong>合計</strong>: 222</p>
+
+<p><strong>ざっくり言うと:</strong>
+欧州宇宙機関（ESA）、エアバス、オランダの応用科学研究機構（TNO）が、飛行中の航空機と地球の上空36,000kmにある静止衛星（静止衛星: 地球の自転と同じ速度で回り、空の同じ位置に留まっている衛星）の間で、レーザーを使った毎秒2.6ギガビットのデータ通信に成功した。世界初の快挙で、HD映画を数秒でダウンロードできる速度だ。</p>
+
+<p><strong>もう少し詳しく:</strong>
+フランスのニームで行われたテスト飛行では、エアバスの「UltraAir」レーザー端末がAlphasat TDP-1衛星と数分間にわたってエラーフリーの接続を維持した。レーザー通信は電波に比べてビームの広がりが少ないため、より安全で大容量のデータを運べる。宇宙空間がますます混雑し、電波の周波数帯が不足している現状では、レーザー通信は有力な代替手段となる。</p>
+
+<p>技術的な課題は非常に大きい。高速で移動する航空機から36,000km先の衛星に正確にレーザーを当て続ける必要があり、雲や大気の揺らぎにも対処しなければならない。衛星からの下向きレーザーがロックオンの補助に使われたが、実用的なダウンリンク能力があるかは不明。UltraAirレーザー端末の最大出力は20Wだが、2Wでも十分な性能が得られたという研究結果もある。</p>
+
+<p><strong>なぜ注目？:</strong>
+この技術が実用化されれば、飛行機の中でも高速インターネットが当たり前になり、船舶や遠隔地の車両でも途切れない接続が可能になる。現在の機内Wi-Fiの遅さを考えれば、大きな進歩だ。欧州がレーザー通信技術で先行していることは、宇宙通信インフラの勢力図にも影響する。ただし、地上からの利用は航空機への干渉リスクがあり、実用化には課題が残る。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「以前のステップに関する論文が公開されており、技術的な詳細が豊富。最大レーザー出力20Wで、2Wでも良好な性能」（icegreentea2）— 技術的な裏付け
+- 「TNO側の詳細記事もある。ESAのScyLightプログラムの一環」（utopiah）— 追加情報の提供
+- 「宇宙が混雑し電波周波数が不足する中、レーザー通信は必然的な方向性」（記事内）— 技術トレンドの文脈
+- 「エラーフリーで2.6Gbps達成は印象的」（複数ユーザー）— 性能への評価
+- 「飛行機でのブロードバンドが光を付けるくらい簡単になるかもしれない」（記事内）— 将来のビジョン
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「静止衛星なのに『低遅延リンク』と書いてあるが、500msのpingを低遅延と呼ぶのか？LEOに置き換えたいのでは」（Meneth）— 遅延の問題
+- 「小型化がまだ必要」（db48x）— 実用化への課題
+- 「地上からレーザーを空に向けるのは航空機への干渉リスクがある。地上利用は難しいのでは」（tart-lemonade）— 安全性の懸念
+- 「数分間のテストでは実用性の証明としてはまだ不十分」（複数ユーザー）— テスト規模の限界
+- 「雲がかかったらどうなるのか。実際の運用環境は実験環境とは全く違う」（複数ユーザー）— 実環境での課題
+
+</details>
+
+<hr />
+
+<h2 id="10-proton-mailが匿名の抗議者の身元特定にfbiへ協力">10. Proton Mailが匿名の抗議者の身元特定にFBIへ協力</h2>
+
+<p><strong>原題</strong>: Proton Mail Helped FBI Unmask Anonymous ‘Stop Cop City’ Protester
+<strong>URL</strong>: https://www.404media.co/proton-mail-helped-fbi-unmask-anonymous-stop-cop-city-protestor/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47267628
+<strong>スコア</strong>: 141 / <strong>コメント</strong>: 60件 / <strong>合計</strong>: 201</p>
+
+<p><strong>ざっくり言うと:</strong>
+プライバシー重視のメールサービスProton Mailが、スイス当局を通じてFBIに支払いデータを提供し、アトランタの「Stop Cop City」運動（警察訓練施設の建設に反対する市民運動）に関わる匿名アカウントの持ち主の特定に協力したことが裁判記録で明らかになった。Proton Mailはエンドツーエンド暗号化とスイスのプライバシー法の下での運営を売りにしているが、暗号化の範囲外のデータ（決済情報やIPアドレス）は提供できることが改めて示された。</p>
+
+<p><strong>もう少し詳しく:</strong>
+Proton Mailが提供したのはメールの内容ではなく、支払いデータだった。Proton Mailはエンドツーエンド暗号化（E2EE: 送信者と受信者以外がメールの内容を読めない暗号化方式）を採用しているため、メール本文を第三者に提供することは技術的にできない。しかし、IPアドレスやデバイスID、支払い情報といったメタデータは暗号化の対象外であり、法的要請があれば提供される。</p>
+
+<p>今回の事件で対象となったDefend the Atlanta Forest（DTAF）グループは、放火・器物損壊・個人情報の晒しの容疑で捜査されていた。しかし、60人以上に対する起訴はその後取り下げられている。Proton Mailが法執行機関にデータを提供した事例は2021年にも報じられており、その際にProton Mailは利用規約を変更していた。なお、Proton Mailは匿名支払い（暗号通貨など）も受け付けているため、匿名支払いを選択していれば特定されなかった可能性もある。</p>
+
+<p><strong>なぜ注目？:</strong>
+「プライバシー重視」を掲げるサービスでも、法的要請に応じてメタデータを提供する義務があるという現実は、ユーザーにとって重要な認識だ。E2EEはメールの内容を守るが、「誰が」「いつ」「どこから」「どうやって支払ったか」は守らない。真のプライバシーを求めるなら、匿名の支払い手段、VPN（仮想プライベートネットワーク: 実際のIPアドレスを隠すツール）の使用など、複数の対策を組み合わせる必要がある。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Protonはプライバシー重視のサーバーであって、ダークウェブではない。IPとデバイスIDしかアクセスできず、データは渡せない」（h4kunamata）— サービスの正確な理解
+- 「他のメールプロバイダーはメール内容・メタデータ・支払い情報すべてを日常的に提供している。Protonはまだましな方」（loteck）— 他サービスとの比較
+- 「Protonは匿名支払いも受け付けている。暗号通貨で払っていれば特定されなかった」（loteck）— 防御策の存在
+- 「2021年に既に同じことが報じられている。驚くべきことではない」（CodeWriter23）— 既知の情報
+- 「E2EEの暗号化対象と対象外を正しく理解することが大事」（複数ユーザー）— 技術リテラシーの重要性
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「プライバシーを売りにしているのに法執行機関にデータを渡すのは、ブランドの裏切りだ。Proton Mailから離れる」（kittikitti）— ブランドへの失望
+- 「この事件の容疑は結局取り下げられた。正当な抗議活動をしていた人の情報を渡したことになる」（複数ユーザー）— 正当性への疑問
+- 「十代レベルの犯罪と正当な抗議活動のために評判を捨てた」（kittikitti）— 協力判断への批判
+- 「スイスのプライバシー法が守ってくれるという宣伝は誤解を招く。実際にはスイス法に基づいて情報を提供する」（複数ユーザー）— マーケティングへの批判
+- 「404 Mediaだけがこの情報を報じているが、ログインが必要で全文が読めない」（h4kunamata）— 情報源の制限
+
+</details>
+
+<hr />
+
+<h2 id="用語集">用語集</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>用語</th>
+      <th>解説</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>XSS（クロスサイトスクリプティング）</td>
+      <td>Webページに悪意のあるスクリプトを注入する攻撃手法。今回のWikipedia事件で使われたワームの基本的な手法</td>
+    </tr>
+    <tr>
+      <td>プロンプトインジェクション</td>
+      <td>AIシステムに偽の指示を読み込ませて意図しない動作をさせる攻撃。Cline事件の起点となった</td>
+    </tr>
+    <tr>
+      <td>ECC（Error-Correcting Code）メモリ</td>
+      <td>メモリ内のデータエラーを自動的に検出・修正する機能を持つメモリ。サーバーでは一般的だが消費者向けPCでは稀</td>
+    </tr>
+    <tr>
+      <td>ビットフリップ</td>
+      <td>メモリ内の0と1が宇宙線や電気的ノイズで勝手に反転する現象。Firefoxクラッシュの10%がこれに起因</td>
+    </tr>
+    <tr>
+      <td>コンテキストウィンドウ</td>
+      <td>AIが一度に処理できるテキストの最大量。GPT-5.4では100万トークン（約75万語）に拡大</td>
+    </tr>
+    <tr>
+      <td>BEAM</td>
+      <td>Erlang/Elixirが動作するランタイム環境。元々は電話交換機のために設計され、大量の並行処理と障害復旧が得意</td>
+    </tr>
+    <tr>
+      <td>タイポスクワッティング</td>
+      <td>有名なパッケージやURLに似た偽名を使って悪意のあるソフトウェアをインストールさせる攻撃手法</td>
+    </tr>
+    <tr>
+      <td>E2EE（エンドツーエンド暗号化）</td>
+      <td>送信者と受信者だけがデータを読める暗号化方式。メタデータ（IPアドレス、支払い情報など）は保護対象外</td>
+    </tr>
+    <tr>
+      <td>静止衛星</td>
+      <td>地球の自転と同じ速度で周回し、地上から見て空の同じ位置に留まる衛星。通信やテレビ放送に利用。高度約36,000km</td>
+    </tr>
+    <tr>
+      <td>フィーチャークリープ</td>
+      <td>ソフトウェアに不要な機能が際限なく追加されて複雑化していく現象。「良いソフトウェアは止まりどきを知っている」の主テーマ</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+
+<script>
+(function() {
+  const source = document.getElementById('source');
+  if (!source) return;
+
+  // ========== Date extraction from page title ==========
+  const pageTitle = source.getAttribute('data-title') || '';
+  const dateMatch = pageTitle.match(/(\d{4})-(\d{2})-(\d{2})/);
+  const dateStr = dateMatch
+    ? dateMatch[1] + '.' + dateMatch[2] + '.' + dateMatch[3]
+    : '';
+  const shortDate = dateMatch
+    ? parseInt(dateMatch[2]) + '/' + parseInt(dateMatch[3])
+    : '';
+
+  // ========== Parse source content ==========
+  const h1 = source.querySelector('h1');
+  const allH2s = Array.from(source.querySelectorAll('h2'));
+
+  // Intro paragraph (first <p> after h1)
+  let introText = '';
+  if (h1) {
+    let next = h1.nextElementSibling;
+    while (next && (next.tagName === 'HR' || next.tagName === 'BR')) {
+      next = next.nextElementSibling;
+    }
+    if (next && next.tagName === 'P') {
+      introText = next.textContent.trim();
+    }
+  }
+
+  // Collect sections: each h2 + all siblings until next h2
+  const sections = allH2s.map(h2 => {
+    const content = [];
+    let sib = h2.nextElementSibling;
+    while (sib && sib.tagName !== 'H2') {
+      if (sib.tagName !== 'HR') content.push(sib);
+      sib = sib.nextElementSibling;
+    }
+    return { heading: h2, content };
+  });
+
+  // Separate articles (h2 starts with digit) from glossary
+  const articles = sections.filter(s => /^\d/.test(s.heading.textContent.trim()));
+  const glossarySec = sections.find(s => s.heading.textContent.includes('用語集'));
+
+  // ========== Parse glossary terms ==========
+  const glossaryTerms = [];
+  if (glossarySec) {
+    const table = glossarySec.content.find(el => el.tagName === 'TABLE');
+    if (table) {
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 2) {
+          glossaryTerms.push({
+            name: cells[0].textContent.trim(),
+            desc: cells[1].textContent.trim()
+          });
+        }
+      });
+    }
+  }
+
+  // ========== Match glossary terms to articles ==========
+  function findRelevantTerms(contentElements) {
+    const text = contentElements.map(el => el.textContent).join(' ');
+    return glossaryTerms.filter(term => {
+      const baseName = term.name.replace(/（.*/, '').replace(/\(.*/, '').trim();
+      return text.includes(baseName);
+    });
+  }
+
+  // ========== Parse a single article ==========
+  function parseArticle(heading, contentElements) {
+    const fullText = contentElements.map(el => el.textContent).join('\n');
+    const headingText = heading.textContent.replace(/^\d+\.\s*/, '').trim();
+
+    // Metadata — extract via regex from full text (handles single-paragraph metadata)
+    let origTitle = '';
+    let m = fullText.match(/原題[:：]\s*(.+?)(?=\s*URL[:：]|\n|$)/);
+    if (m) origTitle = m[1].trim();
+
+    let url = '';
+    m = fullText.match(/URL[:：]\s*(https?:\/\/\S+)/);
+    if (m) url = m[1].trim();
+
+    let hnUrl = '';
+    m = fullText.match(/HN[:：]\s*(https?:\/\/\S+)/);
+    if (m) hnUrl = m[1].trim();
+
+    let score = '', comments = '', total = '';
+    m = fullText.match(/スコア[:：]\s*([\d,]+)/);
+    if (m) score = m[1].replace(/,/g, '');
+    m = fullText.match(/コメント[:：]\s*([\d,]+)件?/);
+    if (m) comments = m[1].replace(/,/g, '');
+    m = fullText.match(/合計[:：]\s*([\d,]+)/);
+    if (m) total = m[1].replace(/,/g, '');
+
+    // Section content — from paragraphs with known labels
+    let summary = '', detail = '', whyNotable = '';
+    contentElements.forEach(el => {
+      if (el.tagName !== 'P') return;
+      const strong = el.querySelector('strong');
+      if (!strong) return;
+      const label = strong.textContent.trim();
+      const afterLabel = el.textContent.replace(label, '').trim();
+      if (/^ざっくり/.test(label)) summary = afterLabel;
+      else if (/^もう少し/.test(label)) detail = afterLabel;
+      else if (/^なぜ注目/.test(label)) whyNotable = afterLabel;
+    });
+
+    // Details blocks (comment sections)
+    const detailsBlocks = contentElements.filter(el => el.tagName === 'DETAILS');
+
+    return { headingText, origTitle, url, hnUrl, score, comments, total,
+             summary, detail, whyNotable, detailsBlocks };
+  }
+
+  // ========== Escape HTML for safe insertion ==========
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ========== Build Carousel ==========
+  const carousel = document.getElementById('carousel');
+  const totalSlides = 1 + articles.length;
+
+  // --- Slide 0: Title ---
+  const titleSlide = document.createElement('div');
+  titleSlide.className = 'slide slide--title';
+  titleSlide.innerHTML =
+    '<div class="slide-inner">' +
+      (dateStr ? '<div class="date-badge">' + esc(dateStr) + '</div>' : '') +
+      '<h1>HN Digest<span> — ' + esc(shortDate) + '</span></h1>' +
+      '<p>' + esc(introText) + '</p>' +
+      '<div class="article-count">' + articles.length + ' articles</div>' +
+      '<div class="arrow-hint">&#8594; スワイプまたは矢印キーで次へ</div>' +
+    '</div>';
+  carousel.appendChild(titleSlide);
+
+  // --- Article Slides ---
+  articles.forEach((section, idx) => {
+    const art = parseArticle(section.heading, section.content);
+    const relevantTerms = findRelevantTerms(section.content);
+
+    const slide = document.createElement('div');
+    slide.className = 'slide slide--article';
+
+    // Details HTML (with open attribute + fix raw markdown lists)
+    const detailsHTML = art.detailsBlocks.map(el => {
+      const clone = el.cloneNode(true);
+      clone.setAttribute('open', '');
+      // If kramdown didn't convert markdown lists inside <details>,
+      // the content will be raw text with "- " prefixes. Fix it.
+      if (!clone.querySelector('ul') && !clone.querySelector('ol')) {
+        const summary = clone.querySelector('summary');
+        const summaryText = summary ? summary.textContent.trim() : '';
+        const rawText = clone.textContent.replace(summaryText, '').trim();
+        if (rawText.includes('- ') || rawText.includes('「')) {
+          const lines = rawText.split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
+          const items = lines.map(l => l.replace(/^[-–—]\s*/, ''));
+          const ul = document.createElement('ul');
+          items.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            ul.appendChild(li);
+          });
+          // Remove all content except summary, then append the list
+          while (clone.lastChild && clone.lastChild !== summary) {
+            clone.removeChild(clone.lastChild);
+          }
+          clone.appendChild(ul);
+        }
+      }
+      return clone.outerHTML;
+    }).join('\n');
+
+    // Sidebar glossary (desktop)
+    let sidebarHTML = '';
+    if (relevantTerms.length > 0) {
+      sidebarHTML =
+        '<aside class="article-sidebar">' +
+          '<div class="sidebar-label">用語</div>' +
+          relevantTerms.map(t =>
+            '<div class="sidebar-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+        '</aside>';
+    }
+
+    // Inline glossary (mobile)
+    let inlineGlossaryHTML = '';
+    if (relevantTerms.length > 0) {
+      inlineGlossaryHTML =
+        '<div class="inline-glossary">' +
+          '<div class="sidebar-label">関連用語</div>' +
+          '<div class="inline-terms">' +
+          relevantTerms.map(t =>
+            '<div class="inline-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+          '</div>' +
+        '</div>';
+    }
+
+    // Links
+    const urlLink = art.url
+      ? '<a href="' + esc(art.url) + '" target="_blank" rel="noopener">元記事 &#8599;</a>'
+      : '';
+    const hnLink = art.hnUrl
+      ? '<a href="' + esc(art.hnUrl) + '" target="_blank" rel="noopener">HN &#8599;</a>'
+      : '';
+
+    // Build sections conditionally
+    let sectionsHTML = '';
+    if (art.summary) {
+      sectionsHTML +=
+        '<div class="section-label">ざっくり言うと</div>' +
+        '<p>' + esc(art.summary) + '</p>';
+    }
+    if (art.detail) {
+      sectionsHTML +=
+        '<div class="section-label">もう少し詳しく</div>' +
+        '<p>' + esc(art.detail) + '</p>';
+    }
+    if (art.whyNotable) {
+      sectionsHTML +=
+        '<div class="section-label">なぜ注目？</div>' +
+        '<p>' + esc(art.whyNotable) + '</p>';
+    }
+
+    const mainContent =
+      '<div class="article-main">' +
+        '<div class="article-number">ARTICLE ' + (idx + 1) + '</div>' +
+        '<h2>' + esc(art.headingText) + '</h2>' +
+        (art.origTitle ? '<div class="meta-row"><span>' + esc(art.origTitle) + '</span></div>' : '') +
+        '<div class="meta-row">' + urlLink + hnLink + '</div>' +
+        '<div class="stats">' +
+          (art.score ? '<div class="stat"><strong>' + esc(art.score) + '</strong> pts</div>' : '') +
+          (art.comments ? '<div class="stat"><strong>' + esc(art.comments) + '</strong> comments</div>' : '') +
+          (art.total ? '<div class="stat">Total <strong>' + esc(art.total) + '</strong></div>' : '') +
+        '</div>' +
+        sectionsHTML +
+        detailsHTML +
+        inlineGlossaryHTML +
+      '</div>';
+
+    slide.innerHTML =
+      '<div class="article-layout">' +
+        mainContent +
+        sidebarHTML +
+      '</div>';
+
+    carousel.appendChild(slide);
+  });
+
+  // ========== Navigation Dots ==========
+  const navDots = document.getElementById('navDots');
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'スライド ' + (i + 1) + ' へ');
+    dot.addEventListener('click', () => goToSlide(i));
+    navDots.appendChild(dot);
+  }
+
+  // ========== State & Navigation ==========
+  let currentSlide = 0;
+  const progressBar = document.getElementById('progressBar');
+  const miniHeader = document.getElementById('miniHeader');
+  const arrowLeft = document.getElementById('arrowLeft');
+  const arrowRight = document.getElementById('arrowRight');
+
+  function updateUI(index) {
+    currentSlide = index;
+    const progress = totalSlides > 1 ? (index / (totalSlides - 1)) * 100 : 100;
+    progressBar.style.width = progress + '%';
+    miniHeader.textContent = (index + 1) + ' / ' + totalSlides;
+
+    navDots.querySelectorAll('.nav-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === index);
+    });
+
+    arrowLeft.classList.toggle('hidden', index === 0);
+    arrowRight.classList.toggle('hidden', index === totalSlides - 1);
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides) return;
+    carousel.children[index].scrollIntoView({
+      behavior: 'smooth', block: 'nearest', inline: 'start'
+    });
+  }
+
+  // ========== Scroll Detection ==========
+  let scrollTimeout;
+  carousel.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const index = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+      updateUI(index);
+    }, 50);
+  }, { passive: true });
+
+  // ========== Arrow Buttons ==========
+  arrowLeft.addEventListener('click', () => goToSlide(currentSlide - 1));
+  arrowRight.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+  // ========== Keyboard Navigation ==========
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(currentSlide - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goToSlide(currentSlide + 1); }
+  });
+
+  // ========== Initial State ==========
+  updateUI(0);
+})();
+</script>
+
+</body>
+</html>

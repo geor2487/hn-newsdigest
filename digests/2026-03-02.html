@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>HN Digest - 2026-03-02</title>
+<meta name="description" content="Hacker Newsの最新記事を日本語で毎日まとめています">
+<link rel="icon" href="/hn-newsdigest/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/hn-newsdigest/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ========== Reset & Base ========== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'DM Sans', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background-color: #0c0d12;
+    color: #c8cad0;
+    line-height: 1.8;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(249, 115, 22, 0.35);
+    color: #fff;
+  }
+
+  /* ========== Progress Bar ========== */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f97316, #fb923c);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.15s ease-out;
+  }
+
+  /* ========== Mini Header ========== */
+  .mini-header {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #777b88;
+    letter-spacing: 0.05em;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    user-select: none;
+  }
+
+  /* ========== Home Button ========== */
+  .home-btn {
+    position: fixed;
+    top: 12px;
+    left: 20px;
+    z-index: 900;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #555a6a;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .home-btn:hover {
+    color: #f97316;
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  /* ========== Scroll Container ========== */
+  .carousel {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    height: 100vh;
+    width: 100vw;
+    scrollbar-width: none;
+  }
+
+  .carousel::-webkit-scrollbar { display: none; }
+
+  /* ========== Slide ========== */
+  .slide {
+    flex: 0 0 100vw;
+    min-width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 32px 100px;
+    position: relative;
+  }
+
+  .slide--article { justify-content: center; }
+
+  .slide-inner {
+    max-width: 640px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+  }
+
+  .slide-inner::-webkit-scrollbar { width: 4px; }
+  .slide-inner::-webkit-scrollbar-track { background: transparent; }
+  .slide-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  /* ========== Article Layout: content + glossary sidebar ========== */
+  .article-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    max-width: 960px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+  }
+
+  .article-main {
+    flex: 1;
+    min-width: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+    padding-right: 8px;
+  }
+
+  .article-main::-webkit-scrollbar { width: 4px; }
+  .article-main::-webkit-scrollbar-track { background: transparent; }
+  .article-main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  .article-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+  }
+
+  .article-sidebar::-webkit-scrollbar { width: 3px; }
+  .article-sidebar::-webkit-scrollbar-track { background: transparent; }
+  .article-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-term {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .sidebar-term:hover {
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  .sidebar-term .term-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #fb923c;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-term .term-desc {
+    font-size: 0.78rem;
+    color: #777b88;
+    line-height: 1.6;
+  }
+
+  /* ========== Title Slide ========== */
+  .slide--title { text-align: center; }
+
+  .slide--title h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    color: #ecedf2;
+  }
+
+  .slide--title h1 span { color: #f97316; }
+
+  .slide--title p {
+    font-size: 1.1rem;
+    color: #777b88;
+    line-height: 1.9;
+  }
+
+  .slide--title .date-badge {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 6px 18px;
+    border-radius: 24px;
+    margin-bottom: 24px;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(251, 146, 60, 0.15);
+  }
+
+  .slide--title .article-count {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    letter-spacing: 0.05em;
+  }
+
+  .slide--title .arrow-hint {
+    margin-top: 48px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    animation: pulse-hint 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-hint {
+    0%, 100% { opacity: 0.5; transform: translateX(0); }
+    50% { opacity: 1; transform: translateX(6px); }
+  }
+
+  /* ========== Article Slide ========== */
+  .slide--article .article-number {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 4px 12px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    letter-spacing: 0.06em;
+    border: 1px solid rgba(251, 146, 60, 0.12);
+  }
+
+  .slide--article h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: #ecedf2;
+    letter-spacing: -0.01em;
+  }
+
+  .slide--article .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    color: #555a6a;
+  }
+
+  .slide--article .meta-row a {
+    color: #f97316;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .slide--article .meta-row a:hover {
+    color: #fb923c;
+    text-decoration: underline;
+  }
+
+  .slide--article .stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .slide--article .stats .stat {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 6px 14px;
+    border-radius: 8px;
+    color: #888d9e;
+    font-weight: 500;
+  }
+
+  .slide--article .stats .stat strong {
+    color: #f97316;
+    font-weight: 700;
+  }
+
+  .slide--article .section-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #f97316;
+    margin-bottom: 6px;
+    margin-top: 20px;
+  }
+
+  .slide--article p {
+    font-size: 0.95rem;
+    color: #a0a4b2;
+    margin-bottom: 12px;
+    line-height: 1.9;
+  }
+
+  /* ========== Comments (open by default) ========== */
+  .slide--article details {
+    margin-top: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .slide--article details + details { margin-top: 8px; }
+
+  .slide--article summary {
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #c8cad0;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+    transition: background 0.15s;
+    list-style: none;
+  }
+
+  .slide--article summary::-webkit-details-marker { display: none; }
+
+  .slide--article summary::before {
+    content: '− ';
+    font-weight: 700;
+    color: #f97316;
+    margin-right: 4px;
+  }
+
+  .slide--article details:not([open]) summary::before { content: '+ '; }
+
+  .slide--article summary:hover {
+    background: rgba(249, 115, 22, 0.06);
+  }
+
+  .slide--article details ul {
+    list-style: none;
+    padding: 12px 16px;
+  }
+
+  .slide--article details li {
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .slide--article details li:last-child { border-bottom: none; }
+
+  /* Details with plain paragraph (no list) */
+  .slide--article details > p {
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+  }
+
+  /* ========== Navigation Arrows ========== */
+  .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 800;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #888d9e;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .nav-arrow:hover {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);
+  }
+
+  .nav-arrow:active { transform: translateY(-50%) scale(0.92); }
+
+  .nav-arrow--left { left: 20px; }
+  .nav-arrow--right { right: 20px; }
+
+  .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+
+  /* ========== Navigation Dots ========== */
+  .nav-dots {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 800;
+    display: flex;
+    gap: 10px;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 10px 18px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: none;
+    padding: 0;
+  }
+
+  .nav-dot:hover { background: rgba(255, 255, 255, 0.3); }
+
+  .nav-dot.active {
+    background: #f97316;
+    width: 28px;
+    border-radius: 5px;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+  }
+
+  /* ========== Inline Glossary (mobile) ========== */
+  .inline-glossary .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 10px;
+  }
+
+  .inline-glossary .inline-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .inline-glossary .inline-term {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+
+  .inline-glossary .inline-term .term-name {
+    font-weight: 600;
+    color: #fb923c;
+  }
+
+  .inline-glossary .inline-term .term-desc {
+    color: #777b88;
+    margin-top: 2px;
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 960px) {
+    .article-sidebar { display: none; }
+    .inline-glossary {
+      display: block !important;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  @media (min-width: 961px) {
+    .inline-glossary { display: none !important; }
+  }
+
+  @media (max-width: 700px) {
+    .slide { padding: 50px 20px 90px; }
+    .slide--title h1 { font-size: 2rem; }
+    .slide--article h2 { font-size: 1.25rem; }
+    .nav-arrow { width: 40px; height: 40px; font-size: 1rem; }
+    .nav-arrow--left { left: 10px; }
+    .nav-arrow--right { right: 10px; }
+    .home-btn .home-btn-text { display: none; }
+    .nav-dots { gap: 6px; padding: 8px 12px; }
+    .nav-dot { width: 8px; height: 8px; }
+    .nav-dot.active { width: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Mini Header -->
+<div class="mini-header" id="miniHeader"></div>
+
+<!-- Home Button -->
+<a href="/hn-newsdigest/" class="home-btn" aria-label="ホームに戻る">
+  <span>&#8592;</span>
+  <span class="home-btn-text">HN Digest</span>
+</a>
+
+<!-- Navigation Arrows -->
+<button class="nav-arrow nav-arrow--left hidden" id="arrowLeft" aria-label="前のスライド">&#8592;</button>
+<button class="nav-arrow nav-arrow--right" id="arrowRight" aria-label="次のスライド">&#8594;</button>
+
+<!-- Carousel Container -->
+<div class="carousel" id="carousel"></div>
+
+<!-- Navigation Dots -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- Hidden source content rendered by Jekyll/kramdown -->
+<div id="source" data-title="HN Digest - 2026-03-02" style="display:none">
+<h1 id="hn-digest--32">HN Digest — 3/2</h1>
+
+<p>Hacker Newsのトップ記事を日本語でまとめました。</p>
+
+<hr />
+
+<h2 id="1-microgpt--gptを200行で完全実装karpathyのアート作品が記録的人気に">1. microgpt — GPTを200行で完全実装、Karpathyの「アート作品」が記録的人気に</h2>
+<p><strong>原題</strong>: Microgpt
+<strong>URL</strong>: http://karpathy.github.io/2026/02/12/microgpt/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47202708
+<strong>スコア</strong>: 1677 / <strong>コメント</strong>: 293件 / <strong>合計</strong>: 1970</p>
+
+<p><strong>ざっくり言うと:</strong>
+AI研究者として世界的に有名なAndrej Karpathyが、（GPT（Generative Pre-trained Transformer）: ChatGPTなどの基盤となっているAIモデルの設計思想）をたった200行のPythonコードで完全に再現した「microgpt」を公開した。外部ライブラリに一切依存せず、データの読み込みからAIモデルの学習、テキスト生成まで全てが1つのファイルに収まっている。昨日に引き続きHNトップに居座り、スコアは1677まで伸びて記録的な注目度を集めている。</p>
+
+<p><strong>もう少し詳しく:</strong>
+microgptには、AIモデルの学習に必要な要素が全て詰め込まれている。（トークナイザー: テキストを数字の列に変換する仕組み。AIは文字を直接扱えないので、まず数字に変換する必要がある）、（自動微分エンジン: AIの学習に必要な微分計算を自動で行う仕組み。予測の間違いを計算して、次にもっと正しい予測ができるようにパラメータを調整する）、GPT-2風のニューラルネットワーク、（Adamオプティマイザー: AIの学習速度を自動調整するアルゴリズム）、学習ループ、推論ループが含まれている。データセットには32,000個の人名リストを使い、「kamon」「vialan」といった実在しないが「ありそうな」名前を生成できるようになる。ChatGPTとの違いは規模だけで、原理は全く同じ。コミュニティの反応も活発で、Rust版やC++版への移植が進んでおり、C++版は2倍のコード量（400行）で10倍の速度を実現している。韓国語名前生成の派生版や、全プロセスをインタラクティブに可視化するWebページも公開されている。</p>
+
+<p><strong>なぜ注目？:</strong>
+2日連続でHNトップという異例の人気。LLMの仕組みを学びたい人にとってこれ以上ない教材で、Google Colabでも動かせる。「ChatGPTの中身って結局なんなの？」という疑問に、実際に動くコードで答えてくれる。Karpathyはこれを「アートプロジェクト」と呼んでおり、10年以上かけてLLMの本質を蒸留し続けた集大成だ。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Rustに移植してみた。自動微分のグラフ構造をRustの型システムでどう表現するかが一番トリッキーだった」（subset）— 他言語への移植が活発に進行中
+- 「韓国語の名前を生成するmicrogptの派生版を作り、トークナイズから推論まで全プロセスをインタラクティブに可視化するWebページを公開した」（teleforce）— 教育コンテンツの拡張
+- 「C++版を書いた。コード量は2倍の400行だが、速度は10倍」（verma7）— パフォーマンス面での貢献
+- 「美しく読みやすいが、backbone.jsソースコードのような行単位の詳細解説が欲しい」（red_hare）— さらなる教材への期待
+- 「"幻覚"についての説明が明快。モデルはトークンを確率分布からサンプリングしているだけで、真実の概念を持っていない」（geokon）— 技術的な洞察への評価
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見）</summary>
+
+（この記事に対する否定的なコメントはほとんど見られなかった。Karpathyの教育的貢献に対する賞賛が圧倒的。）
+
+</details>
+
+<hr />
+
+<h2 id="2-ghostty--gpuアクセラレーション搭載のターミナルエミュレータ作者が最新状況を報告">2. Ghostty — GPUアクセラレーション搭載のターミナルエミュレータ、作者が最新状況を報告</h2>
+<p><strong>原題</strong>: Ghostty – Terminal Emulator
+<strong>URL</strong>: https://ghostty.org/docs
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47206009
+<strong>スコア</strong>: 594 / <strong>コメント</strong>: 263件 / <strong>合計</strong>: 857</p>
+
+<p><strong>ざっくり言うと:</strong>
+（ターミナルエミュレータ: コマンドを入力してコンピュータを操作するための黒い画面のアプリ。エンジニアが日常的に使う基本ツール）であるGhosttyが再びHNのフロントページに登場した。macOSとLinuxに対応し、（GPUアクセラレーション: グラフィックボードの処理能力を使ってアプリの描画を高速化する技術）を活用した高速な動作と、プラットフォームネイティブなUIが特徴。作者のmitchellh氏（HashiCorpの共同創業者）がコメント欄に降臨して最新情報を共有した。</p>
+
+<p><strong>もう少し詳しく:</strong>
+Ghosttyはゼロ設定で使い始められるターミナルで、数百のビルトインテーマ、柔軟なキーバインド設定、ライト/ダークモード切り替えなどを備えている。今回特に注目されたのは作者mitchellh氏による最新アップデート。（libghostty: Ghosttyのコアライブラリ。他のアプリケーションに組み込んで使える部品化されたターミナルエンジン）が大幅に進化しており、既に12以上のターミナルプロジェクトのバックエンドとして使われているという。一方でコメント欄では課題も指摘されている。AIエージェントを動かすには（tmux: 複数のターミナルセッションを管理するツール。SSH接続が切れてもプロセスを維持できる）が必要だが、Ghosttyのtmuxサポートが不十分だという声や、SSH接続時にターミナルの表示が崩れる問題、スクロールバック検索機能がないことへの不満も挙がっている。</p>
+
+<p><strong>なぜ注目？:</strong>
+ターミナルエミュレータ市場はiTerm2、Kitty、WezTermなど選択肢が多く、「またターミナル？」という声もある。しかしGhosttyはlibghosttyというライブラリ化戦略で差別化を図っており、他のターミナルプロジェクトのエンジンとして使われることで影響力を広げている。AIエージェント時代におけるターミナルの役割変化も議論のポイントだ。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Ghosttyのオリジナル作者です。libghosttyが今一番エキサイティング。既に12以上のターミナルプロジェクトのバックエンドとして使われている」（mitchellh）— 作者本人による最新アップデート
+- 「Ghosttyが好きだ。特にUIはKittyよりずっと良い」（Myzel394）— UIデザインへの評価
+- 「Obsidianと同じく、AI CLI との組み合わせが楽しい」（corysama）— AIツールとの連携
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「過去にGhosttyを使ったが、AIエージェントを動かすにはtmuxセッションが必要で、Ghosttyのtmuxサポートが弱いのが問題」（danhergir）— tmux対応の課題
+- 「なぜこんなに何度もハイプされるのか理解できない。ターミナルエミュレータだぞ」（guerrilla）— 過剰な話題性への疑問
+- 「スクロールバック検索ができないのが致命的。WezTermはiTerm2に最も近く、必要な機能が全て揃っている」（pdimitar）— 機能の欠如
+- 「SSH接続時にターミナルの表示が壊れることがあり、Kittyに戻らざるを得なかった」（Myzel394）— SSH時の安定性
+
+</details>
+
+<hr />
+
+<h2 id="3-obsidian-syncにヘッドレスクライアントが登場--ai連携の新時代">3. Obsidian Syncにヘッドレスクライアントが登場 — AI連携の新時代</h2>
+<p><strong>原題</strong>: Obsidian Sync now has a headless client
+<strong>URL</strong>: https://help.obsidian.md/sync/headless
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47197267
+<strong>スコア</strong>: 563 / <strong>コメント</strong>: 201件 / <strong>合計</strong>: 764</p>
+
+<p><strong>ざっくり言うと:</strong>
+人気のノートアプリ「Obsidian」の同期サービスに、（ヘッドレスクライアント: 画面を持たず、コマンドラインやスクリプトからバックグラウンドで動かせるプログラム）が追加された。これまでObsidian Syncを使うにはデスクトップアプリを起動する必要があったが、サーバー上やスクリプトから直接（Vault: Obsidianにおけるノートの保管庫。実体はマークダウンファイルが入ったフォルダ）を同期できるようになった。</p>
+
+<p><strong>もう少し詳しく:</strong>
+Obsidianはマークダウン形式でノートを管理するアプリで、エンジニアやナレッジワーカーに根強い人気がある。これまでの弱点は「Syncを使うにはGUIアプリを開かないといけない」こと。サーバー上で自動バックアップを取りたい、ブログの公開を自動化したい、AIエージェントにVaultの中身を読ませたい——こうしたユースケースにはヘッドレスが必須だった。同時にObsidianのCLIツールもリリースされており、AI CLIツールとの相性が抜群に良い。開発を担当したkepano氏がHNのコメント欄で「このプロジェクトを担当しました。質問があればどうぞ」と降臨したのも注目ポイント。「マークダウンファイルのディレクトリ」という素朴な構造のおかげで、プラグインなしでAIツールとの連携が可能になった意義は大きい。</p>
+
+<p><strong>なぜ注目？:</strong>
+昨日に続き上位にランクイン。特にAIエージェントとの連携は大きな可能性を秘めている。（RAG（Retrieval-Augmented Generation）: AIが外部のデータを検索して回答を生成する手法）との組み合わせや、（CI/CDパイプライン: コードの変更を自動テスト・デプロイする仕組み）への組み込みなど、開発者向けのユースケースが一気に広がった。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Obsidian CLIも出た。AI CLIとObsidianの組み合わせが最高に楽しい。プラグイン不要でマークダウンのディレクトリツリーをそのまま扱える」（corysama）— CLI活用の広がり
+- 「このプロジェクトを担当しました。質問があればどうぞ」（kepano）— Obsidian開発者本人が降臨
+- 「Dockerコンテナで動かす手間が省けるのは嬉しい」（fuckinpuppers）— 運用の簡素化
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「単体のマークダウンファイルを開けるようにしてほしい。プロジェクトのREADMEを編集するためだけにVaultを作るのはおかしい」（eric-p7）— Vault前提の設計への不満
+- 「ユースケースがよくわからない。何に使うの？」（jesse_dot_id）— 実用性への率直な疑問
+
+</details>
+
+<hr />
+
+<h2 id="4-無料でaiチャットが使える未来のデモ--広告まみれの悪夢を体験">4. 「無料でAIチャットが使える未来」のデモ — 広告まみれの悪夢を体験</h2>
+<p><strong>原題</strong>: I built a demo of what AI chat will look like when it’s “free” and ad-supported
+<strong>URL</strong>: https://99helpers.com/tools/ad-supported-chat
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47205890
+<strong>スコア</strong>: 452 / <strong>コメント</strong>: 261件 / <strong>合計</strong>: 713</p>
+
+<p><strong>ざっくり言うと:</strong>
+「もしAIチャットが無料で、その代わり広告で収益を上げるモデルだったら？」を実際に体験できる風刺的なデモサイトが公開された。バナー広告、（インタースティシャル広告: コンテンツの間に全画面で表示される広告。アプリやWebサイトで操作の合間に挟み込まれる）、スポンサー付き回答、フリーミアムの課金ゲートなど、あらゆるマネタイズ手法がAIチャットに詰め込まれた「最悪の未来」を見せてくれる。</p>
+
+<p><strong>もう少し詳しく:</strong>
+デモでは、AIに質問するたびにバナーが表示されたり、回答の途中にスポンサーメッセージが挟まったり、一定回数を超えると「Pro版にアップグレード」を求められたりする。作者はこれを風刺として作ったが、コメント欄では「風刺とサイト本体の区別がつかない」という指摘が相次いだ。99helpers.com自体もかなり押しの強いマーケティングをしており、「パロディなのかマジなのかわからない」という声が上がっている。ただし本質的な議論はもっと深い。あるコメントは「本当に危険なのはこういう派手な広告じゃなく、AIがゆっくりと説得してモノを買わせるパターン」と指摘している。プリンストン大学の研究グループも、AI企業が広告モデルに走る可能性とその社会的影響を研究している。</p>
+
+<p><strong>なぜ注目？:</strong>
+「便利なものが無料→人気が出る→マネタイズが必要→広告だらけ」はテック業界のお決まりパターン。AIチャットも同じ道を辿るのか？という問いは非常にリアル。現在のChatGPT ProやClaude Proは月額課金モデルだが、無料ティアが広告モデルに移行する可能性は十分ある。AIが広告主の利益に沿った回答を返す未来は、検索エンジンのSEO問題をさらに悪化させたものになりかねない。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「右下のSalesforceボタンが"標準の"サイト機能でパロディじゃないと気づくのに1分かかった」（zeta0134）— パロディの出来の良さ
+- 「プリンストンの研究グループを知ってる？AIと広告の社会的影響を研究している」（neves）— 学術的な裏付け
+- 「お決まりのパターン。便利なもの→人気→マネタイズ→広告まみれ。AIも同じ道を行く」（nickk81）— 業界パターンの認識
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「風刺とサイト本体の区別がつかない。サイト自体も押しの強いメッセージだらけで、何かを売ろうとしている」（makerofthings）— パロディか本気か不明
+- 「これは危険なAI広告の姿じゃない。瀕死のサービスの姿だ。本当に危険なのはChatGPTのように自然に見えて、裏でAIがゆっくり説得して物を買わせるパターン」（planb）— 本質的なリスクの指摘
+
+</details>
+
+<hr />
+
+<h2 id="5-誰とでも話す方法そしてなぜそうすべきか-見知らぬ人との会話の力">5. 「誰とでも話す方法、そしてなぜそうすべきか」— 見知らぬ人との会話の力</h2>
+<p><strong>原題</strong>: How to talk to anyone, and why you should
+<strong>URL</strong>: https://www.theguardian.com/lifeandstyle/2026/feb/24/stranger-secret-how-to-talk-to-anyone-why-you-should
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47142183
+<strong>スコア</strong>: 374 / <strong>コメント</strong>: 177件 / <strong>合計</strong>: 551</p>
+
+<p><strong>ざっくり言うと:</strong>
+The Guardian に掲載された、見知らぬ人との会話の価値と方法についてのエッセイ。筆者がある日、電車で70代の女性に「ここに座ってもいいですか？」と声をかけられ、短い会話が生まれたエピソードから始まる。「話しかけるスキル」は特別な才能ではなく、練習で身につくもので、その見返りは驚くほど大きい——という主張。</p>
+
+<p><strong>もう少し詳しく:</strong>
+記事の核心は「最大の障壁は”言い訳”だ」というメッセージ。「相手は忙しそう」「迷惑かもしれない」「うまく話せない」——これらは全て言い訳に過ぎず、話しかけること自体が人間の根源的なスキルだ、という主張が展開される。HNコメント欄では多くの人が自身の体験を共有した。ある人は2015年の失恋後、Redditのソーシャルスキル掲示板のアドバイスに従い「全員に話しかける」を実践した。魅力的な人だけでなく、ロシア語の新聞を読む老人や自転車に乗る子供にも。結果、人間関係全般が劇的に改善したという。また別のコメントでは、亡くなった母親が「どんな言語でも誰とでも話せる才能」を持っており、ダゲスタン（ロシアの地域）の羊飼い兼教師を自宅に連れてきたエピソードが紹介されている。</p>
+
+<p><strong>なぜ注目？:</strong>
+テック業界はリモートワークの普及もあり、人との直接的な交流が減りがち。この記事がHNで大きな反響を呼んだのは、エンジニアコミュニティにおける孤立感や社交への渇望の表れかもしれない。一方で「この記事の’方法’の90%は”年配のイギリス人女性であること”だ。若い男性が同じことをしたら全然違う反応が返ってくる」というシニカルな指摘もあり、社会的な非対称性についても議論が広がっている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「自分は全員に話しかける。友人や家族は冗談にするが、どこに行っても誰かと会話になる。やらない人生は想像できない」（saaaaaam）— 実践者の証言
+- 「2015年の失恋後、"全員に話しかける"を実践した。老人にも子供にも。人間関係が劇的に改善した」（SequoiaHope）— 具体的な成功体験
+- 「"最大の言い訳"——これが記事で最も重要な一文。人と話すのは人間の本能で、言い訳は言い訳でしかない」（cal_dent）— 核心への共感
+- 「亡き母は誰とでもどんな言語でも話せた。ダゲスタンの羊飼い兼教師を家に連れてきたこともある」（danielodievich）— 感動的なエピソード
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見）</summary>
+
+- 「この記事の"方法"の90%は"年配のイギリス人女性であること"だ。その要素がなければ、相手から"お金持ってない"と言われるか、無視される」（caditinpiscinam）— 社会的非対称性の指摘
+
+</details>
+
+<hr />
+
+<h2 id="6-決定木--ネストされた判定ルールの不合理なほどのパワー">6. 決定木 — ネストされた判定ルールの「不合理なほどの」パワー</h2>
+<p><strong>原題</strong>: Decision trees – the unreasonable power of nested decision rules
+<strong>URL</strong>: https://mlu-explain.github.io/decision-tree/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47204964
+<strong>スコア</strong>: 388 / <strong>コメント</strong>: 69件 / <strong>合計</strong>: 457</p>
+
+<p><strong>ざっくり言うと:</strong>
+Amazon（MLU: Machine Learning University）が公開している（決定木（Decision Tree）: データを「はい/いいえ」の質問の連鎖で分類していくアルゴリズム。「年齢は30歳以上？」→「収入は500万以上？」のように条件分岐を繰り返して予測する）のインタラクティブな解説ページがHNで話題になった。美しいビジュアライゼーションで（エントロピー: データの「混ざり具合」を数値で表したもの。よく混ざっている＝エントロピーが高い＝まだ分類が不十分）や分割の仕組みを直感的に理解できる。</p>
+
+<p><strong>もう少し詳しく:</strong>
+決定木はデータを上から下に向かって順番に分割していく。各ステップで「どの特徴量を使って、どこで分割すれば最も効果的か？」を決めるのにエントロピーを使う。このページではアニメーションと対話的なUI で、分割の各ステップがデータにどう影響するかを可視化している。決定木の強みは「なぜその判定になったか」が追跡できる（説明可能性: AIの判断理由を人間が理解できること。ブラックボックスなニューラルネットワークと対照的な性質）こと。CERNの物理実験では2010年頃にニューラルネットワークより決定木ベースの分類器（Boosted Decision Trees）が好まれていたのも、この説明可能性が理由だった。面白い指摘として「1ビットのニューラルネットワークは決定木である」というコメントがあり、理論上はほとんどのニューラルネットワークをif-else文の連鎖に「コンパイル」できるが、いつそのアプローチがうまくいくかはまだよくわかっていないという。</p>
+
+<p><strong>なぜ注目？:</strong>
+LLMやディープラーニングが注目を集める中、「古典的だが強力な」機械学習手法を再評価する動き。決定木は推論速度が圧倒的に速く、あるコメントでは「小さなニューラルネットワークで置き換えようとしたが、分類精度は上がっても推論速度は2桁遅くなった」と報告されている。低レイテンシが求められるアプリケーションでは、今でも決定木が最適解になりうる。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「同サイトのランダムフォレストの解説も素晴らしい」（huqedato）— シリーズ全体への評価
+- 「1ビットのニューラルネットワークは決定木。理論上、ほとんどのNNをif-else文の連鎖にコンパイルできる」（fooker）— 理論的な洞察
+- 「線形分類器を最初に学習させ、そのスコアを追加の特徴量として使う"秘密兵器"がある」（srean）— 実践的なテクニック
+- 「CERNで2010年頃に働いていた時、Boosted Decision Treesが最も人気のある分類器だった。説明可能性が理由」（lokimedes）— 科学分野での実績
+- 「決定木の最大の強みは速さ。小さなNNで置き換えようとしたが、精度は上がっても速度は2桁遅かった」（jebarker）— パフォーマンスの優位性
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見）</summary>
+
+（否定的なコメントはほぼなし。教育コンテンツとしての質の高さが広く認められている。）
+
+</details>
+
+<hr />
+
+<h2 id="7-mcp-vs-cli--mcpは既に死につつあるという大胆な主張">7. MCP vs CLI — 「MCPは既に死につつある」という大胆な主張</h2>
+<p><strong>原題</strong>: When does MCP make sense vs CLI?
+<strong>URL</strong>: https://ejholmes.github.io/2026/02/28/mcp-is-dead-long-live-the-cli.html
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47208398
+<strong>スコア</strong>: 234 / <strong>コメント</strong>: 157件 / <strong>合計</strong>: 391</p>
+
+<p><strong>ざっくり言うと:</strong>
+「（MCP（Model Context Protocol）: AIエージェントが外部のツールやデータソースと連携するための標準規格。Anthropicが提唱した）は既に死につつある」という大胆な主張のブログ記事。OpenClawもPiもMCPをサポートしておらず、それには理由がある——既存の（CLI（Command Line Interface）: コマンドを打ち込んでコンピュータを操作する仕組み。ターミナルで使うツール全般）で十分だから、というのが記事の論旨。</p>
+
+<p><strong>もう少し詳しく:</strong>
+記事の著者は、AnthropicがMCPを発表した時に業界が「AI対応」を証明するためにMCPサーバーの構築に殺到したと指摘する。新しいエンドポイント、新しいワイヤーフォーマット、新しい認証スキーム——全てはLLMがサービスと通信できるようにするためだが、著者の主張は「それ、CLIでできるじゃん」。AIエージェントはシェルコマンドを驚くほどうまく使いこなせるので、わざわざMCPという新しいプロトコルを作る必要はないという立場だ。しかし反論も多い。「stdioベースのMCPは過剰設計だが、Streamable HTTPとOAuth discoveryを使ったMCPは現時点でAI連携を提供する最良の方法」「CLIはサンドボックスが難しく、認証の標準的な方法もない」「開発者以外のユーザーにとってCLIは使えない」など、MCPの価値を擁護する声も多い。</p>
+
+<p><strong>なぜ注目？:</strong>
+MCPは2024年末にAnthropicが発表して以来、AIツール連携の標準として急速に広まった。しかし「本当にMCPは必要だったのか？」という根本的な問いは重要。記事のポイントは「開発者ユースケースならCLIで十分」であり、MCPの真の価値は「非開発者向けのチャットインターフェースからツールに接続する」場面にあるのかもしれない。AIエージェントのツール連携がどう進化するかは、エンジニア全員に関わるトピックだ。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「MCPは実世界のメリットがないという主張に100%同意。自分はシェルコマンドでAIエージェントを動かしているが、驚くほどうまくいく」（umairnadeem123）— 実践者からの賛同
+- 「リモートMCPはブラックボックスAPI。CLIツールは精密な道具。両方に居場所がある」（wenc）— バランスの取れた視点
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「stdioベースのMCPは過剰設計だが、Streamable HTTP + OAuthのMCPはAI連携の最良の方法。CLIはサンドボックスが難しく、認証の標準もない」（buremba）— MCPの技術的優位性
+- 「この記事は開発者ユースケースに偏りすぎ。非技術ユーザー向けのチャットUIからツールに接続する場合、MCPはUXの観点から理にかなっている」（rimeice）— ユースケースの偏り
+- 「Claude Codeのようなエージェントは機能で差別化できず収斂する。MCPの本当の差別化価値は別のところにある」（nickstinemates）— より広い視点
+
+</details>
+
+<hr />
+
+<h2 id="8-鉄ナノ材料でがん細胞を内側から破壊-健康な組織を傷つけない新技術">8. 鉄ナノ材料でがん細胞を「内側から破壊」— 健康な組織を傷つけない新技術</h2>
+<p><strong>原題</strong>: New iron nanomaterial wipes out cancer cells without harming healthy tissue
+<strong>URL</strong>: https://www.sciencedaily.com/releases/2026/02/260228093456.htm
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47207404
+<strong>スコア</strong>: 226 / <strong>コメント</strong>: 78件 / <strong>合計</strong>: 304</p>
+
+<p><strong>ざっくり言うと:</strong>
+オレゴン州立大学の科学者チームが、がん細胞を内側から破壊する新しい鉄ベースの（ナノ材料: ナノメートル（10億分の1メートル）サイズの極めて小さな材料。その小ささゆえに、通常の材料とは異なる特殊な性質を持つ）を開発した。がん細胞特有の化学環境——酸性度の高さと過酸化水素濃度の高さ——を利用して、2種類の化学反応を引き起こし、腫瘍を攻撃する。健康な組織にはほぼダメージを与えないという。</p>
+
+<p><strong>もう少し詳しく:</strong>
+この鉄ベースのナノ材料は、がん細胞の内部環境を「武器」として利用する設計になっている。がん細胞は正常な細胞と比べて酸性度が高く、過酸化水素の濃度も高い。このナノ材料はその環境に反応して（フェントン反応: 鉄イオンと過酸化水素が反応して、非常に強い酸化力を持つヒドロキシラジカルを生成する化学反応）を含む2つの化学反応を連鎖的に起こし、がん細胞を内部から破壊する。正常な細胞では酸性度も過酸化水素濃度も低いため、反応が起きにくく、副作用が少ないとされている。ただし現時点では動物実験の段階であり、人間への臨床応用にはまだ距離がある。</p>
+
+<p><strong>なぜ注目？:</strong>
+がん治療の革新的なアプローチとして注目されているが、HNコメントの反応は冷静。「マウス実験？」という一言コメントが端的に示すように、基礎研究から臨床応用までの道のりは非常に長い。ある人は「がん研究のニュースは5年間ずっと画期的だが、平均的な患者のアウトカムを大きく変えるブレークスルーはまだない」と指摘。一方で、家族をがんで亡くした人からの「いつかこれが命を救えることを願う」というコメントが胸を打つ。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見）</summary>
+
+- 「昨日兄をがんで亡くした。いつかこれが命を救えることを願う。Go Beavs（オレゴン州立大の愛称）」（xbar）— 個人的な思いとの共鳴
+- 「致命的ながんの患者に試してほしい」（msie）— 臨床応用への期待
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「マウス実験？」（mcc1ane）— 研究段階への端的な疑問
+- 「家族のがんを経験した立場から言えば、こういうニュースはワクワクするが、過去5年間、平均的な患者のアウトカムを大きく変えるブレークスルーはなかった」（RomanPushkin）— 現実的な指摘
+- 「カナダでは、がんと診断された30秒後に安楽死を提案された。診断を消化する前に。希望がもっと必要」（quantummagic）— 医療システムへの批判
+
+</details>
+
+<hr />
+
+<h2 id="9-cmuモダンai入門コース--llmの仕組みを本格的に学べる無料教材">9. CMU「モダンAI入門」コース — LLMの仕組みを本格的に学べる無料教材</h2>
+<p><strong>原題</strong>: 10-202: Introduction to Modern AI (CMU)
+<strong>URL</strong>: https://modernaicourse.org
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47204559
+<strong>スコア</strong>: 222 / <strong>コメント</strong>: 47件 / <strong>合計</strong>: 269</p>
+
+<p><strong>ざっくり言うと:</strong>
+（CMU（Carnegie Mellon University）: コンピュータサイエンス分野で世界トップクラスの大学。AI研究の中心地の一つ）が「モダンAI入門」という講座を無料公開している。ここで言う「モダンAI」とは、ChatGPT、Gemini、Claudeの背後にある（機械学習: データからパターンを自動的に学習するコンピュータの手法）と（LLM（Large Language Model）: 大量のテキストデータで学習した、文章を生成・理解できる大規模AIモデル）のこと。</p>
+
+<p><strong>もう少し詳しく:</strong>
+コースの内容はLLMの仕組みに特化しており、ChatGPTやClaudeがどのように動作しているかを体系的に学べる。注目すべきは、全ての宿題とプログラミング課題でAIアシスタントの使用が公式に許可されていること。「AIについて学ぶコースでAIを使って学ぶ」という自己言及的なアプローチだ。ただし「提出する前に自力で完成させることを強く推奨する」という注意書き付き。講義は無料で公開されており、コーディング課題はローカルでテストを実行できる形式で提供されている。あるユーザーは「数日前から始めたが、レッスンも良いし、何よりローカルテスト付きの宿題が素晴らしい。聞いて理解したつもりでもコードが書けないことがあるので」と高評価。なお、講師のZico KolterはOpenAIの取締役でもある。</p>
+
+<p><strong>なぜ注目？:</strong>
+「モダンAI」のタイトルだが、コンピュータビジョンや強化学習などの広範なAI分野はカバーしておらず、LLMに特化している点は注意。しかしLLMの仕組みを体系的に、しかも無料で学べるCMUレベルの教材は貴重。Karpathyのmicrogpt（記事1）がコードで学ぶアプローチなら、このコースは理論と実践の両面から学べる正統派の教材。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「数日前から始めた。レッスンは素晴らしいが、ローカルテスト付きのコーディング宿題がさらに良い。理解したつもりでもコードが書けないことがある」（neriymus）— 実践重視の教材への評価
+- 「AI課題の使用ポリシーが面白い。"全ての宿題でAIアシスタントを使ってOK"だが、自力での完成を強く推奨」（aanet）— 教育方針の先進性
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「"モダンAI"がLLMだけを指すのは不満。モダンAIはそれよりはるかに広い。多分野の最先端モデルをカバーするコースを期待していた」（somethingsome）— スコープの狭さ
+- 「講師がOpenAIの取締役であることは知っておくべき」（apavlo）— 利害関係の指摘
+
+</details>
+
+<hr />
+
+<h2 id="10-xmlタグがclaudeにとって根本的に重要な理由">10. XMLタグがClaudeにとって根本的に重要な理由</h2>
+<p><strong>原題</strong>: Why XML tags are so fundamental to Claude
+<strong>URL</strong>: https://glthr.com/XML-fundamental-to-Claude
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47207236
+<strong>スコア</strong>: 153 / <strong>コメント</strong>: 106件 / <strong>合計</strong>: 259</p>
+
+<p><strong>ざっくり言うと:</strong>
+Anthropicの（Claude: Anthropicが開発したAIアシスタント。ChatGPTの競合）において、（XML（eXtensible Markup Language）: データを構造化するためのマークアップ言語。<code class="language-plaintext highlighter-rouge">&lt;tag&gt;内容&lt;/tag&gt;</code> のようにタグで情報を囲んで整理する）タグがなぜプロンプトの構造化に効果的なのかを解説した記事。Claudeのシステムプロンプトや入力データの整理にXMLタグを使うと、AIの回答精度が向上するという話。</p>
+
+<p><strong>もう少し詳しく:</strong>
+記事の主張は、XMLタグがClaudeのコンテキスト内で明確な境界線（デリミタ）として機能するということ。Claudeの学習データにはXMLが大量に含まれており、タグの開始と終了を正確に認識できる。これにより「ここからがユーザーの入力」「ここからがシステムの指示」といった区分けが明確になり、AIが指示をより正確に理解できる。ただしコメント欄では議論が分かれた。「全てのLLMはロールマーカー（役割の区切り）を使っている。XMLが他のフォーマットより優れている理由が不明」「1998年の技術をいまさら”古い技術”呼ばわりするのは変」といった批判や、「引用符もデリミタとして機能する。XMLがベストである証拠は？」という疑問が寄せられている。また「（プロンプトインジェクション: AIへの指示に悪意のある命令を紛れ込ませる攻撃手法）やジェイルブレイクの文脈でClaudeのXMLタグの使い方を学ぶと面白い」という実践的な視点も。</p>
+
+<p><strong>なぜ注目？:</strong>
+（プロンプトエンジニアリング: AIから望ましい出力を得るための入力（プロンプト）の設計技術）に関する実践的な知見。Claude Codeのスキルやカスタムコマンドを書く際にもXMLタグの使い方は重要。ただし「Claudeに特化しすぎると、他のモデル（GPT、Geminiなど）で使えなくなる」というトレードオフは考慮すべき。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見）</summary>
+
+- 「Hacker Newsの精神で言えば、プロンプトインジェクションやジェイルブレイクを通じてこれらのタグを学ぶのが面白い」（muzani）— 実践的な学び方の提案
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「全てのシステムプロンプトは既にロールマーカーで区切られている。XMLが他のデリミタより優れている理由が不明」（krackers）— 技術的な疑問
+- 「"1998年の技術"を古いもの扱いする書き方が気になる。XMLが古い技術だと本気で思っている人がいるのか」（RadiozRadioz）— XMLへの不当な扱い
+- 「これをClaude以外のモデルにも適用すべきか？スキルやコマンド、カスタムサブエージェントにもXMLを使うべき？Claude特化で他のモデルを切り捨てることになりかねない」（Jcampuzano2）— ポータビリティへの懸念
+- 「記事の主張はデリミタが重要ということだが、引用符もデリミタとして機能する。XMLがベストである証拠はあるのか」（kid64）— 比較の欠如
+
+</details>
+
+<hr />
+
+<h2 id="用語集">用語集</h2>
+
+<ul>
+  <li><strong>GPT（Generative Pre-trained Transformer）</strong>: テキストを生成するAIモデルの設計思想。ChatGPTやClaudeの基盤技術</li>
+  <li><strong>MCP（Model Context Protocol）</strong>: AIエージェントが外部ツールと連携するための標準規格。Anthropicが提唱した</li>
+  <li><strong>CLI（Command Line Interface）</strong>: コマンドを打ち込んでコンピュータを操作する仕組み。ターミナルで使うツール全般</li>
+  <li><strong>決定木（Decision Tree）</strong>: データを「はい/いいえ」の質問の連鎖で分類する機械学習アルゴリズム。説明可能性と推論速度が強み</li>
+  <li><strong>ナノ材料</strong>: ナノメートルサイズの極めて小さな材料。通常の材料とは異なる特殊な性質を持ち、医療分野で注目されている</li>
+  <li><strong>ヘッドレス</strong>: GUI（画面）を持たず、コマンドラインやAPIだけで動作するソフトウェアの形態</li>
+  <li><strong>XML（eXtensible Markup Language）</strong>: データを構造化するためのマークアップ言語。<code class="language-plaintext highlighter-rouge">&lt;tag&gt;内容&lt;/tag&gt;</code> の形式で情報を整理する</li>
+  <li><strong>プロンプトエンジニアリング</strong>: AIから望ましい出力を得るための入力（プロンプト）の設計技術</li>
+  <li><strong>LLM（Large Language Model）</strong>: 大量のテキストデータで学習した大規模AIモデル。ChatGPT、Claude、Geminiなどの総称</li>
+  <li><strong>エントロピー</strong>: 情報理論における「不確実さ」の度合い。機械学習ではデータの混ざり具合を測る指標として使われる</li>
+</ul>
+
+</div>
+
+<script>
+(function() {
+  const source = document.getElementById('source');
+  if (!source) return;
+
+  // ========== Date extraction from page title ==========
+  const pageTitle = source.getAttribute('data-title') || '';
+  const dateMatch = pageTitle.match(/(\d{4})-(\d{2})-(\d{2})/);
+  const dateStr = dateMatch
+    ? dateMatch[1] + '.' + dateMatch[2] + '.' + dateMatch[3]
+    : '';
+  const shortDate = dateMatch
+    ? parseInt(dateMatch[2]) + '/' + parseInt(dateMatch[3])
+    : '';
+
+  // ========== Parse source content ==========
+  const h1 = source.querySelector('h1');
+  const allH2s = Array.from(source.querySelectorAll('h2'));
+
+  // Intro paragraph (first <p> after h1)
+  let introText = '';
+  if (h1) {
+    let next = h1.nextElementSibling;
+    while (next && (next.tagName === 'HR' || next.tagName === 'BR')) {
+      next = next.nextElementSibling;
+    }
+    if (next && next.tagName === 'P') {
+      introText = next.textContent.trim();
+    }
+  }
+
+  // Collect sections: each h2 + all siblings until next h2
+  const sections = allH2s.map(h2 => {
+    const content = [];
+    let sib = h2.nextElementSibling;
+    while (sib && sib.tagName !== 'H2') {
+      if (sib.tagName !== 'HR') content.push(sib);
+      sib = sib.nextElementSibling;
+    }
+    return { heading: h2, content };
+  });
+
+  // Separate articles (h2 starts with digit) from glossary
+  const articles = sections.filter(s => /^\d/.test(s.heading.textContent.trim()));
+  const glossarySec = sections.find(s => s.heading.textContent.includes('用語集'));
+
+  // ========== Parse glossary terms ==========
+  const glossaryTerms = [];
+  if (glossarySec) {
+    const table = glossarySec.content.find(el => el.tagName === 'TABLE');
+    if (table) {
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 2) {
+          glossaryTerms.push({
+            name: cells[0].textContent.trim(),
+            desc: cells[1].textContent.trim()
+          });
+        }
+      });
+    }
+  }
+
+  // ========== Match glossary terms to articles ==========
+  function findRelevantTerms(contentElements) {
+    const text = contentElements.map(el => el.textContent).join(' ');
+    return glossaryTerms.filter(term => {
+      const baseName = term.name.replace(/（.*/, '').replace(/\(.*/, '').trim();
+      return text.includes(baseName);
+    });
+  }
+
+  // ========== Parse a single article ==========
+  function parseArticle(heading, contentElements) {
+    const fullText = contentElements.map(el => el.textContent).join('\n');
+    const headingText = heading.textContent.replace(/^\d+\.\s*/, '').trim();
+
+    // Metadata — extract via regex from full text (handles single-paragraph metadata)
+    let origTitle = '';
+    let m = fullText.match(/原題[:：]\s*(.+?)(?=\s*URL[:：]|\n|$)/);
+    if (m) origTitle = m[1].trim();
+
+    let url = '';
+    m = fullText.match(/URL[:：]\s*(https?:\/\/\S+)/);
+    if (m) url = m[1].trim();
+
+    let hnUrl = '';
+    m = fullText.match(/HN[:：]\s*(https?:\/\/\S+)/);
+    if (m) hnUrl = m[1].trim();
+
+    let score = '', comments = '', total = '';
+    m = fullText.match(/スコア[:：]\s*([\d,]+)/);
+    if (m) score = m[1].replace(/,/g, '');
+    m = fullText.match(/コメント[:：]\s*([\d,]+)件?/);
+    if (m) comments = m[1].replace(/,/g, '');
+    m = fullText.match(/合計[:：]\s*([\d,]+)/);
+    if (m) total = m[1].replace(/,/g, '');
+
+    // Section content — from paragraphs with known labels
+    let summary = '', detail = '', whyNotable = '';
+    contentElements.forEach(el => {
+      if (el.tagName !== 'P') return;
+      const strong = el.querySelector('strong');
+      if (!strong) return;
+      const label = strong.textContent.trim();
+      const afterLabel = el.textContent.replace(label, '').trim();
+      if (/^ざっくり/.test(label)) summary = afterLabel;
+      else if (/^もう少し/.test(label)) detail = afterLabel;
+      else if (/^なぜ注目/.test(label)) whyNotable = afterLabel;
+    });
+
+    // Details blocks (comment sections)
+    const detailsBlocks = contentElements.filter(el => el.tagName === 'DETAILS');
+
+    return { headingText, origTitle, url, hnUrl, score, comments, total,
+             summary, detail, whyNotable, detailsBlocks };
+  }
+
+  // ========== Escape HTML for safe insertion ==========
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ========== Build Carousel ==========
+  const carousel = document.getElementById('carousel');
+  const totalSlides = 1 + articles.length;
+
+  // --- Slide 0: Title ---
+  const titleSlide = document.createElement('div');
+  titleSlide.className = 'slide slide--title';
+  titleSlide.innerHTML =
+    '<div class="slide-inner">' +
+      (dateStr ? '<div class="date-badge">' + esc(dateStr) + '</div>' : '') +
+      '<h1>HN Digest<span> — ' + esc(shortDate) + '</span></h1>' +
+      '<p>' + esc(introText) + '</p>' +
+      '<div class="article-count">' + articles.length + ' articles</div>' +
+      '<div class="arrow-hint">&#8594; スワイプまたは矢印キーで次へ</div>' +
+    '</div>';
+  carousel.appendChild(titleSlide);
+
+  // --- Article Slides ---
+  articles.forEach((section, idx) => {
+    const art = parseArticle(section.heading, section.content);
+    const relevantTerms = findRelevantTerms(section.content);
+
+    const slide = document.createElement('div');
+    slide.className = 'slide slide--article';
+
+    // Details HTML (with open attribute + fix raw markdown lists)
+    const detailsHTML = art.detailsBlocks.map(el => {
+      const clone = el.cloneNode(true);
+      clone.setAttribute('open', '');
+      // If kramdown didn't convert markdown lists inside <details>,
+      // the content will be raw text with "- " prefixes. Fix it.
+      if (!clone.querySelector('ul') && !clone.querySelector('ol')) {
+        const summary = clone.querySelector('summary');
+        const summaryText = summary ? summary.textContent.trim() : '';
+        const rawText = clone.textContent.replace(summaryText, '').trim();
+        if (rawText.includes('- ') || rawText.includes('「')) {
+          const lines = rawText.split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
+          const items = lines.map(l => l.replace(/^[-–—]\s*/, ''));
+          const ul = document.createElement('ul');
+          items.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            ul.appendChild(li);
+          });
+          // Remove all content except summary, then append the list
+          while (clone.lastChild && clone.lastChild !== summary) {
+            clone.removeChild(clone.lastChild);
+          }
+          clone.appendChild(ul);
+        }
+      }
+      return clone.outerHTML;
+    }).join('\n');
+
+    // Sidebar glossary (desktop)
+    let sidebarHTML = '';
+    if (relevantTerms.length > 0) {
+      sidebarHTML =
+        '<aside class="article-sidebar">' +
+          '<div class="sidebar-label">用語</div>' +
+          relevantTerms.map(t =>
+            '<div class="sidebar-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+        '</aside>';
+    }
+
+    // Inline glossary (mobile)
+    let inlineGlossaryHTML = '';
+    if (relevantTerms.length > 0) {
+      inlineGlossaryHTML =
+        '<div class="inline-glossary">' +
+          '<div class="sidebar-label">関連用語</div>' +
+          '<div class="inline-terms">' +
+          relevantTerms.map(t =>
+            '<div class="inline-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+          '</div>' +
+        '</div>';
+    }
+
+    // Links
+    const urlLink = art.url
+      ? '<a href="' + esc(art.url) + '" target="_blank" rel="noopener">元記事 &#8599;</a>'
+      : '';
+    const hnLink = art.hnUrl
+      ? '<a href="' + esc(art.hnUrl) + '" target="_blank" rel="noopener">HN &#8599;</a>'
+      : '';
+
+    // Build sections conditionally
+    let sectionsHTML = '';
+    if (art.summary) {
+      sectionsHTML +=
+        '<div class="section-label">ざっくり言うと</div>' +
+        '<p>' + esc(art.summary) + '</p>';
+    }
+    if (art.detail) {
+      sectionsHTML +=
+        '<div class="section-label">もう少し詳しく</div>' +
+        '<p>' + esc(art.detail) + '</p>';
+    }
+    if (art.whyNotable) {
+      sectionsHTML +=
+        '<div class="section-label">なぜ注目？</div>' +
+        '<p>' + esc(art.whyNotable) + '</p>';
+    }
+
+    const mainContent =
+      '<div class="article-main">' +
+        '<div class="article-number">ARTICLE ' + (idx + 1) + '</div>' +
+        '<h2>' + esc(art.headingText) + '</h2>' +
+        (art.origTitle ? '<div class="meta-row"><span>' + esc(art.origTitle) + '</span></div>' : '') +
+        '<div class="meta-row">' + urlLink + hnLink + '</div>' +
+        '<div class="stats">' +
+          (art.score ? '<div class="stat"><strong>' + esc(art.score) + '</strong> pts</div>' : '') +
+          (art.comments ? '<div class="stat"><strong>' + esc(art.comments) + '</strong> comments</div>' : '') +
+          (art.total ? '<div class="stat">Total <strong>' + esc(art.total) + '</strong></div>' : '') +
+        '</div>' +
+        sectionsHTML +
+        detailsHTML +
+        inlineGlossaryHTML +
+      '</div>';
+
+    slide.innerHTML =
+      '<div class="article-layout">' +
+        mainContent +
+        sidebarHTML +
+      '</div>';
+
+    carousel.appendChild(slide);
+  });
+
+  // ========== Navigation Dots ==========
+  const navDots = document.getElementById('navDots');
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'スライド ' + (i + 1) + ' へ');
+    dot.addEventListener('click', () => goToSlide(i));
+    navDots.appendChild(dot);
+  }
+
+  // ========== State & Navigation ==========
+  let currentSlide = 0;
+  const progressBar = document.getElementById('progressBar');
+  const miniHeader = document.getElementById('miniHeader');
+  const arrowLeft = document.getElementById('arrowLeft');
+  const arrowRight = document.getElementById('arrowRight');
+
+  function updateUI(index) {
+    currentSlide = index;
+    const progress = totalSlides > 1 ? (index / (totalSlides - 1)) * 100 : 100;
+    progressBar.style.width = progress + '%';
+    miniHeader.textContent = (index + 1) + ' / ' + totalSlides;
+
+    navDots.querySelectorAll('.nav-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === index);
+    });
+
+    arrowLeft.classList.toggle('hidden', index === 0);
+    arrowRight.classList.toggle('hidden', index === totalSlides - 1);
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides) return;
+    carousel.children[index].scrollIntoView({
+      behavior: 'smooth', block: 'nearest', inline: 'start'
+    });
+  }
+
+  // ========== Scroll Detection ==========
+  let scrollTimeout;
+  carousel.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const index = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+      updateUI(index);
+    }, 50);
+  }, { passive: true });
+
+  // ========== Arrow Buttons ==========
+  arrowLeft.addEventListener('click', () => goToSlide(currentSlide - 1));
+  arrowRight.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+  // ========== Keyboard Navigation ==========
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(currentSlide - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goToSlide(currentSlide + 1); }
+  });
+
+  // ========== Initial State ==========
+  updateUI(0);
+})();
+</script>
+
+</body>
+</html>

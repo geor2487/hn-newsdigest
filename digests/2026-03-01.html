@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>HN Digest - 2026-03-01</title>
+<meta name="description" content="Hacker Newsの最新記事を日本語で毎日まとめています">
+<link rel="icon" href="/hn-newsdigest/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/hn-newsdigest/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ========== Reset & Base ========== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'DM Sans', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background-color: #0c0d12;
+    color: #c8cad0;
+    line-height: 1.8;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(249, 115, 22, 0.35);
+    color: #fff;
+  }
+
+  /* ========== Progress Bar ========== */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f97316, #fb923c);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.15s ease-out;
+  }
+
+  /* ========== Mini Header ========== */
+  .mini-header {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #777b88;
+    letter-spacing: 0.05em;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    user-select: none;
+  }
+
+  /* ========== Home Button ========== */
+  .home-btn {
+    position: fixed;
+    top: 12px;
+    left: 20px;
+    z-index: 900;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #555a6a;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .home-btn:hover {
+    color: #f97316;
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  /* ========== Scroll Container ========== */
+  .carousel {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    height: 100vh;
+    width: 100vw;
+    scrollbar-width: none;
+  }
+
+  .carousel::-webkit-scrollbar { display: none; }
+
+  /* ========== Slide ========== */
+  .slide {
+    flex: 0 0 100vw;
+    min-width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 32px 100px;
+    position: relative;
+  }
+
+  .slide--article { justify-content: center; }
+
+  .slide-inner {
+    max-width: 640px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+  }
+
+  .slide-inner::-webkit-scrollbar { width: 4px; }
+  .slide-inner::-webkit-scrollbar-track { background: transparent; }
+  .slide-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  /* ========== Article Layout: content + glossary sidebar ========== */
+  .article-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    max-width: 960px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+  }
+
+  .article-main {
+    flex: 1;
+    min-width: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+    padding-right: 8px;
+  }
+
+  .article-main::-webkit-scrollbar { width: 4px; }
+  .article-main::-webkit-scrollbar-track { background: transparent; }
+  .article-main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  .article-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+  }
+
+  .article-sidebar::-webkit-scrollbar { width: 3px; }
+  .article-sidebar::-webkit-scrollbar-track { background: transparent; }
+  .article-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-term {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .sidebar-term:hover {
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  .sidebar-term .term-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #fb923c;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-term .term-desc {
+    font-size: 0.78rem;
+    color: #777b88;
+    line-height: 1.6;
+  }
+
+  /* ========== Title Slide ========== */
+  .slide--title { text-align: center; }
+
+  .slide--title h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    color: #ecedf2;
+  }
+
+  .slide--title h1 span { color: #f97316; }
+
+  .slide--title p {
+    font-size: 1.1rem;
+    color: #777b88;
+    line-height: 1.9;
+  }
+
+  .slide--title .date-badge {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 6px 18px;
+    border-radius: 24px;
+    margin-bottom: 24px;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(251, 146, 60, 0.15);
+  }
+
+  .slide--title .article-count {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    letter-spacing: 0.05em;
+  }
+
+  .slide--title .arrow-hint {
+    margin-top: 48px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    animation: pulse-hint 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-hint {
+    0%, 100% { opacity: 0.5; transform: translateX(0); }
+    50% { opacity: 1; transform: translateX(6px); }
+  }
+
+  /* ========== Article Slide ========== */
+  .slide--article .article-number {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 4px 12px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    letter-spacing: 0.06em;
+    border: 1px solid rgba(251, 146, 60, 0.12);
+  }
+
+  .slide--article h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: #ecedf2;
+    letter-spacing: -0.01em;
+  }
+
+  .slide--article .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    color: #555a6a;
+  }
+
+  .slide--article .meta-row a {
+    color: #f97316;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .slide--article .meta-row a:hover {
+    color: #fb923c;
+    text-decoration: underline;
+  }
+
+  .slide--article .stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .slide--article .stats .stat {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 6px 14px;
+    border-radius: 8px;
+    color: #888d9e;
+    font-weight: 500;
+  }
+
+  .slide--article .stats .stat strong {
+    color: #f97316;
+    font-weight: 700;
+  }
+
+  .slide--article .section-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #f97316;
+    margin-bottom: 6px;
+    margin-top: 20px;
+  }
+
+  .slide--article p {
+    font-size: 0.95rem;
+    color: #a0a4b2;
+    margin-bottom: 12px;
+    line-height: 1.9;
+  }
+
+  /* ========== Comments (open by default) ========== */
+  .slide--article details {
+    margin-top: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .slide--article details + details { margin-top: 8px; }
+
+  .slide--article summary {
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #c8cad0;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+    transition: background 0.15s;
+    list-style: none;
+  }
+
+  .slide--article summary::-webkit-details-marker { display: none; }
+
+  .slide--article summary::before {
+    content: '− ';
+    font-weight: 700;
+    color: #f97316;
+    margin-right: 4px;
+  }
+
+  .slide--article details:not([open]) summary::before { content: '+ '; }
+
+  .slide--article summary:hover {
+    background: rgba(249, 115, 22, 0.06);
+  }
+
+  .slide--article details ul {
+    list-style: none;
+    padding: 12px 16px;
+  }
+
+  .slide--article details li {
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .slide--article details li:last-child { border-bottom: none; }
+
+  /* Details with plain paragraph (no list) */
+  .slide--article details > p {
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+  }
+
+  /* ========== Navigation Arrows ========== */
+  .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 800;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #888d9e;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .nav-arrow:hover {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);
+  }
+
+  .nav-arrow:active { transform: translateY(-50%) scale(0.92); }
+
+  .nav-arrow--left { left: 20px; }
+  .nav-arrow--right { right: 20px; }
+
+  .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+
+  /* ========== Navigation Dots ========== */
+  .nav-dots {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 800;
+    display: flex;
+    gap: 10px;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 10px 18px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: none;
+    padding: 0;
+  }
+
+  .nav-dot:hover { background: rgba(255, 255, 255, 0.3); }
+
+  .nav-dot.active {
+    background: #f97316;
+    width: 28px;
+    border-radius: 5px;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+  }
+
+  /* ========== Inline Glossary (mobile) ========== */
+  .inline-glossary .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 10px;
+  }
+
+  .inline-glossary .inline-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .inline-glossary .inline-term {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+
+  .inline-glossary .inline-term .term-name {
+    font-weight: 600;
+    color: #fb923c;
+  }
+
+  .inline-glossary .inline-term .term-desc {
+    color: #777b88;
+    margin-top: 2px;
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 960px) {
+    .article-sidebar { display: none; }
+    .inline-glossary {
+      display: block !important;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  @media (min-width: 961px) {
+    .inline-glossary { display: none !important; }
+  }
+
+  @media (max-width: 700px) {
+    .slide { padding: 50px 20px 90px; }
+    .slide--title h1 { font-size: 2rem; }
+    .slide--article h2 { font-size: 1.25rem; }
+    .nav-arrow { width: 40px; height: 40px; font-size: 1rem; }
+    .nav-arrow--left { left: 10px; }
+    .nav-arrow--right { right: 10px; }
+    .home-btn .home-btn-text { display: none; }
+    .nav-dots { gap: 6px; padding: 8px 12px; }
+    .nav-dot { width: 8px; height: 8px; }
+    .nav-dot.active { width: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Mini Header -->
+<div class="mini-header" id="miniHeader"></div>
+
+<!-- Home Button -->
+<a href="/hn-newsdigest/" class="home-btn" aria-label="ホームに戻る">
+  <span>&#8592;</span>
+  <span class="home-btn-text">HN Digest</span>
+</a>
+
+<!-- Navigation Arrows -->
+<button class="nav-arrow nav-arrow--left hidden" id="arrowLeft" aria-label="前のスライド">&#8592;</button>
+<button class="nav-arrow nav-arrow--right" id="arrowRight" aria-label="次のスライド">&#8594;</button>
+
+<!-- Carousel Container -->
+<div class="carousel" id="carousel"></div>
+
+<!-- Navigation Dots -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- Hidden source content rendered by Jekyll/kramdown -->
+<div id="source" data-title="HN Digest - 2026-03-01" style="display:none">
+<h1 id="hn-digest--31">HN Digest — 3/1</h1>
+
+<p>Hacker Newsのトップ記事を日本語でまとめました。</p>
+
+<hr />
+
+<h2 id="1-microgpt--gptを200行のpythonで完全実装したkarpathyのアート作品">1. microgpt — GPTを200行のPythonで完全実装したKarpathyの「アート作品」</h2>
+<p><strong>原題</strong>: Microgpt
+<strong>URL</strong>: http://karpathy.github.io/2026/02/12/microgpt/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47202708
+<strong>スコア</strong>: 1176 / <strong>コメント</strong>: 209件 / <strong>合計</strong>: 1385</p>
+
+<p><strong>ざっくり言うと:</strong>
+AI研究者として世界的に有名なAndrej Karpathyが、（GPT（Generative Pre-trained Transformer）: ChatGPTなどの基盤となっているAIモデルの設計思想） を、たった200行のPythonコードで完全に再現した「microgpt」を公開した。外部ライブラリ（他の人が作ったプログラム部品）に一切依存せず、データの読み込みからAIモデルの学習、テキスト生成まで全てが1つのファイルに収まっている。Karpathy自身はこれを「アートプロジェクト」と呼んでおり、「これ以上シンプルにすることはできない」という到達点だと語っている。</p>
+
+<p><strong>もう少し詳しく:</strong>
+microgptには、AIモデルの学習に必要なものが全て詰め込まれている。具体的には、（トークナイザー: テキストを数字の列に変換する仕組み。AIは文字を直接扱えないので、まず数字に変換する必要がある）、（自動微分エンジン（Autograd）: AIの学習に必要な微分計算を自動で行う仕組み。「この予測はどのくらい間違っていたか？」を計算して、次にもっと正しい予測ができるようにパラメータを調整するためのもの）、GPT-2風のニューラルネットワーク、（Adamオプティマイザー: AIの学習速度を自動調整するアルゴリズム。学習が速すぎて暴走したり、遅すぎて進まなかったりしないように制御する）、学習ループ、推論ループが含まれている。データセットには32,000個の人名リストを使い、このAIモデルが「学習」すると、「kamon」「vialan」「karia」といった実際には存在しないが「ありそうな」名前を生成できるようになる。ChatGPTとの違いは規模だけで、原理は全く同じ。ChatGPTでの会話も、モデルから見れば「変な形をしたドキュメントの統計的な補完」に過ぎない、とKarpathyは説明している。これはKarpathyがこれまで手がけてきたmicrograd、makemore、nanogptなどの教育プロジェクトの集大成で、10年以上かけてLLMの本質を蒸留し続けた結果だ。</p>
+
+<p><strong>なぜ注目？:</strong>
+LLMの仕組みを学びたい人にとって、これ以上ないほどの教材。通常、GPTの実装コードは数万行にわたるが、microgptはその核心だけを200行に凝縮している。「ChatGPTの中身って結局なんなの？」という疑問に対して、実際に動くコードで答えてくれる。Google Colabでも動かせるので、プログラミング環境を整える手間もない。AI時代に「中身を理解している人」と「ブラックボックスとして使うだけの人」の差は大きくなる一方で、この教材はその橋渡しをしてくれる。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「韓国語の名前を生成するmicrogptの派生版を作って、トークナイズから推論までの全プロセスをインタラクティブに可視化するWebページを公開した」（teleforce）— コミュニティによる教育コンテンツの拡張
+- 「Rustに移植してみた。自動微分のグラフ構造をRustの型システムでどう表現するかが一番トリッキーだった。WebAssemblyでブラウザ上で動かす予定」（subset）— 他言語への移植が活発
+- 「基礎を知っていても、Karpathyの動画は見るべき。LLM入門として最高の教材」（etothet）— YouTube動画との相乗効果
+- 「特化型のマイクロLLMが実用的な価値を持つ時代が来るかも。たとえばLaravelやDjangoなど特定フレームワーク専用のモデルを、OSS＋ドキュメントだけで学習させるとか」（znnajdla）— 小規模モデルの可能性への期待
+- 「アートとして見るとIOCCCの受賞作（GPTを難読化Cで実装）も素晴らしい」（0xbadcafebee）— 「コードをアートとして見る」文化
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見）</summary>
+
+（この記事に対する否定的なコメントはほとんど見られなかった。Karpathyの教育的貢献に対する賞賛が圧倒的。）
+
+</details>
+
+<hr />
+
+<h2 id="2-anthropicをサプライチェーンリスクに指定すべきでない-openaiの異例の声明">2. 「Anthropicをサプライチェーンリスクに指定すべきでない」— OpenAIの異例の声明</h2>
+<p><strong>原題</strong>: We do not think Anthropic should be designated as a supply chain risk
+<strong>URL</strong>: https://twitter.com/OpenAI/status/2027846016423321831
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47200420
+<strong>スコア</strong>: 625 / <strong>コメント</strong>: 336件 / <strong>合計</strong>: 961</p>
+
+<p><strong>ざっくり言うと:</strong>
+OpenAIがX（旧Twitter）で、競合企業であるAnthropicが米国防総省（Department of War: アメリカの国防総省。2026年にDepartment of Defenseから改名された）から （サプライチェーンリスク: 製品やサービスの供給網における安全保障上の脅威。この指定を受けると政府機関との取引が事実上不可能になる） に指定されようとしていることに対して「そうすべきではない」と声明を出した。競合を擁護するという異例の動きだが、その裏にはAI業界全体の軍事関与をめぐる複雑な事情がある。</p>
+
+<p><strong>もう少し詳しく:</strong>
+事の発端は、トランプ政権がAnthropicを連邦システムから排除する動きを見せたこと。Anthropicは自社AIの軍事利用に対して「技術的なセーフガード」を設けており、たとえば自律型兵器への利用を技術レベルでブロックするような仕組みを求めていた。一方OpenAIも同様の（レッドライン: 「これだけは絶対に超えない」という安全上の一線） を主張しているが、両社のアプローチには決定的な違いがある。Anthropicは「技術で制限を強制する」のに対し、OpenAIは「契約条項で政府に守らせる」という信頼ベースのアプローチを採っている。結果的にAnthropicは排除され、OpenAIが国防総省との契約を獲得した。OpenAIの声明は「競合を守る」ように見えるが、「AI企業がレッドラインを持つこと自体が罰せられるべきではない」という業界全体の利益を守る意図もあると見られている。同じXスレッドでOpenAIは「我々の国防総省との契約はレッドラインを守っている」とも述べており、自社の立場の正当化も兼ねている。</p>
+
+<p><strong>なぜ注目？:</strong>
+AI企業と軍事利用の関係は、テック業界最大の倫理的論点の一つ。「安全策を技術で強制するか、契約で約束するか」は、（AIガバナンス: AIの開発・利用に関するルールや統治の仕組み） の根本的な設計思想の違い。初学者にとっても、「AIを作る会社がどこまで使い方に責任を持つべきか？」という問いは、今後ますます重要になる。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見）</summary>
+
+- 「キーとなる違いは明確。Anthropicは技術で条件を強制し、OpenAIは口頭で"守ってね"と言うだけ。技術的強制のほうが正しいに決まっている」（jedberg）— 両社のアプローチ比較
+- 「ChatGPTを解約してClaudeに乗り換えた。今このタイミングでこのメッセージを送りたかった」（Buttons840）— ユーザーによる意思表示
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「公平になるまで国防総省の契約を拒否すべき。SamはNDAと嘘の義務付きで100%すり寄ったはず。Larryと一緒でモラルコンパスがゼロ」（qwertox）— OpenAIの動機への不信
+- 「"Any Lawful Use（すべての合法的な目的）"が問題。国防総省は弁護士にメモを書かせれば何でも合法にできる。司法レビューもない」（siliconc0w）— 法的抜け穴への指摘
+- 「同じXスレッドでOpenAIは"我々の契約はレッドラインを守っている"と言っている。AnthropicもOpenAIも同じレッドラインを主張しているのに、なぜかAnthropicだけが排除される」（cube00）— ダブルスタンダードへの疑問
+- 「AIが人間を殺す判断を"理解した上で"行うのは非常に悪い考え。超知能の問題ではなく、8Bモデルに蒸留されたとき、世界中の誰でも追跡不能な自律兵器を作れるようになる」（K0balt）— 実践的なリスク
+- 「OpenAIの声明を額面通りに受け取る人がいるのか？彼らの行動パターンを見れば、これは業界の利益を守るポーズに過ぎない」（qwertox）— PR戦略への疑念
+
+</details>
+
+<hr />
+
+<h2 id="3-人生で一番幸せだった時の話-テック業界の空虚感とその処方箋">3. 「人生で一番幸せだった時の話」— テック業界の空虚感とその処方箋</h2>
+<p><strong>原題</strong>: The happiest I’ve ever been
+<strong>URL</strong>: https://ben-mini.com/2026/the-happiest-ive-ever-been
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47161759
+<strong>スコア</strong>: 550 / <strong>コメント</strong>: 295件 / <strong>合計</strong>: 845</p>
+
+<p><strong>ざっくり言うと:</strong>
+大学卒業後、最初の仕事に就いたものの言葉にできない空虚感を抱えていた筆者が、地元インディアナ州で子供のバスケットボールチームのヘッドコーチを引き受けたことで「人生で一番幸せ」を経験した、というエッセイ。サイドプロジェクトを作ったり、同僚と飲みに行ったり、選挙にのめり込んだり——「若手社会人がやるべきこと」を全てやっても埋まらなかった穴が、6人の子供たちの指導を通じて埋まった、という話。</p>
+
+<p><strong>もう少し詳しく:</strong>
+筆者はまず空虚感の正体を探ろうとした。コードを書き、副業プロジェクトを立ち上げ、政治にも関心を持った。しかしどれも「やるべきだからやっている」という感覚で、根本的な充足感にはつながらなかった。転機はバスケの街・インディアナで地元のピックアップゲーム（即席チームで遊ぶバスケ）に参加したこと。体育館のスタッフから「中学生リーグのアシスタントコーチを探している」と言われ、引き受けたら「ヘッドコーチ」にされた。6人の子供、週1試合、週2練習、なぜか14通の保護者メール。筆者は友人のClaytonとともに毎回2時間の練習を必死で準備し、子供たちの成長を見守った。筆者の気づきは「自分にフォーカスするのをやめて、他者に対して責任を持つこと」が幸福のカギだった、ということ。これは哲学や心理学で古くから知られる原則だが、体験して初めて腹落ちするタイプの知恵だ。</p>
+
+<p><strong>なぜ注目？:</strong>
+テック業界では （バーンアウト（燃え尽き症候群）: 仕事への過度な没頭の結果、心身が消耗しきった状態） やメンタルヘルスの問題が深刻化している。リモートワークの孤立感、AIによるスキルの陳腐化への不安なども重なり、「自分は何のために働いているのか」という問いを抱えるエンジニアは多い。この記事は、その処方箋が「もっと良いコード」や「もっと良い副業」ではなく、「誰かのために動くこと」にあるかもしれない、という示唆を与えている。HNのコメント欄が300件近くに達したことが、この話題への共感の深さを物語っている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「自分も似たような心境だった。2026年2月がAIの転換点になると感じている。面白いパーラートリックだったAIが、仕事の根幹を変えるものになりつつある」（dgritsko）— AI時代の不安との共鳴
+- 「だからICからテックリードに転向した。コンピュータで働くのは好きだが、ジュニアエンジニアのメンタリングはコードを書くこととは比べものにならないやりがいがある」（dejawu）— エンジニアリングへの応用
+- 「これは人類最古の教訓。自分にフォーカスするのをやめて、他者に責任を持つと空虚感は消える。6人の子供が毎週自分を必要としている——それが全て」（bengale）— 普遍的な真理としての再確認
+- 「新しい目標を"美しさを探す、幸福を探す、人を悲しませない"に設定した。3つ目が一番難しいが、口を閉じることが増えて、意外とうまくいっている」（bloomingeek）— 実践的なアプローチ
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見）</summary>
+
+- 「対面で子供を教えて鬱になった自分もいるので、この体験は普遍的ではない。一方でリモートワークは確かにディストピア。オフィスと人の物理的な存在が必要」（lr4444lr）— 個人差の指摘と部分的な同意
+
+</details>
+
+<hr />
+
+<h2 id="4-obsidian-syncにヘッドレスクライアントが登場--ノートアプリ--aiの新時代">4. Obsidian Syncにヘッドレスクライアントが登場 — ノートアプリ × AIの新時代</h2>
+<p><strong>原題</strong>: Obsidian Sync now has a headless client
+<strong>URL</strong>: https://help.obsidian.md/sync/headless
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47197267
+<strong>スコア</strong>: 516 / <strong>コメント</strong>: 173件 / <strong>合計</strong>: 689</p>
+
+<p><strong>ざっくり言うと:</strong>
+人気のノートアプリ「Obsidian」の同期サービスに、（ヘッドレスクライアント: 画面（GUI）を持たず、コマンドラインやスクリプトからバックグラウンドで動かせるプログラム） が追加された。これまでObsidian Syncを使うにはデスクトップアプリを起動する必要があったが、今回のアップデートで、サーバー上やスクリプトから直接 （Vault（ボルト）: Obsidianにおけるノートの保管庫。実体はマークダウンファイルが入ったフォルダ） を同期できるようになった。Node.js 22以降が必要で、npmパッケージとしてインストールできる。</p>
+
+<p><strong>もう少し詳しく:</strong>
+Obsidianはマークダウン形式でノートを管理するアプリで、エンジニアやナレッジワーカーに強い人気がある。これまでの弱点は「Syncを使うにはGUIアプリを開かないといけない」こと。たとえばサーバー上で自動バックアップを取りたい、ブログの公開を自動化したい、AIエージェントにVaultの中身を読ませたい——こうしたユースケースにはヘッドレスが必須だった。今回のリリースで、（CI/CDパイプライン: コードの変更を自動的にテスト・デプロイする仕組み） への組み込み、（RAG（Retrieval-Augmented Generation）: AIが外部のデータベースやファイルを検索して、それを元に回答を生成する手法） との連携、チームVaultのサーバー同期など、開発者向けのユースケースが一気に広がった。開発を担当したkepano氏（Obsidianの開発者）がHNのコメント欄に降臨して質問に答えていたのも注目ポイント。同時にObsidianのCLIツールもリリースされており、「ノートアプリだけどガチの開発者ツールでもある」というObsidianの立ち位置がさらに明確になった。</p>
+
+<p><strong>なぜ注目？:</strong>
+Obsidianのユーザーコミュニティで最も要望が多かった機能の一つ。特にAIエージェントとの連携は大きい。「マークダウンファイルのディレクトリ」という素朴な構造のおかげで、AI CLIツールとの相性が抜群に良い。「ノートアプリ × AI」の実用的な連携が、プラグインなしで可能になった意義は大きい。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「一番欲しかった機能。サーバーサイドの自動化とRAGに最高」（segphault）— 待望の声
+- 「このプロジェクトを担当しました。質問があればどうぞ」（kepano）— Obsidian開発者本人が降臨
+- 「早速ヘッドレスを使ってブログ公開を自動化する実験をした。記事も書いた」（spondyl）— 即座に実用例が登場
+- 「新機能としてObsidian CLIも出た。AI CLIとObsidianの組み合わせが最高に楽しい。プラグイン不要でマークダウンのディレクトリツリーをそのまま扱える」（corysama）— CLI活用の広がり
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見）</summary>
+
+- 「単体のマークダウンファイルを開けるようにしてほしい。プロジェクトのREADMEを編集するためだけにVaultを作るのはおかしい」（eric-p7）— Vault前提の設計への不満
+
+</details>
+
+<hr />
+
+<h2 id="5-openaiと国防総省の契約--すべての合法的な目的の意味">5. OpenAIと国防総省の契約 — 「すべての合法的な目的」の意味</h2>
+<p><strong>原題</strong>: Our Agreement with the Department of War
+<strong>URL</strong>: https://openai.com/index/our-agreement-with-the-department-of-war
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47199948
+<strong>スコア</strong>: 334 / <strong>コメント</strong>: 237件 / <strong>合計</strong>: 571</p>
+
+<p><strong>ざっくり言うと:</strong>
+OpenAIが米国防総省（Department of War）との契約内容の一部を公開したブログ記事。国防総省はOpenAIのAIシステムを「すべての合法的な目的」に使用可能とされ、（自律型兵器: 人間の操作なしに自動で標的を選定・攻撃する兵器システム） については「法律や規制、省の方針が人間のコントロールを要求する場合」には独立運用しないとされている。記事2の「Anthropicサプライチェーンリスク問題」と対になるトピック。</p>
+
+<p><strong>もう少し詳しく:</strong>
+契約の要点は3つのレッドライン。第一に、大規模な国内監視への使用禁止。第二に、自律型兵器システムの独立運用禁止（ただし条件付き）。第三に、（ソーシャルクレジット: 市民の行動を点数化して管理する仕組み。中国で実施されていることで知られる） のような高リスクの自動判定への使用禁止。OpenAIは「これまでの機密AIデプロイメント契約で最も強いガードレールがある」と主張している。具体的な保護策として、OpenAIがセーフティスタック（安全機能の層）の完全な裁量権を保持すること、クラウド経由でのデプロイ、機密資格を持つOpenAI職員の関与、強い契約上の保護が挙げられている。情報活動については （合衆国憲法修正第4条: 不合理な捜索・押収を禁止する条項） や国家安全保障法（1947年）、外国情報監視法（1978年）などの遵守が求められている。しかし批判者たちは、「合法的な目的」の判断権が国防総省自身にある点を問題視している。</p>
+
+<p><strong>なぜ注目？:</strong>
+「すべての合法的な目的」という文言の危うさが議論の中心。国防総省は内部的に法的メモを作成することで、事実上あらゆる用途を「合法」と見なすことができる。自律兵器の禁止も「法律が要求する場合のみ」という条件付きで、法律を変更すれば制限は無効になる。AI企業が軍事組織と結ぶ契約のあるべき姿について、業界全体が答えを模索している段階だ。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見）</summary>
+
+- 「ChatGPTを解約してClaudeに切り替えた。Anthropicが特別に聖人だとは思わないが、今このタイミングでこのメッセージを送りたい」（Buttons840）— ユーザーによる消費者投票
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「情報活動での利用は第4修正条項等に準拠するとあるが、問題は"外国情報目的"の定義が広すぎること。そしてDoD指令による制限は行政府内部で完結し、司法レビューがない」（tfehring）— 法的枠組みの穴
+- 「自前で法律を作れる組織に"合法な目的なら何でもOK"と言うのは"何にでも使える"と言っているのと同じ」（zmmmmm）— 根本的な批判
+- 「自律兵器の禁止は"法律が禁止している場合のみ"。つまり"法律が人間のコントロールを要求する場合"という但し書きがある。法律を変えれば終わり」（piker）— 条件付き禁止の本質
+- 「"Any Lawful Use"の問題は、DoD内部で弁護士がメモを書けばそれで合法になること。外部のレビューは存在しない。前例は何度もある」（siliconc0w）— 実例に基づく懸念
+- 「明記されている契約条件は悪くないように見えるが、歴史的にこの手の条件は骨抜きにされてきた」（eoskx）— 歴史的パターンへの警戒
+
+</details>
+
+<hr />
+
+<h2 id="6-claude-codeのコンテキスト消費を98削減するmcpサーバーcontext-mode">6. Claude Codeのコンテキスト消費を98%削減するMCPサーバー「Context Mode」</h2>
+<p><strong>原題</strong>: MCP server that reduces Claude Code context consumption by 98%
+<strong>URL</strong>: https://mksg.lu/blog/context-mode
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47193064
+<strong>スコア</strong>: 455 / <strong>コメント</strong>: 92件 / <strong>合計</strong>: 547</p>
+
+<p><strong>ざっくり言うと:</strong>
+（Claude Code: Anthropicが提供するAIコーディングツール） で （MCP（Model Context Protocol）: AIエージェントが外部のツールやデータソースと連携するための標準規格。Anthropicが提唱した） のツールを使うと、その出力データがAIの （コンテキストウィンドウ: AIが一度の会話で参照できるテキスト量の上限。Claude Codeでは約200Kトークン（おおよそ15万語相当）） を大量に消費してしまう問題がある。「Context Mode」はこの問題を解決するMCPサーバーで、315KBのデータを5.4KBに圧縮し、98%の削減を実現した。</p>
+
+<p><strong>もう少し詳しく:</strong>
+MCPはAIエージェントが外部ツール（ブラウザ操作、GitHub、ログ取得など）を使うための標準的な仕組みだが、根本的な矛盾を抱えている。ツールの定義（「このツールは何ができるか」の説明）がコンテキストを入口側から消費し、ツールの出力がコンテキストを出口側から消費する。81以上のツールがアクティブだと、最初のメッセージを送る前に143Kトークン（72%）が消費される。さらにPlaywrightのスナップショットで56KB、<code class="language-plaintext highlighter-rouge">gh issue list</code>で59KBなど、ツール出力がどんどん積み重なる。Context Modeの仕組みは、各<code class="language-plaintext highlighter-rouge">execute</code>呼び出しごとに独立したサブプロセスを生成すること。スクリプトは隔離された環境で実行され、（stdout: プログラムの標準出力。画面に表示されるテキストのこと） だけが会話コンテキストに入る。元データ（ログファイル、API応答、スナップショット）はサンドボックスの外に出ない。さらに （FTS5: SQLiteの全文検索エンジン。テキストデータを効率的に検索できるインデックス） を使って必要な部分だけを取り出す仕組みにより、作業可能時間が30分から約3時間に延びるという。10言語のランタイムに対応し、BunによるJS/TS実行は3〜5倍高速。</p>
+
+<p><strong>なぜ注目？:</strong>
+Claude Codeのヘビーユーザーにとって「コンテキストが30分で足りなくなる」は切実な問題。MCPエコシステムの急成長を示す好例でもある。Cloudflareがツール定義を99.9%圧縮する「Code Mode」を示したが、Context Modeは出力側の圧縮に取り組んでいる。ただし圧縮後の情報量で推論品質が維持されるかは要検証。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「いい仕事。コンテキスト管理にはまだ低い位置にある果実が多い。失敗した試行をコンテキストから刈り取るバックトラッキングも有望な方向」（nr378）— さらなる最適化の余地
+- 「作者です。数日前にGitHubリポジトリを共有してフィードバックをもらった。今回はアーキテクチャの解説記事」（mksglu）— 開発者本人による補足
+- 「この記事を見て、自分のClaude Codeのトークン消費を可視化するCLIツール"claude-trace"を作った」（vexorkai）— 派生プロジェクトの即座の誕生
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見）</summary>
+
+- 「このトークン消費の多くは、MCPではなくCLIアプリを使えば回避できる。たとえばGitHub CLIはMCPよりはるかにトークンコストが低い」（muddi900）— MCPに頼りすぎでは？という指摘
+- 「FTS5のBM25アプローチは正しいが、ツール出力はJSON・テーブル・設定ファイルなどの構造化データと自然言語の混合。キーワードマッチングは構造化データに弱い。ハイブリッド検索が必要」（blakec）— 技術的な限界の指摘
+
+</details>
+
+<hr />
+
+<h2 id="7-windows-95のuiデザインユーザビリティ工学のケーススタディ1996年の論文が再注目">7. Windows 95のUIデザイン：ユーザビリティ工学のケーススタディ（1996年の論文が再注目）</h2>
+<p><strong>原題（: The Windows 95 user interface: A case study in usability engineering (1996)
+）URL</strong>: https://dl.acm.org/doi/fullHtml/10.1145/238386.238611
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47200904
+<strong>スコア</strong>: 304 / <strong>コメント</strong>: 214件 / <strong>合計</strong>: 518</p>
+
+<p><strong>ざっくり言うと:</strong>
+1996年にACM（Association for Computing Machinery: コンピュータ科学分野の世界最大の学術団体）で発表されたWindows 95のUI設計に関する論文が、30年の時を経てHNで再び話題になっている。Microsoftが当時、スタートメニューやタスクバーを設計するためにどれほど綿密な （ユーザビリティテスト: 実際のユーザーに製品を使ってもらい、使いやすさや問題点を観察・測定する評価手法） を行っていたかを詳細に記録した文書だ。</p>
+
+<p><strong>もう少し詳しく:</strong>
+論文の著者Kent Sullivanは1992年にWindows 95のUIチームに加わった。チームはまず （ベースラインテスト: 改善前の現状を測定するテスト。これと比較して改善効果を確認する） を実施し、初心者ユーザーの基本タスク達成率が「許容できないほど低い」ことを確認した。中級ユーザーからも「Windows 95は”違う”だけで”良い”わけではない」という反応を得た。そこでチームはオフサイトの合宿を開き、ベースラインの研究結果、インタビュー、市場調査、製品サポート情報を徹底的にレビュー。「ユーザーが最も頻繁に行うタスク」に集中することを決めた。ここから （反復的デザイン（Iterative Design）: 設計→テスト→改善のサイクルを何度も繰り返す設計手法） と （問題追跡（Problem Tracking）: 発見されたUI問題を記録・分類・優先順位付けし、解決を追跡する管理手法） を徹底的に適用した。スタートメニュー、タスクバー、右クリックメニューなど、今では当たり前の要素が、何度ものテストと改善を経て生まれたことが詳細に記録されている。</p>
+
+<p><strong>なぜ注目？:</strong>
+現代のUIデザインが「テストに基づく設計」から「トレンドに基づく設計」に退行しているという批判が背景にある。macOS Tahoeの （Liquid Glass: Apple が macOS Tahoe で導入した、半透明でガラスのような質感のUI デザイン。見た目は美しいが「ボタンかどうかわかりにくい」と批判されている） やWindows 11のフラットUIは、ユーザビリティテストの結果ではなくデザイナーの美的判断で決まっていると指摘されている。30年前のMicrosoftのほうが「ちゃんとテストしてた」という逆説が、多くのエンジニアの共感を集めている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「このレベルのテストと情熱があったから、あのクリスプでプロフェッショナルなUIが生まれた。今のWindowsがあのひどさになるはずがない」（VerifiedReports）— 現代UIとの対比
+- 「Jobsの"Microsoftにはテイストがない"発言（1996年）には同意しかねる。1995〜2000年のMicrosoftのUIは実にテイストフルだった。最もテイストフルな時期だ」（linguae）— 再評価
+- 「Microsoftは"Where do you want to go today?"に1億ドル注ぎ込んだ。90年代のデジタル世界の無限の可能性を感じさせるキャンペーンだった」（catskull）— マーケティングと製品の調和
+- 「プログラミング言語設計もUIデザインと同じ問題。旅客機のコックピットUIは一見の価値がある。4月にYaleでこの話をする予定」（WalterBright）— D言語作者からの広い視点
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見）</summary>
+
+- 「デザイナーは開発者よりフィードバックに閉鎖的。だからフラットUIに使いやすさの問題があるとわかっても修正されない。macOS Tahoeはさらに悪化した。Appleが過度な角丸を修正するリリースを出すか？期待するな」（lateforwork）— 構造的な問題
+
+</details>
+
+<hr />
+
+<h2 id="8-他のaiから乗り換え-claudeのメモリインポート機能">8. 他のAIから乗り換え？ Claudeの「メモリインポート」機能</h2>
+<p><strong>原題</strong>: Switch to Claude without starting over
+<strong>URL</strong>: https://claude.com/import-memory
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47204571
+<strong>スコア</strong>: 294 / <strong>コメント</strong>: 155件 / <strong>合計</strong>: 449</p>
+
+<p><strong>ざっくり言うと:</strong>
+Anthropicが、他のAIサービス（ChatGPTなど）で蓄積した好みや文脈をClaudeに移行できる「メモリインポート」機能を公開した。用意されたプロンプトを他のAIにコピペして記憶を書き出し、それをClaudeのメモリ設定に貼り付けるだけで、最初の会話から「100回目の会話」のようにClaudeが振る舞えるという仕組み。有料プラン限定の機能。</p>
+
+<p><strong>もう少し詳しく:</strong>
+手順は2ステップ。まず、Anthropicが用意した専用のプロンプトを現在使っているAI（ChatGPTなど）にコピペする。このプロンプトは「あなたが私について記憶している全てのデータを書き出してください」という内容で、AIが蓄積した好み・仕事のスタイル・プロジェクトの文脈などを一括エクスポートするように設計されている。次に、その出力をClaudeのメモリ設定にペーストする。Claudeはそれを自身の （メモリ: AIが会話をまたいで記憶する情報。コードスタイルの好み、プロジェクトの文脈、コミュニケーションの好みなど） として取り込み、以後の会話に反映する。Anthropicはメモリについて「プロジェクトごとに文脈を分離し、何が記憶されているかをユーザーが確認・編集できる」と説明している。</p>
+
+<p><strong>なぜ注目？:</strong>
+AIサービスの乗り換えコストを下げる興味深い試み。通常、AIを長く使うほど「この人はこういうコードスタイルが好き」「このプロジェクトの背景はこう」といった文脈が蓄積され、それが （スイッチングコスト: サービスを乗り換えるときに失われるもの（時間、データ、慣れなど）の総称。これが高いほど乗り換えにくい） になる。しかしこの機能は、結局のところメモリの （モート（堀）: ビジネスにおける競争優位性の比喩。「堀が深い」ほど競合が入り込みにくい） は薄い、ということも示している。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Cursorで同じモデルを使っても全然違う。重要なのはモデルの性能だけじゃなく、CLAUDE.mdでテスト、リント、型チェック、カバレッジチェックを全部やらせるようなツール環境」（khasan222）— ツールエコシステムの重要性
+- 「とっくにChatGPTからClaudeに乗り換えていた。文脈は持ち出さず、サブスク切り替えただけ。何事もなかった。結局モートなんてない」（Joeri）— モートの不在を証明
+- 「インポート用プロンプトの内容を確認した。"保存している全てのメモリとコンテキストをコードブロックで出力して"という内容」（xrd）— 透明性
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見）</summary>
+
+- 「アカウント全体のメモリの魅力がわからない。コンテキストの漏洩が怖い。コードスタイルや応答長さの好みならカスタムインストラクションで十分では」（wps）— プライバシーへの懸念
+- 「Anthropic、AGENTS.mdを活用してくれ」（brikym）— 別の方向への要望
+
+</details>
+
+<hr />
+
+<h2 id="9-google-gemini-cliの反重力バン問題--有料ユーザーが警告なしに凍結">9. Google Gemini CLIの「反重力バン」問題 — 有料ユーザーが警告なしに凍結</h2>
+<p><strong>原題</strong>: Addressing Antigravity Bans and Reinstating Access
+<strong>URL</strong>: https://github.com/google-gemini/gemini-cli/discussions/20632
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47195371
+<strong>スコア</strong>: 244 / <strong>コメント</strong>: 205件 / <strong>合計</strong>: 449</p>
+
+<p><strong>ざっくり言うと:</strong>
+Google Gemini CLIの （OAuth認証: ユーザーの代わりにサードパーティアプリがサービスにアクセスするための認証の仕組み。「Googleでログイン」ボタンもこの技術を使っている） を利用したサードパーティツール（Antigravityなど）経由のアクセスに対し、Googleがユーザーのアカウントを予告なしに永久バンする問題が起きている。AI Pro/Ultraの有料会員が多数影響を受け、サポートへのメールも無視されている状態。Googleが公式にこの問題に言及し、一部のアクセス復旧を行うと発表した。</p>
+
+<p><strong>もう少し詳しく:</strong>
+問題の核心は、Gemini CLIの （OAuthトークン: 認証後に発行される一時的なアクセス権。このトークンを使ってAPIにリクエストを送る） をサードパーティツールが「借用」してGoogleのバックエンドにアクセスしていたこと。Googleはこれを利用規約違反としたが、問題は複数ある。第一に、この制限は事前に明確に告知されておらず、利用規約への追記もバン開始後に行われた。第二に、バンがGoogleアカウント全体に波及する可能性がある。つまりGeminiの規約違反で、Gmail、Google Drive、Google Photosなど全てのGoogleサービスが使えなくなるリスクがある。第三に、Googleは「先週から対応している」と言っているが、実際にはバンは2ヶ月前から始まっており、ユーザーからは「タイムラインが違う」と指摘されている。利用状況モニタリングの透明性も低く、自分がどれだけトークンを使っているか確認する方法がないため、サードパーティの使用量監視ツールが「必需品」だったという皮肉な状況もある。</p>
+
+<p><strong>なぜ注目？:</strong>
+Googleの「アカウント一括バン」問題は長年の課題で、今回AI機能でも再現された。有料サブスクリプションで支払ったトークンを「どう使うか」はユーザーの自由であるべきという主張と、プラットフォーム側のAPI利用規約の線引きの衝突。初学者にとっての教訓は「メインのGoogleアカウントでリスクのあるサービスを使うな」という実用的なアドバイスに尽きる。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見）</summary>
+
+- 「Googleは長期的にAIプロバイダーとして生き残れる唯一の企業かもしれない。無限の資金力があるから。OpenAIやAnthropicは現行モデルで利益を出せるかもしれないが、次のモデルへの投資を止められない」（Verdex）— Google有利の長期展望
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「バンが始まって2ヶ月なのに"先週から対応"は嘘。しかもバンの理由が不明確で、フォームを送っても音沙汰なし。復旧後の状況も不透明」（cube00）— タイムラインの矛盾
+- 「"サードパーティツールでOAuth認証を利用してバックエンドにアクセスすることは規約違反"——2ヶ月経ってもこの文言の意味がはっきりしない。使用量モニタリングツールもダメなのか？」（gck1）— 曖昧な規約の問題
+- 「サブスクならトークンを好きに使わせてほしい。Antigravityでもgemini-cliでも使用量は同じはず。結局、使い切らないユーザーの余剰分で利益を出すビジネスモデルを守りたいだけ」（jascha_eng）— ビジネスモデルへの批判
+- 「メインのGoogleアカウントでこういうサービスを使うのはリスクが高すぎる。Geminiのリクエストが原因でGmailにアクセスできなくなる"デジタル死刑宣告"は冗談じゃない。しかもGoogleには人間に連絡する方法がない」（koolba）— 実用的な警告
+- 「利用規約にはOpenUsage.aiのような使用量モニタリングツールも禁止されているように読める。高負荷を与えないツールまで禁止するのは行き過ぎ」（GitHub discussion user）— 透明性の欠如
+
+</details>
+
+<hr />
+
+<h2 id="10-woxiwolfram-mathematicaの言語をrustで再実装するプロジェクト">10. Woxi：Wolfram Mathematicaの言語をRustで再実装するプロジェクト</h2>
+<p><strong>原題（: Woxi: Wolfram Mathematica Reimplementation in Rust
+）URL</strong>: https://github.com/ad-si/Woxi
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47155526
+<strong>スコア</strong>: 306 / <strong>コメント</strong>: 124件 / <strong>合計</strong>: 430</p>
+
+<p><strong>ざっくり言うと:</strong>
+（Wolfram Mathematica: 数式処理、データ可視化、プログラミングを統合した商用ソフトウェア。科学計算や工学分野で広く使われているが、ライセンス料が高い） の言語（Wolfram Language）を （Rust: Mozillaが開発したシステムプログラミング言語。メモリ安全性と高速性を両立することで知られ、近年急速に人気を集めている） で再実装するオープンソースプロジェクト「Woxi」がGitHubで公開され、注目を集めている。CLIスクリプティングやJupyterノートブックでの利用を目指している。</p>
+
+<p><strong>もう少し詳しく:</strong>
+Woxiは Wolfram Languageの （インタープリター: プログラムのソースコードを1行ずつ読み取り、即座に実行するプログラム。コンパイラと違い、事前に機械語に変換する必要がない） をRustで構築している。現在の目標はMathematica 1.0のほぼ全機能に加え、最も人気のある新しい関数（900以上）をサポートすること。WolframScriptと違い、カーネルの起動やライセンス検証のオーバーヘッドがないため、より高速に動作する。<code class="language-plaintext highlighter-rouge">cargo install woxi</code> でインストールでき、コマンドラインから直接式を評価したり、スクリプトファイルを実行したりできる。Jupyterノートブックもサポートしており、グラフィカル出力にも対応している。ブラウザ上で試せるJupyterLiteインスタンスも提供されている。全てのCLIテストはWoxiとWolframScriptの両方で通過する必要があるという互換性へのこだわりも見える。主開発者のadius氏がHNで質問に答えている。</p>
+
+<p><strong>なぜ注目？:</strong>
+Mathematicaは非常に強力だがライセンス料が高く、アカデミア以外では手を出しにくい。Woxiが成熟すれば、Wolfram Languageの数学的表現力をオープンソースかつ高速で利用できるようになる可能性がある。ただし、Mathematicaの価値は30年以上かけて磨き上げられたライブラリと統合性にあるため、再実装の道のりは果てしなく長い。実際にHNコメントでも「自分もMathematicaクローンを何度か作ったが、基礎的な微積分まで行くと毎回断念した」という経験談が寄せられている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Wolfram Kernelをターミナルで使いたかった。自分もRustで同様のプロジェクトを作ったことがある。パターンマッチング言語の実装は楽しい」（anandijain）— 開発者仲間からの共感
+- 「JupyterLiteモードもあるのが良い。Woxi Studioに加えてブラウザで試せるのは最初の心配を解消してくれた」（WillAdams）— 試しやすさへの評価
+- 「主開発者です。次のリリースではMathematica 1.0のほぼ全機能に加え、人気の新しい関数（900以上）をサポートします。質問があればどうぞ」（adius）— 開発者本人の意気込み
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見）</summary>
+
+- 「自分もMathematicaクローンを2〜3回作った。毎回、式のパースと基本的な数学までは行くが、そこから先の崖を見て断念する。Woxiにはアーキテクチャ上の欠陥がある——多項式が木構造で実装されているが、これだとスケールしない」（Grosvenor）— 経験者からの技術的批判
+- 「RustでのMathematica好きとしてターゲット層のはずだが...Mathematicaの価値はアプリケーションを意識した数十年の一貫した磨き込みにある。この再実装の実用性には懐疑的」（the__alchemist）— ターゲットユーザーからの率直な疑問
+
+</details>
+
+<hr />
+
+<h2 id="用語集">用語集</h2>
+
+<ul>
+  <li><strong>GPT（Generative Pre-trained Transformer）</strong>: テキストを生成するAIモデルの設計思想。「事前に大量のテキストで学習（Pre-trained）し、文章を生成（Generative）する、Transformerという構造のモデル」。ChatGPTやClaude の基盤技術</li>
+  <li><strong>コンテキストウィンドウ</strong>: AIが一度の会話で参照できるテキスト量の上限。本でいえば「一度に開けるページ数」。大きいほど長い会話や大量の資料を扱えるが、消費が多いと途中で限界に達する</li>
+  <li><strong>MCP（Model Context Protocol）</strong>: AIエージェントが外部のツール（GitHub、ブラウザ、データベースなど）と連携するための標準規格。USBがどんな機器も接続できるように、MCPがあればどんなツールもAIに接続できる</li>
+  <li><strong>自律型兵器</strong>: 人間の操作なしに、AIが自動で標的を選定・攻撃する兵器システム。現在、国際的にその規制が議論されている</li>
+  <li><strong>OAuth</strong>: ユーザーの代わりにアプリがサービスにアクセスするための認証の仕組み。「Googleでログイン」ボタンの裏側で動いている技術</li>
+  <li><strong>RAG（Retrieval-Augmented Generation）</strong>: AIが外部のデータベースやファイルを検索し、その情報を元に回答を生成する手法。AIの「知識」を外部データで補強する仕組み</li>
+  <li><strong>ヘッドレス</strong>: GUI（画面）を持たず、コマンドラインやAPIだけで動作するソフトウェアの形態。サーバー上での自動実行やスクリプトからの操作に適している</li>
+  <li><strong>Rust</strong>: Mozillaが開発したプログラミング言語。メモリの安全性と実行速度を両立させることが特長で、C/C++の代替として注目されている</li>
+  <li><strong>バーンアウト（燃え尽き症候群）</strong>: 仕事への過度な没頭の結果、心身が消耗しきった状態。テック業界では特に問題視されている</li>
+  <li><strong>ユーザビリティテスト</strong>: 実際のユーザーに製品を使ってもらい、使いやすさや問題点を測定する手法。「自分たちが使いやすいと思うもの」ではなく「ユーザーが実際に使えるもの」を目指す設計の基盤</li>
+</ul>
+
+</div>
+
+<script>
+(function() {
+  const source = document.getElementById('source');
+  if (!source) return;
+
+  // ========== Date extraction from page title ==========
+  const pageTitle = source.getAttribute('data-title') || '';
+  const dateMatch = pageTitle.match(/(\d{4})-(\d{2})-(\d{2})/);
+  const dateStr = dateMatch
+    ? dateMatch[1] + '.' + dateMatch[2] + '.' + dateMatch[3]
+    : '';
+  const shortDate = dateMatch
+    ? parseInt(dateMatch[2]) + '/' + parseInt(dateMatch[3])
+    : '';
+
+  // ========== Parse source content ==========
+  const h1 = source.querySelector('h1');
+  const allH2s = Array.from(source.querySelectorAll('h2'));
+
+  // Intro paragraph (first <p> after h1)
+  let introText = '';
+  if (h1) {
+    let next = h1.nextElementSibling;
+    while (next && (next.tagName === 'HR' || next.tagName === 'BR')) {
+      next = next.nextElementSibling;
+    }
+    if (next && next.tagName === 'P') {
+      introText = next.textContent.trim();
+    }
+  }
+
+  // Collect sections: each h2 + all siblings until next h2
+  const sections = allH2s.map(h2 => {
+    const content = [];
+    let sib = h2.nextElementSibling;
+    while (sib && sib.tagName !== 'H2') {
+      if (sib.tagName !== 'HR') content.push(sib);
+      sib = sib.nextElementSibling;
+    }
+    return { heading: h2, content };
+  });
+
+  // Separate articles (h2 starts with digit) from glossary
+  const articles = sections.filter(s => /^\d/.test(s.heading.textContent.trim()));
+  const glossarySec = sections.find(s => s.heading.textContent.includes('用語集'));
+
+  // ========== Parse glossary terms ==========
+  const glossaryTerms = [];
+  if (glossarySec) {
+    const table = glossarySec.content.find(el => el.tagName === 'TABLE');
+    if (table) {
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 2) {
+          glossaryTerms.push({
+            name: cells[0].textContent.trim(),
+            desc: cells[1].textContent.trim()
+          });
+        }
+      });
+    }
+  }
+
+  // ========== Match glossary terms to articles ==========
+  function findRelevantTerms(contentElements) {
+    const text = contentElements.map(el => el.textContent).join(' ');
+    return glossaryTerms.filter(term => {
+      const baseName = term.name.replace(/（.*/, '').replace(/\(.*/, '').trim();
+      return text.includes(baseName);
+    });
+  }
+
+  // ========== Parse a single article ==========
+  function parseArticle(heading, contentElements) {
+    const fullText = contentElements.map(el => el.textContent).join('\n');
+    const headingText = heading.textContent.replace(/^\d+\.\s*/, '').trim();
+
+    // Metadata — extract via regex from full text (handles single-paragraph metadata)
+    let origTitle = '';
+    let m = fullText.match(/原題[:：]\s*(.+?)(?=\s*URL[:：]|\n|$)/);
+    if (m) origTitle = m[1].trim();
+
+    let url = '';
+    m = fullText.match(/URL[:：]\s*(https?:\/\/\S+)/);
+    if (m) url = m[1].trim();
+
+    let hnUrl = '';
+    m = fullText.match(/HN[:：]\s*(https?:\/\/\S+)/);
+    if (m) hnUrl = m[1].trim();
+
+    let score = '', comments = '', total = '';
+    m = fullText.match(/スコア[:：]\s*([\d,]+)/);
+    if (m) score = m[1].replace(/,/g, '');
+    m = fullText.match(/コメント[:：]\s*([\d,]+)件?/);
+    if (m) comments = m[1].replace(/,/g, '');
+    m = fullText.match(/合計[:：]\s*([\d,]+)/);
+    if (m) total = m[1].replace(/,/g, '');
+
+    // Section content — from paragraphs with known labels
+    let summary = '', detail = '', whyNotable = '';
+    contentElements.forEach(el => {
+      if (el.tagName !== 'P') return;
+      const strong = el.querySelector('strong');
+      if (!strong) return;
+      const label = strong.textContent.trim();
+      const afterLabel = el.textContent.replace(label, '').trim();
+      if (/^ざっくり/.test(label)) summary = afterLabel;
+      else if (/^もう少し/.test(label)) detail = afterLabel;
+      else if (/^なぜ注目/.test(label)) whyNotable = afterLabel;
+    });
+
+    // Details blocks (comment sections)
+    const detailsBlocks = contentElements.filter(el => el.tagName === 'DETAILS');
+
+    return { headingText, origTitle, url, hnUrl, score, comments, total,
+             summary, detail, whyNotable, detailsBlocks };
+  }
+
+  // ========== Escape HTML for safe insertion ==========
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ========== Build Carousel ==========
+  const carousel = document.getElementById('carousel');
+  const totalSlides = 1 + articles.length;
+
+  // --- Slide 0: Title ---
+  const titleSlide = document.createElement('div');
+  titleSlide.className = 'slide slide--title';
+  titleSlide.innerHTML =
+    '<div class="slide-inner">' +
+      (dateStr ? '<div class="date-badge">' + esc(dateStr) + '</div>' : '') +
+      '<h1>HN Digest<span> — ' + esc(shortDate) + '</span></h1>' +
+      '<p>' + esc(introText) + '</p>' +
+      '<div class="article-count">' + articles.length + ' articles</div>' +
+      '<div class="arrow-hint">&#8594; スワイプまたは矢印キーで次へ</div>' +
+    '</div>';
+  carousel.appendChild(titleSlide);
+
+  // --- Article Slides ---
+  articles.forEach((section, idx) => {
+    const art = parseArticle(section.heading, section.content);
+    const relevantTerms = findRelevantTerms(section.content);
+
+    const slide = document.createElement('div');
+    slide.className = 'slide slide--article';
+
+    // Details HTML (with open attribute + fix raw markdown lists)
+    const detailsHTML = art.detailsBlocks.map(el => {
+      const clone = el.cloneNode(true);
+      clone.setAttribute('open', '');
+      // If kramdown didn't convert markdown lists inside <details>,
+      // the content will be raw text with "- " prefixes. Fix it.
+      if (!clone.querySelector('ul') && !clone.querySelector('ol')) {
+        const summary = clone.querySelector('summary');
+        const summaryText = summary ? summary.textContent.trim() : '';
+        const rawText = clone.textContent.replace(summaryText, '').trim();
+        if (rawText.includes('- ') || rawText.includes('「')) {
+          const lines = rawText.split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
+          const items = lines.map(l => l.replace(/^[-–—]\s*/, ''));
+          const ul = document.createElement('ul');
+          items.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            ul.appendChild(li);
+          });
+          // Remove all content except summary, then append the list
+          while (clone.lastChild && clone.lastChild !== summary) {
+            clone.removeChild(clone.lastChild);
+          }
+          clone.appendChild(ul);
+        }
+      }
+      return clone.outerHTML;
+    }).join('\n');
+
+    // Sidebar glossary (desktop)
+    let sidebarHTML = '';
+    if (relevantTerms.length > 0) {
+      sidebarHTML =
+        '<aside class="article-sidebar">' +
+          '<div class="sidebar-label">用語</div>' +
+          relevantTerms.map(t =>
+            '<div class="sidebar-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+        '</aside>';
+    }
+
+    // Inline glossary (mobile)
+    let inlineGlossaryHTML = '';
+    if (relevantTerms.length > 0) {
+      inlineGlossaryHTML =
+        '<div class="inline-glossary">' +
+          '<div class="sidebar-label">関連用語</div>' +
+          '<div class="inline-terms">' +
+          relevantTerms.map(t =>
+            '<div class="inline-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+          '</div>' +
+        '</div>';
+    }
+
+    // Links
+    const urlLink = art.url
+      ? '<a href="' + esc(art.url) + '" target="_blank" rel="noopener">元記事 &#8599;</a>'
+      : '';
+    const hnLink = art.hnUrl
+      ? '<a href="' + esc(art.hnUrl) + '" target="_blank" rel="noopener">HN &#8599;</a>'
+      : '';
+
+    // Build sections conditionally
+    let sectionsHTML = '';
+    if (art.summary) {
+      sectionsHTML +=
+        '<div class="section-label">ざっくり言うと</div>' +
+        '<p>' + esc(art.summary) + '</p>';
+    }
+    if (art.detail) {
+      sectionsHTML +=
+        '<div class="section-label">もう少し詳しく</div>' +
+        '<p>' + esc(art.detail) + '</p>';
+    }
+    if (art.whyNotable) {
+      sectionsHTML +=
+        '<div class="section-label">なぜ注目？</div>' +
+        '<p>' + esc(art.whyNotable) + '</p>';
+    }
+
+    const mainContent =
+      '<div class="article-main">' +
+        '<div class="article-number">ARTICLE ' + (idx + 1) + '</div>' +
+        '<h2>' + esc(art.headingText) + '</h2>' +
+        (art.origTitle ? '<div class="meta-row"><span>' + esc(art.origTitle) + '</span></div>' : '') +
+        '<div class="meta-row">' + urlLink + hnLink + '</div>' +
+        '<div class="stats">' +
+          (art.score ? '<div class="stat"><strong>' + esc(art.score) + '</strong> pts</div>' : '') +
+          (art.comments ? '<div class="stat"><strong>' + esc(art.comments) + '</strong> comments</div>' : '') +
+          (art.total ? '<div class="stat">Total <strong>' + esc(art.total) + '</strong></div>' : '') +
+        '</div>' +
+        sectionsHTML +
+        detailsHTML +
+        inlineGlossaryHTML +
+      '</div>';
+
+    slide.innerHTML =
+      '<div class="article-layout">' +
+        mainContent +
+        sidebarHTML +
+      '</div>';
+
+    carousel.appendChild(slide);
+  });
+
+  // ========== Navigation Dots ==========
+  const navDots = document.getElementById('navDots');
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'スライド ' + (i + 1) + ' へ');
+    dot.addEventListener('click', () => goToSlide(i));
+    navDots.appendChild(dot);
+  }
+
+  // ========== State & Navigation ==========
+  let currentSlide = 0;
+  const progressBar = document.getElementById('progressBar');
+  const miniHeader = document.getElementById('miniHeader');
+  const arrowLeft = document.getElementById('arrowLeft');
+  const arrowRight = document.getElementById('arrowRight');
+
+  function updateUI(index) {
+    currentSlide = index;
+    const progress = totalSlides > 1 ? (index / (totalSlides - 1)) * 100 : 100;
+    progressBar.style.width = progress + '%';
+    miniHeader.textContent = (index + 1) + ' / ' + totalSlides;
+
+    navDots.querySelectorAll('.nav-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === index);
+    });
+
+    arrowLeft.classList.toggle('hidden', index === 0);
+    arrowRight.classList.toggle('hidden', index === totalSlides - 1);
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides) return;
+    carousel.children[index].scrollIntoView({
+      behavior: 'smooth', block: 'nearest', inline: 'start'
+    });
+  }
+
+  // ========== Scroll Detection ==========
+  let scrollTimeout;
+  carousel.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const index = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+      updateUI(index);
+    }, 50);
+  }, { passive: true });
+
+  // ========== Arrow Buttons ==========
+  arrowLeft.addEventListener('click', () => goToSlide(currentSlide - 1));
+  arrowRight.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+  // ========== Keyboard Navigation ==========
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(currentSlide - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goToSlide(currentSlide + 1); }
+  });
+
+  // ========== Initial State ==========
+  updateUI(0);
+})();
+</script>
+
+</body>
+</html>

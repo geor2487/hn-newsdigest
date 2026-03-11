@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>HN Digest</title>
+<meta name="description" content="Hacker Newsの最新記事を日本語で毎日まとめています">
+<link rel="icon" href="/hn-newsdigest/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/hn-newsdigest/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'DM Sans', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background-color: #0c0d12;
+    color: #c8cad0;
+    line-height: 1.8;
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(249, 115, 22, 0.35);
+    color: #fff;
+  }
+
+  /* ========== Progress accent (top) ========== */
+  .top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f97316, #fb923c);
+    z-index: 200;
+  }
+
+  /* ========== Layout ========== */
+  .page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 60px 24px 80px;
+  }
+
+  /* ========== Hero ========== */
+  .hero {
+    text-align: center;
+    margin-bottom: 56px;
+    animation: fadeIn 0.6s ease both;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 5px 16px;
+    border-radius: 24px;
+    margin-bottom: 20px;
+    letter-spacing: 0.06em;
+    border: 1px solid rgba(251, 146, 60, 0.15);
+  }
+
+  .hero h1 {
+    font-size: 2.6rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: #ecedf2;
+    margin-bottom: 12px;
+  }
+
+  .hero h1 span {
+    color: #f97316;
+  }
+
+  .hero p {
+    font-size: 1rem;
+    color: #777b88;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.8;
+  }
+
+  /* ========== Digest List ========== */
+  .digest-list {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    list-style: none;
+  }
+
+  .digest-list li {
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .digest-list li:nth-child(1) { animation-delay: 0.08s; }
+  .digest-list li:nth-child(2) { animation-delay: 0.13s; }
+  .digest-list li:nth-child(3) { animation-delay: 0.18s; }
+  .digest-list li:nth-child(4) { animation-delay: 0.23s; }
+  .digest-list li:nth-child(5) { animation-delay: 0.28s; }
+  .digest-list li:nth-child(6) { animation-delay: 0.33s; }
+  .digest-list li:nth-child(7) { animation-delay: 0.38s; }
+  .digest-list li:nth-child(8) { animation-delay: 0.43s; }
+  .digest-list li:nth-child(9) { animation-delay: 0.48s; }
+  .digest-list li:nth-child(10) { animation-delay: 0.53s; }
+
+  .digest-list a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    color: #ecedf2;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .digest-list a:hover {
+    background: rgba(249, 115, 22, 0.06);
+    border-color: rgba(249, 115, 22, 0.25);
+    box-shadow: 0 4px 24px rgba(249, 115, 22, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .digest-list a .arrow {
+    color: #555a6a;
+    font-size: 1.1rem;
+    transition: color 0.2s, transform 0.2s;
+  }
+
+  .digest-list a:hover .arrow {
+    color: #f97316;
+    transform: translateX(3px);
+  }
+
+  /* ========== Section Label ========== */
+  .section-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 16px;
+    text-align: center;
+    animation: fadeIn 0.5s ease 0.05s both;
+  }
+
+  /* ========== Footer ========== */
+  .footer {
+    margin-top: 64px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #3a3d4a;
+    letter-spacing: 0.04em;
+    animation: fadeIn 0.6s ease 0.4s both;
+  }
+
+  /* ========== Animations ========== */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 500px) {
+    .hero h1 { font-size: 2rem; }
+    .page { padding: 48px 20px 60px; }
+    .digest-list a { padding: 16px 18px; }
+  }
+
+  /* ========== Scrollbar ========== */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="top-bar" aria-hidden="true"></div>
+
+<div class="page" id="page">
+  <div class="hero">
+    <h1>HN <span>Digest</span></h1>
+    <p>Hacker News記事まとめ</p>
+  </div>
+
+  <div id="digestContent"></div>
+
+  <footer class="footer">
+    powered by claude code × hacker news api
+  </footer>
+</div>
+
+<script>
+(function() {
+  // Parse the Jekyll-rendered content to extract digest links
+  var temp = document.createElement('div');
+  temp.innerHTML = "<p>毎日更新 — Hacker Newsのトップ記事を日本語で要約</p>\n\n<h2 id=\"最新のダイジェスト\">最新のダイジェスト</h2>\n\n<ul>\n  <li><a href=\"digests/2026-03-11.md\">3/11</a></li>\n  <li><a href=\"digests/2026-03-10.md\">3/10</a></li>\n  <li><a href=\"digests/2026-03-09.md\">3/9</a></li>\n  <li><a href=\"digests/2026-03-06.md\">3/6</a></li>\n  <li><a href=\"digests/2026-03-05.md\">3/5</a></li>\n  <li><a href=\"digests/2026-03-04.md\">3/4</a></li>\n  <li><a href=\"digests/2026-03-03.md\">3/3</a></li>\n  <li><a href=\"digests/2026-03-02.md\">3/2</a></li>\n  <li><a href=\"digests/2026-03-01.md\">3/1</a></li>\n</ul>\n";
+
+  var links = temp.querySelectorAll('a');
+  if (!links.length) return;
+
+  var container = document.getElementById('digestContent');
+  var label = document.createElement('div');
+  label.className = 'section-label';
+  label.textContent = 'Latest Digests';
+  container.appendChild(label);
+
+  var ul = document.createElement('ul');
+  ul.className = 'digest-list';
+
+  for (var i = 0; i < links.length; i++) {
+    var a = links[i];
+    var href = a.getAttribute('href');
+    var text = a.textContent.trim();
+
+    // Fix .md links to .html
+    if (href && href.endsWith('.md')) {
+      href = href.replace(/\.md$/, '.html');
+    }
+
+    var li = document.createElement('li');
+    var link = document.createElement('a');
+    link.href = href;
+    link.innerHTML = '<span>' + text + '</span><span class="arrow">&#8594;</span>';
+    li.appendChild(link);
+    ul.appendChild(li);
+  }
+
+  container.appendChild(ul);
+})();
+</script>
+
+</body>
+</html>

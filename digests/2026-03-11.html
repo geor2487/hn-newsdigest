@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>HN Digest — 3/11</title>
+<meta name="description" content="Hacker Newsの最新記事を日本語で毎日まとめています">
+<link rel="icon" href="/hn-newsdigest/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/hn-newsdigest/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ========== Reset & Base ========== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'DM Sans', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background-color: #0c0d12;
+    color: #c8cad0;
+    line-height: 1.8;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(249, 115, 22, 0.35);
+    color: #fff;
+  }
+
+  /* ========== Progress Bar ========== */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f97316, #fb923c);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.15s ease-out;
+  }
+
+  /* ========== Mini Header ========== */
+  .mini-header {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #777b88;
+    letter-spacing: 0.05em;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    user-select: none;
+  }
+
+  /* ========== Home Button ========== */
+  .home-btn {
+    position: fixed;
+    top: 12px;
+    left: 20px;
+    z-index: 900;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #555a6a;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .home-btn:hover {
+    color: #f97316;
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  /* ========== Scroll Container ========== */
+  .carousel {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    height: 100vh;
+    width: 100vw;
+    scrollbar-width: none;
+  }
+
+  .carousel::-webkit-scrollbar { display: none; }
+
+  /* ========== Slide ========== */
+  .slide {
+    flex: 0 0 100vw;
+    min-width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 32px 100px;
+    position: relative;
+  }
+
+  .slide--article { justify-content: center; }
+
+  .slide-inner {
+    max-width: 640px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+  }
+
+  .slide-inner::-webkit-scrollbar { width: 4px; }
+  .slide-inner::-webkit-scrollbar-track { background: transparent; }
+  .slide-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  /* ========== Article Layout: content + glossary sidebar ========== */
+  .article-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    max-width: 960px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+  }
+
+  .article-main {
+    flex: 1;
+    min-width: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+    padding-right: 8px;
+  }
+
+  .article-main::-webkit-scrollbar { width: 4px; }
+  .article-main::-webkit-scrollbar-track { background: transparent; }
+  .article-main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  .article-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+  }
+
+  .article-sidebar::-webkit-scrollbar { width: 3px; }
+  .article-sidebar::-webkit-scrollbar-track { background: transparent; }
+  .article-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-term {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .sidebar-term:hover {
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  .sidebar-term .term-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #fb923c;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-term .term-desc {
+    font-size: 0.78rem;
+    color: #777b88;
+    line-height: 1.6;
+  }
+
+  /* ========== Title Slide ========== */
+  .slide--title { text-align: center; }
+
+  .slide--title h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    color: #ecedf2;
+  }
+
+  .slide--title h1 span { color: #f97316; }
+
+  .slide--title p {
+    font-size: 1.1rem;
+    color: #777b88;
+    line-height: 1.9;
+  }
+
+  .slide--title .date-badge {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 6px 18px;
+    border-radius: 24px;
+    margin-bottom: 24px;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(251, 146, 60, 0.15);
+  }
+
+  .slide--title .article-count {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    letter-spacing: 0.05em;
+  }
+
+  .slide--title .arrow-hint {
+    margin-top: 48px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    animation: pulse-hint 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-hint {
+    0%, 100% { opacity: 0.5; transform: translateX(0); }
+    50% { opacity: 1; transform: translateX(6px); }
+  }
+
+  /* ========== Article Slide ========== */
+  .slide--article .article-number {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 4px 12px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    letter-spacing: 0.06em;
+    border: 1px solid rgba(251, 146, 60, 0.12);
+  }
+
+  .slide--article h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: #ecedf2;
+    letter-spacing: -0.01em;
+  }
+
+  .slide--article .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    color: #555a6a;
+  }
+
+  .slide--article .meta-row a {
+    color: #f97316;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .slide--article .meta-row a:hover {
+    color: #fb923c;
+    text-decoration: underline;
+  }
+
+  .slide--article .stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .slide--article .stats .stat {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 6px 14px;
+    border-radius: 8px;
+    color: #888d9e;
+    font-weight: 500;
+  }
+
+  .slide--article .stats .stat strong {
+    color: #f97316;
+    font-weight: 700;
+  }
+
+  .slide--article .section-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #f97316;
+    margin-bottom: 6px;
+    margin-top: 20px;
+  }
+
+  .slide--article p {
+    font-size: 0.95rem;
+    color: #a0a4b2;
+    margin-bottom: 12px;
+    line-height: 1.9;
+  }
+
+  /* ========== Comments (open by default) ========== */
+  .slide--article details {
+    margin-top: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .slide--article details + details { margin-top: 8px; }
+
+  .slide--article summary {
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #c8cad0;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+    transition: background 0.15s;
+    list-style: none;
+  }
+
+  .slide--article summary::-webkit-details-marker { display: none; }
+
+  .slide--article summary::before {
+    content: '− ';
+    font-weight: 700;
+    color: #f97316;
+    margin-right: 4px;
+  }
+
+  .slide--article details:not([open]) summary::before { content: '+ '; }
+
+  .slide--article summary:hover {
+    background: rgba(249, 115, 22, 0.06);
+  }
+
+  .slide--article details ul {
+    list-style: none;
+    padding: 12px 16px;
+  }
+
+  .slide--article details li {
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .slide--article details li:last-child { border-bottom: none; }
+
+  /* Details with plain paragraph (no list) */
+  .slide--article details > p {
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+  }
+
+  /* ========== Navigation Arrows ========== */
+  .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 800;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #888d9e;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .nav-arrow:hover {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);
+  }
+
+  .nav-arrow:active { transform: translateY(-50%) scale(0.92); }
+
+  .nav-arrow--left { left: 20px; }
+  .nav-arrow--right { right: 20px; }
+
+  .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+
+  /* ========== Navigation Dots ========== */
+  .nav-dots {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 800;
+    display: flex;
+    gap: 10px;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 10px 18px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: none;
+    padding: 0;
+  }
+
+  .nav-dot:hover { background: rgba(255, 255, 255, 0.3); }
+
+  .nav-dot.active {
+    background: #f97316;
+    width: 28px;
+    border-radius: 5px;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+  }
+
+  /* ========== Inline Glossary (mobile) ========== */
+  .inline-glossary .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 10px;
+  }
+
+  .inline-glossary .inline-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .inline-glossary .inline-term {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+
+  .inline-glossary .inline-term .term-name {
+    font-weight: 600;
+    color: #fb923c;
+  }
+
+  .inline-glossary .inline-term .term-desc {
+    color: #777b88;
+    margin-top: 2px;
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 960px) {
+    .article-sidebar { display: none; }
+    .inline-glossary {
+      display: block !important;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  @media (min-width: 961px) {
+    .inline-glossary { display: none !important; }
+  }
+
+  @media (max-width: 700px) {
+    .slide { padding: 50px 20px 90px; }
+    .slide--title h1 { font-size: 2rem; }
+    .slide--article h2 { font-size: 1.25rem; }
+    .nav-arrow { width: 40px; height: 40px; font-size: 1rem; }
+    .nav-arrow--left { left: 10px; }
+    .nav-arrow--right { right: 10px; }
+    .home-btn .home-btn-text { display: none; }
+    .nav-dots { gap: 6px; padding: 8px 12px; }
+    .nav-dot { width: 8px; height: 8px; }
+    .nav-dot.active { width: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Mini Header -->
+<div class="mini-header" id="miniHeader"></div>
+
+<!-- Home Button -->
+<a href="/hn-newsdigest/" class="home-btn" aria-label="ホームに戻る">
+  <span>&#8592;</span>
+  <span class="home-btn-text">HN Digest</span>
+</a>
+
+<!-- Navigation Arrows -->
+<button class="nav-arrow nav-arrow--left hidden" id="arrowLeft" aria-label="前のスライド">&#8592;</button>
+<button class="nav-arrow nav-arrow--right" id="arrowRight" aria-label="次のスライド">&#8594;</button>
+
+<!-- Carousel Container -->
+<div class="carousel" id="carousel"></div>
+
+<!-- Navigation Dots -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- Hidden source content rendered by Jekyll/kramdown -->
+<div id="source" data-title="HN Digest — 3/11" style="display:none">
+<h1 id="hn-digest--311">HN Digest — 3/11</h1>
+
+<h2 id="1-トニーホーア氏が逝去">1. トニー・ホーア氏が逝去</h2>
+<p><strong>原題</strong>: Tony Hoare has died
+<strong>URL</strong>: https://blog.computationalcomplexity.org/2026/03/tony-hoare-1934-2026.html
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47324054
+<strong>スコア</strong>: 1458 / <strong>コメント</strong>: 197件 / <strong>合計</strong>: 1655</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+コンピュータ科学の巨人、トニー・ホーア（Sir Tony Hoare）氏が3月5日に92歳で亡くなった。ホーア氏は、プログラマなら誰でも学ぶ「クイックソート（Quicksort: データを高速に並び替えるアルゴリズム）」の発明者として最も有名だが、それ以外にも「ホーア論理（Hoare Logic: プログラムが正しく動くことを数学的に証明する手法）」や、プログラミング言語ALGOLの設計、CSP（Communicating Sequential Processes: 並行処理を安全に行うための理論的フレームワーク）など、計り知れない貢献を残した。1980年にはチューリング賞（Turing Award: コンピュータ科学のノーベル賞とも呼ばれる最高の栄誉）を受賞している。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+ホーア氏の業績はコンピュータ科学の根幹に深く刻まれている。クイックソートは1960年に発表されたが、60年以上経った今でも実用的なソートアルゴリズムとして広く使われている。ホーア論理は「このプログラムは仕様通りに動く」ということを数学的に証明するための体系で、ソフトウェアの信頼性を高める基盤となった。また、CSPという並行処理の理論は、Go言語のチャネル（goroutine間でデータをやり取りする仕組み）など、現代のプログラミング言語の設計にも直接的な影響を与えている。彼はオックスフォード大学の教授として長年研究を率い、その後マイクロソフトリサーチでも活躍した。興味深いことに、ホーア氏は「null参照（何も指していないポインタ）」を発明したことを「10億ドルの間違い」と自ら呼んだことでも知られている。この率直さと謙虚さが、彼の人柄をよく表している。個人的な回想記事では、温かく知的好奇心に満ちた人物として描かれている。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+ホーア氏の仕事は、普段意識されないだけで、ほぼすべてのプログラマーの日常に影響を与えている。ソートアルゴリズムを学んだ人なら必ず出会うクイックソート、Go言語やErlangの並行処理モデルの理論的基盤となったCSP — これらはすべてホーア氏の発明だ。コンピュータ科学の歴史の中でも特に大きな足跡を残した人物の死去であり、HNコミュニティでも多くの追悼と感謝のコメントが寄せられている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「オックスフォードでDPhilをやっていた時に面接してもらった。信じられないほど優しく、研究について熱心に議論してくれた」（jgrahamc）— 個人的な思い出
+- 「ダイクストラが晩年に書類を整理していた時、ある教授が全通信を公開すべきだと提案した話がある。ホーア氏もそういった学術的誠実さを体現していた」（srean）— 学問への姿勢
+- 「彼の名言が大好き：『ソフトウェア設計には2つの方法がある。1つは明らかに欠陥がないほどシンプルにすること、もう1つは明らかな欠陥がないほど複雑にすること』」（paul）— 設計哲学
+- 「オックスフォードで建物に彼の名前をつけようとしたら『Hoare House（ホーア・ハウス）』になってしまう問題が発生した」（Plasmoid）— ユーモラスなエピソード
+- 「彼の並行処理に関する仕事は、安全な通信チャネルを通じて混乱を避けるシステムを作ることだった。null参照の件ばかり話題になるのは少し残念」（fidotron）— 業績の再評価
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- コメントはほぼ全て追悼と敬意の表明で、否定的な意見は見られなかった。
+
+</details>
+
+<hr />
+
+<h2 id="2-子ども向け年齢確認ツールが大人を監視している">2. 子ども向け年齢確認ツールが、大人を監視している</h2>
+<p><strong>原題</strong>: Online age-verification tools for child safety are surveilling adults
+<strong>URL</strong>: https://www.cnbc.com/2026/03/08/social-media-child-safety-internet-ai-surveillance.html
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47322635
+<strong>スコア</strong>: 533 / <strong>コメント</strong>: 301件 / <strong>合計</strong>: 834</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+アメリカの約半数の州が、未成年をオンラインの有害コンテンツから守るために「年齢確認」を義務化する法律を制定・推進している。しかしこの仕組みは、子どもだけでなく全てのユーザーに身分証明や顔スキャンを要求するため、結果として大人のプライバシーが大規模に侵害される事態になっている。「子どもを守るため」という大義名分の裏で、自由でオープンなインターネットが脅かされているとの批判が強まっている。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+これらの法律は、アダルトサイト、オンラインゲーム、SNSなどに対して未成年のアクセスをブロックすることを求めている。問題は「年齢確認 = 身元確認」になってしまう点だ。年齢だけを匿名で確認する技術的な仕組みが確立されていないため、運転免許証のアップロードや顔認証など、個人を特定できる情報の提出が必要になる。イギリスのOnline Safety Actでは当初、コンビニで匿名のIDコードを現金で買える仕組みが提案されていたが、実現しなかった。つまり「あなたが18歳以上かどうか」を確認するだけのはずが、「あなたが誰で、何を見ているか」まで把握される仕組みになっている。FTC（連邦取引委員会: アメリカの消費者保護機関）は、収集した情報の利用制限を求めているが、一度収集されたデータが漏洩やミスで流出するリスクは常にある。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+「子どもの安全」と「プライバシー」のバランスは、テクノロジー業界で最も難しい問題の一つだ。多くのHNコメントが指摘するように、この法律の本当の目的は「大人の匿名性を奪うこと」ではないかという懸念がある。特にオンラインでの発言を取り締まる動きが強まっている国では、年齢確認が事実上の身元確認・監視ツールになりうる。初学者にとっても、自分のオンライン活動がどこまで追跡されるかを考える重要なきっかけになる話題だ。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「FTCが情報の利用制限を求めているのは良いこと。少なくとも無制限に使われないよう歯止めをかけようとしている」（john_strinlai）— 規制の姿勢を評価
+- 「子どもの安全自体は重要な課題。問題は実装方法であって、目的そのものを否定すべきではない」（john_strinlai）— バランスある視点
+- 「コンビニで匿名のIDコードを買える仕組みが実現していれば、プライバシーと安全の両立ができたかもしれない」（dizzy9）— 代替案の提示
+- 「年齢確認技術がもっと進歩すれば、身元を明かさずに年齢だけ証明できるようになるかもしれない」（dizzy9）— 技術的解決への期待
+- 「企業が情報を必要以上に長く保持しないルールは最低限必要だ」（john_strinlai）— データ管理の改善
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「ユーザー側が『自分は子どもではない』と能動的にアクションする仕組みでは、悪意ある大人は簡単にすり抜ける。子どもを守る効果はゼロだ」（bilekas）— 根本的欠陥の指摘
+- 「本当の目的は大人の匿名性を奪うことだ。子どものためなら、もっと前からやっていたはず」（bluescrn）— 真意への疑念
+- 「Free Speech Coalitionの代表が指摘するように、これらの法律はVPNの禁止や広範な監視につながる『モラルパニック法』だ」（abalone）— 自由への脅威
+- 「年齢確認は本質的に身元確認を必要とする。匿名のインターネットと両立しない」（dizzy9）— 技術的な矛盾
+- 「一度集めたデータは必ず漏れる。年齢確認のためにアップした免許証がどう使われるか、誰も保証できない」（bluescrn）— データ流出リスク
+
+</details>
+
+<hr />
+
+<h2 id="3-障害多発を受けamazonがaiコード変更にシニアエンジニアの承認を義務化">3. 障害多発を受け、AmazonがAIコード変更にシニアエンジニアの承認を義務化</h2>
+<p><strong>原題</strong>: After outages, Amazon to make senior engineers sign off on AI-assisted changes
+<strong>URL</strong>: https://arstechnica.com/ai/2026/03/after-outages-amazon-to-make-senior-engineers-sign-off-on-ai-assisted-changes/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47323017
+<strong>スコア</strong>: 426 / <strong>コメント</strong>: 386件 / <strong>合計</strong>: 812</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+AmazonのEコマース部門で最近、AIコーディングツールを使った変更に起因するシステム障害が相次いで発生した。Amazonはこの問題を受け、ジュニア・ミッドレベルのエンジニアがAIで生成したコードをプッシュする際、シニアエンジニアの承認を義務化する方針を打ち出した。大規模な「ディープダイブ」ミーティングも開催され、AI活用のリスクが社内で真剣に議論されている。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+Amazonの社内ブリーフィングによると、最近の障害には「高いブラストレディアス（blast radius: 障害が影響する範囲の広さ）」と「GenAIによる変更」が共通の要因として挙げられている。AIコーディングツールは開発速度を大幅に上げるが、生成されたコードの品質を十分にレビューしないまま本番環境にデプロイされるケースが増えていた。従来のコードレビュー（Code Review: 他の開発者がコードをチェックする工程）では、人間が書いたコードの意図を理解した上で問題を見つけることが前提だったが、AI生成コードではそのプロセスが通用しにくい。なぜなら、レビュアーは「このコードがどういう思考過程で書かれたか」を推測できないからだ。これは単に「シニアがOKを出せば安全」という話ではなく、AIが生成するコードをどうレビューすべきかという、業界全体が直面している根本的な課題を浮き彫りにしている。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+AIコーディングツールの普及が進む中、「速さ」と「品質」のトレードオフが現実の障害として表面化した象徴的な事例だ。Amazonほどの大企業でも管理しきれていないという事実は、業界全体に警鐘を鳴らしている。特に「シニアエンジニアのレビューで解決できるか？」という問いは重要で、HNでも多くのエンジニアが「レビューだけでは不十分」と指摘している。AI時代のソフトウェア品質保証のあり方を考えるうえで、必読の話題だ。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「少なくとも問題を認識して対策を打ち出しているのは良いこと。多くの企業はAI生成コードの問題を無視している」（cobolcomesback）— 対応姿勢の評価
+- 「AI生成コードと人間が書いたコードを区別してレビュープロセスを変えるのは合理的だ」（captainkrtek）— プロセス改善の評価
+- 「これは毎週の定例ミーティングで最近の障害を議論するだけの話。大げさに報道されすぎ」（cobolcomesback）— 冷静な視点
+- 「コードレビューの段階で、AIが生成したコードかどうかの情報があると、レビュアーはより注意深くチェックできる」（captainkrtek）— 透明性の重要性
+- 「AIツールの使い方に関するガイドラインを設けること自体は、どの企業でもやるべきことだ」（cobolcomesback）— 業界標準の必要性
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「Amazonでは、人はクビにならないことと昇進だけを気にしている。チケットを消化しないとPIP（業績改善計画 = 実質的な解雇予告）されるから、品質より速度を優先するのは当然」（prakhar897）— 組織文化の問題
+- 「シニアのレビューが『銀の弾丸』だと思うのは管理職の幻想。シニアでもAI生成コードの問題を全て見つけられるわけではない」（happytoexplain）— レビューの限界
+- 「AI生成コードのレビューは従来のレビューより難しい。コードしか見えず、そこに至るプロセスやインプットが分からないから」（captainkrtek）— 構造的な課題
+- 「AIコード生成ツールなしでもちゃんとレビューせずにプッシュした事例はたくさんある。AIのせいにしているだけでは」（prakhar897）— AI以前からの問題
+- 「自社でも同じ問題が起きた。AI生成コードをレビューなしで出荷して、レンダリングパイプラインのバグ特定に1週間かかった」（rubyrfranklin2）— 実体験
+
+</details>
+
+<hr />
+
+<h2 id="4-redox-osが出所証明書ポリシーと厳格なllm禁止ポリシーを採用">4. Redox OSが「出所証明書」ポリシーと厳格なLLM禁止ポリシーを採用</h2>
+<p><strong>原題</strong>: Redox OS has adopted a Certificate of Origin policy and a strict no-LLM policy
+<strong>URL</strong>: https://gitlab.redox-os.org/redox-os/redox/-/blob/master/CONTRIBUTING.md
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47320661
+<strong>スコア</strong>: 372 / <strong>コメント</strong>: 370件 / <strong>合計</strong>: 742</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+Rust言語で書かれたOS「Redox OS」が、コントリビューションガイドラインを更新し、2つの重要なポリシーを導入した。1つは「Certificate of Origin（出所証明書）」— 貢献者が自分のコードの著作権者であることを宣言する仕組み。もう1つは「LLM（Large Language Model: ChatGPTなどの大規模言語モデル）で生成されたコードは一切受け付けない」という厳格なポリシーだ。LLM生成と明示されたIssueやMR（Merge Request: コード変更の提案）は即座にクローズされ、このポリシーを回避しようとした場合はプロジェクトから永久追放される。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+Certificate of Originは、Linux Foundationの「Developer Certificate of Origin（DCO）」にならった仕組みで、コントリビューターが3つの条件に同意することを求める。「自分が著作権者であること」「MITライセンスで提出すること」「変更内容を十分理解していること」の3点だ。LLM禁止ポリシーの背景には、OSSメンテナーの負担増がある。LLMで生成されたコードは一見それらしく見えるが、微妙なバグを含んでいたり、プロジェクトの文脈を理解していない変更だったりすることが多い。メンテナーはこれらを一つ一つレビューしなければならず、結果として「質の低い大量のPR（Pull Request: コード変更の提案）」に時間を奪われてしまう。NetBSD、GIMP、Zig、QEMUなど、他のメジャープロジェクトも同様の禁止ポリシーを採用している。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+OSSコミュニティでのAI生成コードの扱いは、今最もホットな議論の一つだ。「AIを使えば誰でもコントリビュートできる」という民主化の側面と、「低品質なコードが大量に押し寄せてメンテナーが疲弊する」という現実のトレードオフがある。この記事の直後に掲載されたDebianの記事（本ダイジェスト8番）と合わせて読むと、OSSプロジェクトごとにAIへの対応が全く異なることがわかり、興味深い。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「OSSメンテナーのレビュー負担を考えると、これは合理的な判断だ。AIが何を主張しているかより、誰の立場になって考えるかが重要」（ptnpzwqd）— メンテナー目線
+- 「100以上のメジャープロジェクトを調査したが、AI禁止しているのはNetBSD、GIMP、Zig、QEMUの4つだけだった」（eatonphil）— 業界全体の調査
+- 「『LLM生成と明示されたもの』だけが対象なので、こっそり使う人は止められないが、最も明白な低品質PRを防ぐ効果はある」（throwaway2037）— 実用的な効果
+- 「メンテナー自身はLLMを使いつつ、コントリビューターには禁止するという状況もあり得る。それでもメンテナーの判断を尊重すべき」（lukaslalinsky）— 権限の非対称性
+- 「著作権の問題もある。LLM生成コードの著作権が誰に帰属するかが法的に不明確な現状では、リスク回避として合理的」（ptnpzwqd）— 法的リスク
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「LLM禁止は執行不可能だ。彼らも分かっているはず。最も明白なケースを排除するための建前では？」（khalic）— 実効性への疑問
+- 「プロジェクトメンテナー自身がLLMを使っているのに、コントリビューターに禁止するのは矛盾している」（lukaslalinsky）— ダブルスタンダード
+- 「コードの品質を判断する基準は、誰が（何が）書いたかではなく、コード自体の質であるべきだ」（khalic）— 結果主義の視点
+- 「AIの進化が続けば、数年後にはAI生成コードと人間のコードの区別がつかなくなる。そうなったらこのポリシーは意味をなさない」（khalic）— 将来の陳腐化
+- 「手首を怪我してタイピングが困難な自分にとって、LLMは不可欠なアクセシビリティツール。一律禁止は障害のある開発者を排除する」（mr-wendel）— アクセシビリティの問題
+
+</details>
+
+<hr />
+
+<h2 id="5-metaがmoltbookを買収">5. MetaがMoltbookを買収</h2>
+<p><strong>原題</strong>: Meta acquires Moltbook
+<strong>URL</strong>: https://www.axios.com/2026/03/10/meta-facebook-moltbook-agent-social-network
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47323900
+<strong>スコア</strong>: 405 / <strong>コメント</strong>: 262件 / <strong>合計</strong>: 667</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+Meta（旧Facebook）が、AIエージェント（AI Agent: 自律的にタスクを実行するAIプログラム）向けのソーシャルネットワーク「Moltbook」を買収した。Moltbookは「AIボット同士が会話・交流するSNS」という斬新なコンセプトのサービスで、創業者のMatt SchlichtとBen Parrがメタの「Superintelligence Labs（MSL）」に合流する形での人材獲得（acqui-hire）だ。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+Moltbookは「AIエージェントに社会的な場を与える」という、一見するとSFのような発想のプラットフォームだった。AIボットが互いにやり取りし、情報を共有するソーシャルネットワークとして話題を集めた。しかし実態はかなり混沌としていた — ユーザーが「AIのふりをして参加する」ケースも多く、セキュリティ上の脆弱性も深刻で、誰でも任意のボットになりすませる状態だったと報告されている。それでもMetaはこのチームの知見に価値を見出し、AIエージェントをソーシャルプラットフォームに統合するビジョンのもとで買収に踏み切った。Metaは以前からAIエージェントをInstagramやWhatsAppに組み込む計画を進めており、今回の買収はその一環と見られる。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+「AIボット同士のSNS」というコンセプト自体が、AIの進化がどこまで来ているかを象徴している。HNコミュニティの反応は冷ややかで、「10ドル以上払ったなら払いすぎ」「これがスカイネットの始まり方か」といったジョークが飛び交っている。しかし、MetaがAIエージェントの社会的統合に本気で投資していることは明らかで、今後のSNSのあり方を考える上で興味深い動きだ。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「AIが公の場で議論する会社なんて想像もしなかった。でもここまで来たんだな」（hermit_dev）— 時代の変化への驚き
+- 「買収自体はMoltbookのプロダクトではなく、チームの知見を取り込む人材獲得だろう」（kaizenb）— acqui-hireの合理性
+- 「AIエージェントにソーシャルな場を与えるという発想自体は、エージェント間連携の研究として価値がある」（hermit_dev）— 研究的価値
+- 「MetaのSuperintelligence Labsに統合されるなら、リソースを得てもっとまともなものが作れるかもしれない」（kaizenb）— 発展の可能性
+- 「エージェント同士のコミュニケーション基盤は、今後のAI開発において重要になる領域だ」（hermit_dev）— 将来性
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「Moltbookは人がAIのフリをするLARP（Live Action Role Playing: なりきりごっこ）が半分。MetaはそれをAIの成果として買ったのか？」（3rodents）— 実態への疑問
+- 「AIボット用SNSを、AIボットが作り、セキュリティが崩壊して誰でもなりすませた。それを買収するMeta…」（dabedee）— 皮肉
+- 「10ドル以上払ったなら11ドル多い」（shruubi）— 価値への疑問
+- 「Meta Super Intelligence Labsに統合されても、元のプロダクトに価値がなければ意味がない」（shruubi）— 懐疑的
+- 「こうやってスカイネットが始まるのか :)」（hermit_dev）— ジョーク混じりの警戒
+
+</details>
+
+<hr />
+
+<h2 id="6-ヤンルカン氏が10億ドルを調達物理世界を理解するaiを構築へ">6. ヤン・ルカン氏が10億ドルを調達、物理世界を理解するAIを構築へ</h2>
+<p><strong>原題</strong>: Yann LeCun raises $1B to build AI that understands the physical world
+<strong>URL</strong>: https://www.wired.com/story/yann-lecun-raises-dollar1-billion-to-build-ai-that-understands-the-physical-world/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47320600
+<strong>スコア</strong>: 318 / <strong>コメント</strong>: 319件 / <strong>合計</strong>: 637</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+AI界の重鎮ヤン・ルカン（Yann LeCun）氏がMetaを離れ、パリを拠点とするスタートアップ「AMI（Advanced Machine Intelligence）」を共同設立し、10億ドル以上の資金を調達した。ルカン氏は「人間の知性の大部分は言語ではなく物理世界の理解に基づいている」と主張しており、LLM（大規模言語モデル）の延長線上には真の人間レベルのAIは生まれないと考えている。AMIは「ワールドモデル（World Model: 物理世界の仕組みを理解・予測するAIモデル）」の開発に特化する。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+ルカン氏はCNN（畳み込みニューラルネットワーク: 画像認識の基盤技術）の父と呼ばれ、2018年にチューリング賞を受賞した。MetaのチーフAIサイエンティストとして長年活動してきたが、Alex Wang氏が「上司」になったことをきっかけに独立を決意したとされる。ルカン氏の持論は明快だ — 赤ちゃんは言葉を学ぶ前に重力や物体の永続性を理解する。つまり、テキストだけで学習するLLMでは、人間のような推論能力に到達できない。ワールドモデルとは、AIが物理法則やオブジェクトの振る舞いを「体験的に」学ぶアプローチのことだ。AMIは「応用AI企業ではない」と明言しており、純粋な基礎研究に注力する方針だが、Metaでも十分なリソースがあったのに目立った成果が出なかったことを指摘する声もある。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+現在のAIブームはLLMが中心だが、ルカン氏はそのアプローチに真っ向から異を唱えている。10億ドルという巨額の資金調達は、ワールドモデルという研究方向に対する投資家の信頼を示している。LLMの限界が徐々に明らかになる中で、次のブレークスルーがどこから来るのかを占う重要な動きだ。ただし、研究機関ではなくスタートアップとして設立された点に疑問を持つ声もあり、基礎研究と商業化のバランスが問われている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「これは正当な方向性だ。ワールドモデルにはLLMよりはるかに多くの自由度がある。テキストからしか学べないLLMは根本的に限界がある」（A_D_E_P_T）— 技術的妥当性
+- 「ルカン氏のAI/MLへのインパクトは疑いようがない」（Oras）— 実績の評価
+- 「昨年8月にルカン氏とランチした時、MetaでのAlex Wang体制に不満を持っていた。独立は自然な流れだった」（chriskanan）— 背景の理解
+- 「LLMの限界を認識し、別のアプローチを模索すること自体が重要。10億ドルはその研究規模に見合う」（A_D_E_P_T）— 投資の合理性
+- 「パリ拠点というのも良い。AI研究がシリコンバレーに一極集中する必要はない」（sbinnee）— 地理的多様性
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「Metaではもっと多くのリソースにアクセスできたのに、目立った成果はなかった。スタートアップでどう変わるのか」（Oras）— 実績不足への懸念
+- 「基礎研究をやりたいなら、Milaのような研究機関の方が適切では？スタートアップは投資家へのリターンを求められる」（sbinnee）— 組織形態への疑問
+- 「AMI has hired LeBrun as CEO, LeFunde as CFO, LeTune as head of post-training...」（az226）— フランス語のダジャレで皮肉
+- 「ルカン氏は以前からLLMの限界を主張しているが、具体的な代替成果がまだ出ていない」（Oras）— 理論と実績のギャップ
+- 「10億ドルで50億ドル以上のバリュエーションを目指すのは、基礎研究にしては商業的すぎる」（az226）— 矛盾の指摘
+
+</details>
+
+<hr />
+
+<h2 id="7-自分の人生を丸ごとデータベースに入れてみた">7. 自分の人生を丸ごとデータベースに入れてみた</h2>
+<p><strong>原題</strong>: I put my whole life into a single database
+<strong>URL</strong>: https://howisfelix.today/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47321233
+<strong>スコア</strong>: 415 / <strong>コメント</strong>: 202件 / <strong>合計</strong>: 617</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+開発者のFelix Krause氏が、2019年から自分の生活データを1つのデータベースに集約するプロジェクトを続けている。現在地、食事、睡眠時間、体重、ワークアウト、PC使用時間、メールの未読数、Todoリスト、ウェブサイト訪問者数、最新のGitコミットまで、あらゆるデータをリアルタイムで記録・公開している。「自分の人生をダッシュボード化する」という壮大な実験だ。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+このプロジェクトは「Quantified Self（定量化された自己: 自分の生活データを計測・分析する運動）」の極端な実践例だ。Felix氏のウェブサイトでは、彼の現在地（ウィーン）、体調、直近の写真、コード活動までがリアルタイムで表示される。「自分の人生を週単位で可視化する」ビジュアライゼーションも印象的で、データの規模と視覚化のクオリティが高く評価されている。Felix氏自身のまとめでは、客観的なデータ（栄養、睡眠時間など）の追跡は振り返りに非常に有用だが、主観的なデータ（気分など）の追跡はあまり役に立たなかったという。ただし、飛行データから計算すると年間70〜110トンのCO2を排出しているという指摘もあり、データの透明性が予期しない側面を浮き彫りにすることもある。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+個人データの収集・分析は、ウェアラブルデバイスやヘルスアプリの普及で身近になっている。このプロジェクトはその究極形を見せてくれる。「何を測定し、何を公開するか」というプライバシーの線引きや、「データで自分を理解できるか」という哲学的な問いも含まれている。皮肉なコメント「Palantir DBで自分のIDを検索すれば同じデータが出てくるよ」が、監視社会への風刺として刺さる。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「ページ最下部のまとめが秀逸。客観データの追跡は有用だが、主観データの追跡はあまり役立たないという結論は実践的」（brodo）— 実用的な知見
+- 「皮肉を言いたくなるのは分かるが、データの規模と可視化のクオリティは素直にすごい。『人生を週単位で見る』の表現は特に印象的」（cafkafk）— ビジュアライゼーションの評価
+- 「栄養や睡眠時間のような客観データのトラッキングは、何がうまくいかなかったか振り返るのに本当に役立つ」（ismailmaj）— 実体験からの同意
+- 「主観的な『気分』のトラッキングは、記録する時点で無意識にバイアスがかかるから信頼性が低い」（ismailmaj）— 分析的な考察
+- 「このレベルの自己データ公開は、個人プロジェクトとしてのエンジニアリング力を見せるポートフォリオにもなる」（cafkafk）— エンジニアリングの評価
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「Palantir DBで自分の人間IDを検索すれば、人生データはもっと出てくるよ」（hamasho）— 監視社会への皮肉
+- 「飛行データから計算すると年間70〜110トンのCO2排出。パリ協定は一人あたり年間1.5トンと言っているのに」（lejalv）— 環境への影響
+- 「気分のトラッキングは、記録時に影響を受けるから正確ではない。いわゆる観察者効果だ」（ismailmaj）— 方法論の限界
+- 「ここまで公開する必要があるのか？自己データの公開はプライバシーリスクを伴う」（hamasho）— プライバシーの懸念
+- 「CO2排出量のデータは、データの透明性が予期しない結論を導く良い例だ」（lejalv）— 意図しない帰結
+
+</details>
+
+<hr />
+
+<h2 id="8-debianがai生成コントリビューションについて決めないことを決めた">8. Debianが「AI生成コントリビューション」について決めないことを決めた</h2>
+<p><strong>原題</strong>: Debian decides not to decide on AI-generated contributions
+<strong>URL</strong>: https://lwn.net/SubscriberLink/1061544/125f911834966dd0/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47324087
+<strong>スコア</strong>: 273 / <strong>コメント</strong>: 211件 / <strong>合計</strong>: 484</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+Linuxディストリビューションの老舗「Debian」で、LLM生成のコントリビューションを受け入れるかどうかの議論が行われた。Lucas Nussbaum氏がGR（General Resolution: Debianプロジェクト全体での投票による意思決定手続き）の草案を提出したが、結局GRは提出されず、「何も決めない」という結論に落ち着いた。議論は続いているが、公式な方針は定まっていない。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+Debianは民主的な意思決定プロセスで知られるLinuxディストリビューションで、重要な方針変更はGRを通じて全メンバーの投票で決まる。今回の議論では、AI生成コードの品質、著作権問題、メンテナーの負担増など、多角的な論点が出された。しかし「全面禁止」「全面許可」のどちらも支持を集めきれず、結果として「各メンテナーの判断に委ねる」という暗黙の現状維持になった。これは先のRedox OSの「厳格禁止」とは対照的なアプローチだ。「十分な時間が経てば、AIと人間の成果物を見分けられなくなる」という意見や、「コードの質さえ良ければ出所は問わない」という実用主義的な意見が多く見られた。一方で、レビューの信頼性や、コントリビューターが自分のコードを「理解している」ことの重要性を指摘する声もあった。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+Redox OSの「厳格禁止」と対比して読むと面白い。大規模で民主的なプロジェクトほど、白黒つけにくい問題で合意形成が難しいことが浮き彫りになる。「決めないことを決める」というのも一つの判断であり、急速に進化するAI技術に対して今すぐ硬い方針を固めるリスクを避けたとも解釈できる。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「レビューとPR受理は信頼の問題。提出者がコードを最善にする努力をしたと信頼できるかが重要」（vladms）— 信頼ベースの視点
+- 「手首の怪我でタイピングが困難な自分にとって、LLMはコーディングを続けるための命綱。一律禁止は困る」（mr-wendel）— アクセシビリティ
+- 「動くなら間違いじゃない。AIかどうかの判定にエネルギーを費やすのは無駄」（observationist）— 実用主義
+- 「AI技術が急速に進化する今、硬い方針を固めないのは賢明かもしれない」（SamuelAdams）— 柔軟性の評価
+- 「メンテナーの負担やオンボーディング、著作権の問題は政策として重要な論点」（sothatsit）— 議論の質の高さ
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「AI貢献の品質を問題にするのは分かるが、人間の低品質な貢献にも同じ基準を適用すべきだ。AIだけを槍玉に挙げるのは不公平」（sothatsit）— 基準の一貫性
+- 「十分な時間が経てば、AIと人間のコードを区別できなくなる。その時このポリシー議論自体が無意味になる」（SamuelAdams）— 将来の陳腐化
+- 「結局何も決められなかったのは、Debianの意思決定プロセスの遅さを露呈している」（SamuelAdams）— 組織の限界
+- 「『決めないことを決める』は問題の先送りでしかない」（sothatsit）— 消極的との批判
+- 「AIの品質問題と著作権問題は別の話なのに、一緒くたに議論しているから結論が出ない」（vladms）— 議論の構造的問題
+
+</details>
+
+<hr />
+
+<h2 id="9-寝ている間に動くエージェントを作っている話">9. 寝ている間に動くエージェントを作っている話</h2>
+<p><strong>原題</strong>: Agents that run while I sleep
+<strong>URL</strong>: https://www.claudecodecamp.com/p/i-m-building-agents-that-run-while-i-sleep
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47327559
+<strong>スコア</strong>: 210 / <strong>コメント</strong>: 164件 / <strong>合計</strong>: 374</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+AIエージェント（Claude Codeなど）を使って、開発者が寝ている間にコードを書かせる取り組みについての記事。著者はGastown（長時間自律的に動作するエージェントツール）などを使って、夜間にコードを生成・ブランチにプッシュさせている。しかし「朝起きたら変更が入っているが、それが正しいか確認する方法がない」という根本的な問題に直面している。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+著者は過去6ヶ月で100人以上のエンジニアにClaude Codeのワークショップを開催してきた。どのチームでも同じ問題が浮上する — AIエージェントは「できました」と言うが、本当にできているか分からない。テストを書かせても「テストシアター（Test Theatre: テストが通っているように見えるが、実際には何も検証していないテスト）」になりがちだ。著者はこの問題に対して、差分テスト（1つのエージェントがコードを書き、別のエージェントがテストを書く）や、red-green-refactor（まずテストを書いて失敗させ、次にコードを書いて通す、そしてリファクタリング）のアプローチを模索している。AIエージェントの品質保証は、コード生成そのものよりも難しい課題として浮上している。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+AIコーディングエージェントの実用化が進む中、「AIが書いたコードの品質をどう保証するか」は最も切実な問題だ。Amazon（本ダイジェスト3番）の障害事例とも直結する話題で、個人開発者から大企業まで同じ壁にぶつかっている。「AIに任せれば楽」という幻想と現実のギャップを率直に語っている点で価値がある。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「差分テスト（1つのエージェントがコード、もう1つがテストを書く）をGemini CLIのサブエージェントでやっている。ステップアップになる」（seanmcdirmid）— 実践的なアプローチ
+- 「red-green-refactorをClaude Codeに指示するだけで、テスト品質が大幅に改善する」（egeozcan）— 具体的なテクニック
+- 「ソロファウンダーとしてAIでプロダクトを出荷している身として、コードレビューの問題は本当にリアル」（jc-myths）— 共感
+- 「テストシアターの問題提起は重要。多くの開発者が経験しているが言語化されていなかった」（bhouston）— 概念の命名
+- 「100人以上のエンジニアとのワークショップ経験に基づく知見は貴重」（jc-myths）— 実践的な信頼性
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「これに感心しろと？みんなエージェントを使うこと自体が目的になっている。シンプルに2つのエージェント（書くのとレビューするの）で十分」（recroad）— 過剰な複雑化
+- 「AIは『できました』と嘘をつく。実装したと言いながら実際にはダミーコードだったことが何度もある」（jc-myths）— AIの信頼性問題
+- 「テストシアターは本物のテスト手法を理解していないことの表れ。AIのせいではなく、プロンプトの設計の問題」（egeozcan）— 使い手の問題
+- 「寝ている間に動かすほど信頼できるエージェントはまだ存在しない。結局朝にすべてレビューするなら時間の節約にならない」（recroad）— 実用性への疑問
+- 「エージェントに全部任せる前に、自分がコードを理解する能力を維持することが大事」（recroad）— スキル低下の懸念
+
+</details>
+
+<hr />
+
+<h2 id="10-ゲーミングgpu-2台でhuggingface-open-llmリーダーボード1位を取った方法">10. ゲーミングGPU 2台でHuggingFace Open LLMリーダーボード1位を取った方法</h2>
+<p><strong>原題</strong>: Show HN: How I Topped the HuggingFace Open LLM Leaderboard on Two Gaming GPUs
+<strong>URL</strong>: https://dnhkng.github.io/posts/rys/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47322887
+<strong>スコア</strong>: 271 / <strong>コメント</strong>: 83件 / <strong>合計</strong>: 354</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+著者のdnhkng氏が、Qwen2-72B（72億パラメータのオープンウェイトLLM）の重みを一切変更せずに、特定の中間レイヤーを7層複製するだけで、HuggingFaceのOpen LLMリーダーボード（オープンソースLLMの性能ランキング）で全ベンチマーク1位を獲得した。この発見は「LLMの神経解剖学」とも呼べる、モデル内部構造の深い理解に基づいている。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+通常、LLMの性能を上げるにはファインチューニング（Fine-tuning: 追加データで学習し直すこと）や巨大な計算リソースが必要だ。しかし著者は全く異なるアプローチを取った。Qwen2-72Bの「中間の7層」を複製して挿入するだけで、IFEval、BBH、MATH Lvl 5、GPQA、MuSR、MMLU-PROという6つの全ベンチマークでスコアが向上した。これは「Goliath」という先行研究にインスパイアされている。Goliathは2つの異なるモデルを物理的に結合させたもので、重みの変更なしにモデルが機能したこと自体が驚きだった。著者はこの現象を「LLMのニューロアナトミー（神経解剖学）」と呼び、モデル内部の各レイヤーが果たす役割を分析している。ゲーミングGPU 2台で実現できたという点も、大企業のリソースがなくても最先端の研究ができることを示している。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+「重みを一切変えずに性能を上げる」というのは直感に反する発見であり、LLMの内部構造についての理解がまだまだ不十分であることを示している。博士号を持つチームが何百万ドルもかけてファインチューニングしたモデルを、レイヤーの複製だけで上回ったという事実は痛快でもある。このような「発見のプロセス」を丁寧に記述した記事は、研究の再現性と科学的好奇心の両面で価値が高い。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「著者です。Qwen2-72Bの特定の中間7層を複製しただけで全ベンチマークが向上。重みは一切変更していない」（dnhkng）— 著者による解説
+- 「読み応えがあった。ジェネラリストとして直感的に経験してきた『この部分を伸ばせば全体が良くなる』感覚が言語化されている」（hmokiguess）— 直感との一致
+- 「発見のプロセスを丁寧に書いてくれているのが素晴らしい。結果だけでなく、そこに至る思考過程がもっと面白い」（imranq）— プロセスの共有
+- 「Goliathの話は当時もっと注目されるべきだった。重みを変えずにモデルを結合して動くこと自体が驚異的」（mysteria）— 先行研究の再評価
+- 「膨大な労力が記事に注がれていることが伝わる。スコア/コメント比が偏っているのが不思議なくらい良い記事」（momojo）— 記事の質の高さ
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- コメントはほぼ全て肯定的で、否定的な意見は目立たなかった。技術的な質問や深掘りの議論が中心。
+
+</details>
+
+<hr />
+
+<h2 id="用語集">用語集</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>用語</th>
+      <th>解説</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>クイックソート（Quicksort）</strong></td>
+      <td>データを高速に並び替えるアルゴリズム。1960年にトニー・ホーアが発明し、現在も広く使われている</td>
+    </tr>
+    <tr>
+      <td><strong>チューリング賞（Turing Award）</strong></td>
+      <td>コンピュータ科学の最高の栄誉。「コンピュータ科学のノーベル賞」とも呼ばれる</td>
+    </tr>
+    <tr>
+      <td><strong>LLM（Large Language Model）</strong></td>
+      <td>ChatGPTなどの大規模言語モデル。大量のテキストデータから学習し、文章の生成や質問への回答ができる</td>
+    </tr>
+    <tr>
+      <td><strong>ワールドモデル（World Model）</strong></td>
+      <td>AIが物理世界の仕組み（重力、物体の動きなど）を理解・予測するためのモデル</td>
+    </tr>
+    <tr>
+      <td><strong>ファインチューニング（Fine-tuning）</strong></td>
+      <td>既に学習済みのAIモデルに追加のデータで学習させ、特定のタスクの性能を向上させること</td>
+    </tr>
+    <tr>
+      <td><strong>エージェント（AI Agent）</strong></td>
+      <td>人間の指示に基づいて自律的にタスクを実行するAIプログラム</td>
+    </tr>
+    <tr>
+      <td><strong>テストシアター（Test Theatre）</strong></td>
+      <td>テストが通っているように見えるが、実際には何も検証していない見せかけのテスト</td>
+    </tr>
+    <tr>
+      <td><strong>PR / MR（Pull Request / Merge Request）</strong></td>
+      <td>コードの変更を提案し、レビューを経てメインのコードに統合してもらうための仕組み</td>
+    </tr>
+    <tr>
+      <td><strong>CSP（Communicating Sequential Processes）</strong></td>
+      <td>並行処理を安全に行うための理論。Go言語のチャネルなどに影響を与えた</td>
+    </tr>
+    <tr>
+      <td><strong>GR（General Resolution）</strong></td>
+      <td>Debianプロジェクトで全メンバーの投票により重要な方針を決定する手続き</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+
+<script>
+(function() {
+  const source = document.getElementById('source');
+  if (!source) return;
+
+  // ========== Date extraction from page title ==========
+  const pageTitle = source.getAttribute('data-title') || '';
+  const dateMatch = pageTitle.match(/(\d{4})-(\d{2})-(\d{2})/);
+  const dateStr = dateMatch
+    ? dateMatch[1] + '.' + dateMatch[2] + '.' + dateMatch[3]
+    : '';
+  const shortDate = dateMatch
+    ? parseInt(dateMatch[2]) + '/' + parseInt(dateMatch[3])
+    : '';
+
+  // ========== Parse source content ==========
+  const h1 = source.querySelector('h1');
+  const allH2s = Array.from(source.querySelectorAll('h2'));
+
+  // Intro paragraph (first <p> after h1)
+  let introText = '';
+  if (h1) {
+    let next = h1.nextElementSibling;
+    while (next && (next.tagName === 'HR' || next.tagName === 'BR')) {
+      next = next.nextElementSibling;
+    }
+    if (next && next.tagName === 'P') {
+      introText = next.textContent.trim();
+    }
+  }
+
+  // Collect sections: each h2 + all siblings until next h2
+  const sections = allH2s.map(h2 => {
+    const content = [];
+    let sib = h2.nextElementSibling;
+    while (sib && sib.tagName !== 'H2') {
+      if (sib.tagName !== 'HR') content.push(sib);
+      sib = sib.nextElementSibling;
+    }
+    return { heading: h2, content };
+  });
+
+  // Separate articles (h2 starts with digit) from glossary
+  const articles = sections.filter(s => /^\d/.test(s.heading.textContent.trim()));
+  const glossarySec = sections.find(s => s.heading.textContent.includes('用語集'));
+
+  // ========== Parse glossary terms ==========
+  const glossaryTerms = [];
+  if (glossarySec) {
+    const table = glossarySec.content.find(el => el.tagName === 'TABLE');
+    if (table) {
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 2) {
+          glossaryTerms.push({
+            name: cells[0].textContent.trim(),
+            desc: cells[1].textContent.trim()
+          });
+        }
+      });
+    }
+  }
+
+  // ========== Match glossary terms to articles ==========
+  function findRelevantTerms(contentElements) {
+    const text = contentElements.map(el => el.textContent).join(' ');
+    return glossaryTerms.filter(term => {
+      const baseName = term.name.replace(/（.*/, '').replace(/\(.*/, '').trim();
+      return text.includes(baseName);
+    });
+  }
+
+  // ========== Parse a single article ==========
+  function parseArticle(heading, contentElements) {
+    const fullText = contentElements.map(el => el.textContent).join('\n');
+    const headingText = heading.textContent.replace(/^\d+\.\s*/, '').trim();
+
+    // Metadata — extract via regex from full text (handles single-paragraph metadata)
+    let origTitle = '';
+    let m = fullText.match(/原題[:：]\s*(.+?)(?=\s*URL[:：]|\n|$)/);
+    if (m) origTitle = m[1].trim();
+
+    let url = '';
+    m = fullText.match(/URL[:：]\s*(https?:\/\/\S+)/);
+    if (m) url = m[1].trim();
+
+    let hnUrl = '';
+    m = fullText.match(/HN[:：]\s*(https?:\/\/\S+)/);
+    if (m) hnUrl = m[1].trim();
+
+    let score = '', comments = '', total = '';
+    m = fullText.match(/スコア[:：]\s*([\d,]+)/);
+    if (m) score = m[1].replace(/,/g, '');
+    m = fullText.match(/コメント[:：]\s*([\d,]+)件?/);
+    if (m) comments = m[1].replace(/,/g, '');
+    m = fullText.match(/合計[:：]\s*([\d,]+)/);
+    if (m) total = m[1].replace(/,/g, '');
+
+    // Section content — from paragraphs with known labels
+    let summary = '', detail = '', whyNotable = '';
+    contentElements.forEach(el => {
+      if (el.tagName !== 'P') return;
+      const strong = el.querySelector('strong');
+      if (!strong) return;
+      const label = strong.textContent.trim();
+      const afterLabel = el.textContent.replace(label, '').trim();
+      if (/^ざっくり/.test(label)) summary = afterLabel;
+      else if (/^もう少し/.test(label)) detail = afterLabel;
+      else if (/^なぜ注目/.test(label)) whyNotable = afterLabel;
+    });
+
+    // Details blocks (comment sections)
+    const detailsBlocks = contentElements.filter(el => el.tagName === 'DETAILS');
+
+    return { headingText, origTitle, url, hnUrl, score, comments, total,
+             summary, detail, whyNotable, detailsBlocks };
+  }
+
+  // ========== Escape HTML for safe insertion ==========
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ========== Build Carousel ==========
+  const carousel = document.getElementById('carousel');
+  const totalSlides = 1 + articles.length;
+
+  // --- Slide 0: Title ---
+  const titleSlide = document.createElement('div');
+  titleSlide.className = 'slide slide--title';
+  titleSlide.innerHTML =
+    '<div class="slide-inner">' +
+      (dateStr ? '<div class="date-badge">' + esc(dateStr) + '</div>' : '') +
+      '<h1>HN Digest<span> — ' + esc(shortDate) + '</span></h1>' +
+      '<p>' + esc(introText) + '</p>' +
+      '<div class="article-count">' + articles.length + ' articles</div>' +
+      '<div class="arrow-hint">&#8594; スワイプまたは矢印キーで次へ</div>' +
+    '</div>';
+  carousel.appendChild(titleSlide);
+
+  // --- Article Slides ---
+  articles.forEach((section, idx) => {
+    const art = parseArticle(section.heading, section.content);
+    const relevantTerms = findRelevantTerms(section.content);
+
+    const slide = document.createElement('div');
+    slide.className = 'slide slide--article';
+
+    // Details HTML (with open attribute + fix raw markdown lists)
+    const detailsHTML = art.detailsBlocks.map(el => {
+      const clone = el.cloneNode(true);
+      clone.setAttribute('open', '');
+      // If kramdown didn't convert markdown lists inside <details>,
+      // the content will be raw text with "- " prefixes. Fix it.
+      if (!clone.querySelector('ul') && !clone.querySelector('ol')) {
+        const summary = clone.querySelector('summary');
+        const summaryText = summary ? summary.textContent.trim() : '';
+        const rawText = clone.textContent.replace(summaryText, '').trim();
+        if (rawText.includes('- ') || rawText.includes('「')) {
+          const lines = rawText.split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
+          const items = lines.map(l => l.replace(/^[-–—]\s*/, ''));
+          const ul = document.createElement('ul');
+          items.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            ul.appendChild(li);
+          });
+          // Remove all content except summary, then append the list
+          while (clone.lastChild && clone.lastChild !== summary) {
+            clone.removeChild(clone.lastChild);
+          }
+          clone.appendChild(ul);
+        }
+      }
+      return clone.outerHTML;
+    }).join('\n');
+
+    // Sidebar glossary (desktop)
+    let sidebarHTML = '';
+    if (relevantTerms.length > 0) {
+      sidebarHTML =
+        '<aside class="article-sidebar">' +
+          '<div class="sidebar-label">用語</div>' +
+          relevantTerms.map(t =>
+            '<div class="sidebar-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+        '</aside>';
+    }
+
+    // Inline glossary (mobile)
+    let inlineGlossaryHTML = '';
+    if (relevantTerms.length > 0) {
+      inlineGlossaryHTML =
+        '<div class="inline-glossary">' +
+          '<div class="sidebar-label">関連用語</div>' +
+          '<div class="inline-terms">' +
+          relevantTerms.map(t =>
+            '<div class="inline-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+          '</div>' +
+        '</div>';
+    }
+
+    // Links
+    const urlLink = art.url
+      ? '<a href="' + esc(art.url) + '" target="_blank" rel="noopener">元記事 &#8599;</a>'
+      : '';
+    const hnLink = art.hnUrl
+      ? '<a href="' + esc(art.hnUrl) + '" target="_blank" rel="noopener">HN &#8599;</a>'
+      : '';
+
+    // Build sections conditionally
+    let sectionsHTML = '';
+    if (art.summary) {
+      sectionsHTML +=
+        '<div class="section-label">ざっくり言うと</div>' +
+        '<p>' + esc(art.summary) + '</p>';
+    }
+    if (art.detail) {
+      sectionsHTML +=
+        '<div class="section-label">もう少し詳しく</div>' +
+        '<p>' + esc(art.detail) + '</p>';
+    }
+    if (art.whyNotable) {
+      sectionsHTML +=
+        '<div class="section-label">なぜ注目？</div>' +
+        '<p>' + esc(art.whyNotable) + '</p>';
+    }
+
+    const mainContent =
+      '<div class="article-main">' +
+        '<div class="article-number">ARTICLE ' + (idx + 1) + '</div>' +
+        '<h2>' + esc(art.headingText) + '</h2>' +
+        (art.origTitle ? '<div class="meta-row"><span>' + esc(art.origTitle) + '</span></div>' : '') +
+        '<div class="meta-row">' + urlLink + hnLink + '</div>' +
+        '<div class="stats">' +
+          (art.score ? '<div class="stat"><strong>' + esc(art.score) + '</strong> pts</div>' : '') +
+          (art.comments ? '<div class="stat"><strong>' + esc(art.comments) + '</strong> comments</div>' : '') +
+          (art.total ? '<div class="stat">Total <strong>' + esc(art.total) + '</strong></div>' : '') +
+        '</div>' +
+        sectionsHTML +
+        detailsHTML +
+        inlineGlossaryHTML +
+      '</div>';
+
+    slide.innerHTML =
+      '<div class="article-layout">' +
+        mainContent +
+        sidebarHTML +
+      '</div>';
+
+    carousel.appendChild(slide);
+  });
+
+  // ========== Navigation Dots ==========
+  const navDots = document.getElementById('navDots');
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'スライド ' + (i + 1) + ' へ');
+    dot.addEventListener('click', () => goToSlide(i));
+    navDots.appendChild(dot);
+  }
+
+  // ========== State & Navigation ==========
+  let currentSlide = 0;
+  const progressBar = document.getElementById('progressBar');
+  const miniHeader = document.getElementById('miniHeader');
+  const arrowLeft = document.getElementById('arrowLeft');
+  const arrowRight = document.getElementById('arrowRight');
+
+  function updateUI(index) {
+    currentSlide = index;
+    const progress = totalSlides > 1 ? (index / (totalSlides - 1)) * 100 : 100;
+    progressBar.style.width = progress + '%';
+    miniHeader.textContent = (index + 1) + ' / ' + totalSlides;
+
+    navDots.querySelectorAll('.nav-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === index);
+    });
+
+    arrowLeft.classList.toggle('hidden', index === 0);
+    arrowRight.classList.toggle('hidden', index === totalSlides - 1);
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides) return;
+    carousel.children[index].scrollIntoView({
+      behavior: 'smooth', block: 'nearest', inline: 'start'
+    });
+  }
+
+  // ========== Scroll Detection ==========
+  let scrollTimeout;
+  carousel.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const index = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+      updateUI(index);
+    }, 50);
+  }, { passive: true });
+
+  // ========== Arrow Buttons ==========
+  arrowLeft.addEventListener('click', () => goToSlide(currentSlide - 1));
+  arrowRight.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+  // ========== Keyboard Navigation ==========
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(currentSlide - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goToSlide(currentSlide + 1); }
+  });
+
+  // ========== Initial State ==========
+  updateUI(0);
+})();
+</script>
+
+</body>
+</html>
