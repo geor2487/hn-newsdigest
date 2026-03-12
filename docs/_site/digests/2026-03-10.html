@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>HN Digest — 2026-03-10</title>
+<meta name="description" content="Hacker Newsの最新記事を日本語で毎日まとめています">
+<link rel="icon" href="/hn-newsdigest/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/hn-newsdigest/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ========== Reset & Base ========== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'DM Sans', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background-color: #0c0d12;
+    color: #c8cad0;
+    line-height: 1.8;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(249, 115, 22, 0.35);
+    color: #fff;
+  }
+
+  /* ========== Progress Bar ========== */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f97316, #fb923c);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.15s ease-out;
+  }
+
+  /* ========== Mini Header ========== */
+  .mini-header {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #777b88;
+    letter-spacing: 0.05em;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    user-select: none;
+  }
+
+  /* ========== Home Button ========== */
+  .home-btn {
+    position: fixed;
+    top: 12px;
+    left: 20px;
+    z-index: 900;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #555a6a;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .home-btn:hover {
+    color: #f97316;
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  /* ========== Scroll Container ========== */
+  .carousel {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    height: 100vh;
+    width: 100vw;
+    scrollbar-width: none;
+  }
+
+  .carousel::-webkit-scrollbar { display: none; }
+
+  /* ========== Slide ========== */
+  .slide {
+    flex: 0 0 100vw;
+    min-width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 32px 100px;
+    position: relative;
+  }
+
+  .slide--article { justify-content: center; }
+
+  .slide-inner {
+    max-width: 640px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+  }
+
+  .slide-inner::-webkit-scrollbar { width: 4px; }
+  .slide-inner::-webkit-scrollbar-track { background: transparent; }
+  .slide-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  /* ========== Article Layout: content + glossary sidebar ========== */
+  .article-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    max-width: 960px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+  }
+
+  .article-main {
+    flex: 1;
+    min-width: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+    padding-right: 8px;
+  }
+
+  .article-main::-webkit-scrollbar { width: 4px; }
+  .article-main::-webkit-scrollbar-track { background: transparent; }
+  .article-main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  .article-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+  }
+
+  .article-sidebar::-webkit-scrollbar { width: 3px; }
+  .article-sidebar::-webkit-scrollbar-track { background: transparent; }
+  .article-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-term {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .sidebar-term:hover {
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  .sidebar-term .term-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #fb923c;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-term .term-desc {
+    font-size: 0.78rem;
+    color: #777b88;
+    line-height: 1.6;
+  }
+
+  /* ========== Title Slide ========== */
+  .slide--title { text-align: center; }
+
+  .slide--title h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    color: #ecedf2;
+  }
+
+  .slide--title h1 span { color: #f97316; }
+
+  .slide--title p {
+    font-size: 1.1rem;
+    color: #777b88;
+    line-height: 1.9;
+  }
+
+  .slide--title .date-badge {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 6px 18px;
+    border-radius: 24px;
+    margin-bottom: 24px;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(251, 146, 60, 0.15);
+  }
+
+  .slide--title .article-count {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    letter-spacing: 0.05em;
+  }
+
+  .slide--title .arrow-hint {
+    margin-top: 48px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    animation: pulse-hint 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-hint {
+    0%, 100% { opacity: 0.5; transform: translateX(0); }
+    50% { opacity: 1; transform: translateX(6px); }
+  }
+
+  /* ========== Article Slide ========== */
+  .slide--article .article-number {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 4px 12px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    letter-spacing: 0.06em;
+    border: 1px solid rgba(251, 146, 60, 0.12);
+  }
+
+  .slide--article h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: #ecedf2;
+    letter-spacing: -0.01em;
+  }
+
+  .slide--article .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    color: #555a6a;
+  }
+
+  .slide--article .meta-row a {
+    color: #f97316;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .slide--article .meta-row a:hover {
+    color: #fb923c;
+    text-decoration: underline;
+  }
+
+  .slide--article .stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .slide--article .stats .stat {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 6px 14px;
+    border-radius: 8px;
+    color: #888d9e;
+    font-weight: 500;
+  }
+
+  .slide--article .stats .stat strong {
+    color: #f97316;
+    font-weight: 700;
+  }
+
+  .slide--article .section-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #f97316;
+    margin-bottom: 6px;
+    margin-top: 20px;
+  }
+
+  .slide--article p {
+    font-size: 0.95rem;
+    color: #a0a4b2;
+    margin-bottom: 12px;
+    line-height: 1.9;
+  }
+
+  /* ========== Comments (open by default) ========== */
+  .slide--article details {
+    margin-top: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .slide--article details + details { margin-top: 8px; }
+
+  .slide--article summary {
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #c8cad0;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+    transition: background 0.15s;
+    list-style: none;
+  }
+
+  .slide--article summary::-webkit-details-marker { display: none; }
+
+  .slide--article summary::before {
+    content: '− ';
+    font-weight: 700;
+    color: #f97316;
+    margin-right: 4px;
+  }
+
+  .slide--article details:not([open]) summary::before { content: '+ '; }
+
+  .slide--article summary:hover {
+    background: rgba(249, 115, 22, 0.06);
+  }
+
+  .slide--article details ul {
+    list-style: none;
+    padding: 12px 16px;
+  }
+
+  .slide--article details li {
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .slide--article details li:last-child { border-bottom: none; }
+
+  /* Details with plain paragraph (no list) */
+  .slide--article details > p {
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+  }
+
+  /* ========== Navigation Arrows ========== */
+  .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 800;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #888d9e;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .nav-arrow:hover {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);
+  }
+
+  .nav-arrow:active { transform: translateY(-50%) scale(0.92); }
+
+  .nav-arrow--left { left: 20px; }
+  .nav-arrow--right { right: 20px; }
+
+  .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+
+  /* ========== Navigation Dots ========== */
+  .nav-dots {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 800;
+    display: flex;
+    gap: 10px;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 10px 18px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: none;
+    padding: 0;
+  }
+
+  .nav-dot:hover { background: rgba(255, 255, 255, 0.3); }
+
+  .nav-dot.active {
+    background: #f97316;
+    width: 28px;
+    border-radius: 5px;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+  }
+
+  /* ========== Inline Glossary (mobile) ========== */
+  .inline-glossary .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 10px;
+  }
+
+  .inline-glossary .inline-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .inline-glossary .inline-term {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+
+  .inline-glossary .inline-term .term-name {
+    font-weight: 600;
+    color: #fb923c;
+  }
+
+  .inline-glossary .inline-term .term-desc {
+    color: #777b88;
+    margin-top: 2px;
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 960px) {
+    .article-sidebar { display: none; }
+    .inline-glossary {
+      display: block !important;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  @media (min-width: 961px) {
+    .inline-glossary { display: none !important; }
+  }
+
+  @media (max-width: 700px) {
+    .slide { padding: 50px 20px 90px; }
+    .slide--title h1 { font-size: 2rem; }
+    .slide--article h2 { font-size: 1.25rem; }
+    .nav-arrow { width: 40px; height: 40px; font-size: 1rem; }
+    .nav-arrow--left { left: 10px; }
+    .nav-arrow--right { right: 10px; }
+    .home-btn .home-btn-text { display: none; }
+    .nav-dots { gap: 6px; padding: 8px 12px; }
+    .nav-dot { width: 8px; height: 8px; }
+    .nav-dot.active { width: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Mini Header -->
+<div class="mini-header" id="miniHeader"></div>
+
+<!-- Home Button -->
+<a href="/hn-newsdigest/" class="home-btn" aria-label="ホームに戻る">
+  <span>&#8592;</span>
+  <span class="home-btn-text">HN Digest</span>
+</a>
+
+<!-- Navigation Arrows -->
+<button class="nav-arrow nav-arrow--left hidden" id="arrowLeft" aria-label="前のスライド">&#8592;</button>
+<button class="nav-arrow nav-arrow--right" id="arrowRight" aria-label="次のスライド">&#8594;</button>
+
+<!-- Carousel Container -->
+<div class="carousel" id="carousel"></div>
+
+<!-- Navigation Dots -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- Hidden source content rendered by Jekyll/kramdown -->
+<div id="source" data-title="HN Digest — 2026-03-10" style="display:none">
+<h1 id="hn-digest--310">HN Digest — 3/10</h1>
+
+<hr />
+
+<h2 id="1-アイルランドが最後の石炭火力発電所を閉鎖欧州で15番目の脱石炭国に2025年">1. アイルランドが最後の石炭火力発電所を閉鎖、欧州で15番目の「脱石炭」国に（2025年）</h2>
+<p><strong>原題</strong>: Ireland shuts last coal plant, becomes 15th coal-free country in Europe (2025)
+<strong>URL</strong>: <a href="https://www.pv-magazine.com/2025/06/20/ireland-coal-free-ends-coal-power-generation-moneypoint/">https://www.pv-magazine.com/2025/06/20/ireland-coal-free-ends-coal-power-generation-moneypoint/</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47307055">https://news.ycombinator.com/item?id=47307055</a>
+<strong>スコア</strong>: 841 / <strong>コメント</strong>: 515件 / <strong>合計</strong>: 1356</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+アイルランドが2025年6月20日、国内最後の石炭火力発電所「マネーポイント」を閉鎖し、欧州で15番目の脱石炭国となった。マネーポイントは1980年代半ばに建設された915MW（メガワット: 発電能力の単位。1MWで約1,000世帯分の電力）の発電所で、1970年代の石油危機への対策として稼働していた。しかしアイルランドは現在、風力発電だけで国内電力の37%（11.4TWh（テラワット時: 大規模な電力量の単位））をまかなっており、石炭への依存は不要になった。閉鎖後もマネーポイントは2029年まで重油を使った緊急バックアップとして限定的に残る。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+アイルランドのエネルギー転換は風力発電が牽引している。2024年時点で風力が電力の37%を占め、太陽光は0.97TWhとまだ少ないものの、急速に記録を更新し続けている。欧州全体で見ると、脱石炭の流れは加速しており、ポルトガル、ベルギー、オーストリアなどがすでに石炭火力を全廃している。ただしHNコメントでは「本当の脱石炭は、輸入品のサプライチェーン（供給網: 原材料から製品が消費者に届くまでの全過程）に石炭エネルギーが含まれないこと」という指摘もあった。実際、欧州の脱炭素は製造業の海外移転（脱工業化）と表裏一体という批判がある。アイルランド国内からは「安いエネルギーを失い、エネルギー輸入国になった結果、電気代が大幅に上がった」という現地住民の声も。また、アイルランド特有の問題として、泥炭（ピート: 湿地帯の植物が堆積してできた燃料）の採取・燃焼が依然として行われており、これも温室効果ガスの大きな排出源であるという課題が残っている。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+石炭火力の全廃は気候変動対策の象徴的なマイルストーンだが、「国内で燃やさなくなっただけ」なのか「本当にクリーンになったのか」は別問題。エネルギー転換のコスト（電気代上昇）を誰が負担するのか、再生可能エネルギーの間欠性（風が吹かない日もある）をどう補うのかなど、脱石炭の裏側にある課題を考えさせる記事。エネルギー政策に興味がある人にとって、成功と課題の両面を学べる好例。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「素晴らしい。泥炭燃焼もやめてほしい」（CalRobert）— アイルランド在住者として、次の課題として泥炭問題を指摘
+- 「欧州の石炭廃止の進捗を追跡するサイトがある」（bramhaag）— beyondfossilfuels.orgで各国の状況を可視化
+- 「目標は『石炭ゼロ』ではなく『100%再生可能エネルギー』であるべき」（jorisboris）— より前向きな目標設定を提案
+- 「アイルランドの風力発電37%は本当に印象的」（複数ユーザー）— 小国ならではの迅速な転換を評価
+- 「欧州は確実に前進している。批判はあるが方向性は正しい」（複数ユーザー）— 全体的なトレンドへの支持
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「輸入品のサプライチェーンに石炭が含まれている限り、真の脱石炭とは言えない」（reedf1）— 製造業の海外移転による見かけ上の脱炭素を批判
+- 「アイルランド人だが、安いエネルギーを失い電気代が急騰した。データセンターが電力を食いすぎている」（cauliflower99）— 現地からのリアルな声
+- 「石炭を使わなくなっても重油のバックアップを2029年まで維持するのは矛盾では」（複数ユーザー）— 完全なクリーンエネルギーへの疑問
+- 「欧州の脱工業化を脱炭素と呼び替えているだけ」（reedf1）— 構造的な批判
+- 「風力37%は素晴らしいが、風が吹かない日のベースロードをどうするかが課題」（複数ユーザー）— 間欠性の問題
+
+</details>
+
+<hr />
+
+<h2 id="2-フロリダの裁判官が赤信号カメラ違反切符を違憲と判断">2. フロリダの裁判官が赤信号カメラ違反切符を「違憲」と判断</h2>
+<p><strong>原題</strong>: Florida judge rules red light camera tickets are unconstitutional
+<strong>URL</strong>: <a href="https://cbs12.com/news/local/florida-news-judge-rules-red-light-camera-tickets-unconstitutional">https://cbs12.com/news/local/florida-news-judge-rules-red-light-camera-tickets-unconstitutional</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47312090">https://news.ycombinator.com/item?id=47312090</a>
+<strong>スコア</strong>: 289 / <strong>コメント</strong>: 421件 / <strong>合計</strong>: 710</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+フロリダ州ブロワード郡のスティーブン・P・デルーカ裁判官が、赤信号カメラによる違反切符を棄却し、その根拠となる州法を違憲と判断した。21ページにおよぶ命令書で、この法律が立証責任（本来は「有罪を証明する側」にある責任）を車両所有者に不当に転嫁していると指摘。つまり「カメラに映ったのはあなたの車だから、あなたが違反した」と推定し、所有者側が「自分が運転していなかった」と証明しなければならない仕組みが、アメリカ合衆国憲法のデュープロセス条項（適正手続き: 政府が個人の権利を奪う際には公正な手続きが必要とする原則）に違反するというもの。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+赤信号カメラの仕組みは、交差点に設置されたカメラが赤信号中に進入した車のナンバープレートを撮影し、車両の登録所有者に自動的に違反切符を送るというもの。問題は、カメラが撮影するのは「車」であって「運転者」ではないこと。つまり家族や友人が運転していた場合でも、所有者に切符が届く。デルーカ裁判官はこの制度を「公共安全のためではなく収益目的のスキーム」と断じた。実際に、赤信号カメラを導入した自治体はカメラ運営会社に収益の一部を支払う契約を結んでおり、事故削減よりも罰金収入を重視する構造になっている。ミネソタ州では以前に同様の違憲判決が出てカメラが撤去されたが、その後「刑事罰ではなく行政罰」として復活した例もある。今回の判決はフロリダ州全体に適用されるわけではなく、今後上級裁判所での争いが予想される。HNコメントでは「赤信号カメラ」自体は関係なく、「車の所有者＝違反者」と推定する法律の構造が問題だという分析が注目を集めた。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+自動化された法執行と市民の権利のバランスという、テクノロジーと法律が交差する重要なテーマ。AIによる顔認識や自動取り締まりが広がる中、「機械が検出した違反に対して、誰がどう責任を負うのか」は今後ますます重要になる。プログラマーやエンジニアにとっても、自分が作るシステムが「推定有罪」の仕組みになっていないか考えさせられる事例。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「21ページの命令書を読んだが、裁判官の論理に同意する。赤信号カメラは収益スキームだ」（fusslo）— 命令書の詳細な分析
+- 「重要なのはカメラではなく、所有者に立証責任を転嫁する法律の構造だ」（embedding-shape）— 問題の核心を指摘
+- 「Steve Lehtoの分析動画が良い。面白い点として、カメラ会社が被告側に加わって法律を守ろうとしている」（db48x）— 収益構造への注目
+- 「車自体を起訴すればいいのでは？民事没収（政府が犯罪に関連する財産を押収する制度）はそういう仕組みのはず」（crote）— 皮肉を込めた法的分析
+- 「ミネソタでは違憲判決後にカメラが消えたが、行政罰として復活した」（donatj）— 他州での前例を共有
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「赤信号カメラが設置された交差点では事故が減っているデータもある」（複数ユーザー）— 安全効果の主張
+- 「違憲判決は1人の裁判官の意見。上級裁判所で覆される可能性が高い」（複数ユーザー）— 法的効力の限界
+- 「所有者責任の原則はパーキングメーターの違反でも同じ。なぜ赤信号だけ問題になるのか」（複数ユーザー）— 一貫性への疑問
+- 「カメラを撤去したら信号無視が増えるのでは」（複数ユーザー）— 抑止力の喪失への懸念
+- 「収益目的かどうかは法律の合憲性とは別問題のはず」（複数ユーザー）— 法的論点の混同を指摘
+
+</details>
+
+<hr />
+
+<h2 id="3-合法と正当は同じかaiによる再実装とコピーレフトの侵食">3. 「合法」と「正当」は同じか——AIによる再実装とコピーレフトの侵食</h2>
+<p><strong>原題</strong>: Is legal the same as legitimate: AI reimplementation and the erosion of copyleft
+<strong>URL</strong>: <a href="https://writings.hongminhee.org/2026/03/legal-vs-legitimate/">https://writings.hongminhee.org/2026/03/legal-vs-legitimate/</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47310160">https://news.ycombinator.com/item?id=47310160</a>
+<strong>スコア</strong>: 309 / <strong>コメント</strong>: 346件 / <strong>合計</strong>: 655</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+Pythonのテキストエンコーディング検出ライブラリ「chardet」のメンテナーが、AnthropicのClaudeを使ってライブラリを一から再実装し、ライセンスをLGPL（コピーレフト型のオープンソースライセンス: 派生物にも同じライセンスを適用することを義務づける）からMIT（許容型ライセンス: ほぼ自由に使える）に変更した。月間約1億3千万プロジェクトに利用されるライブラリで、新バージョンは48倍高速化された。この記事は「AIを使ってGPLコードの仕様を学習し、別ライセンスで再実装するのは合法かもしれないが、正当と言えるのか？」という倫理的問題を提起している。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+コピーレフトライセンス（GPL/LGPL）の核心は「このコードを使った派生物も同じライセンスにしなければならない」というルール。これにより、オープンソースのコードが商用ソフトに取り込まれて「閉じた」ものになることを防いできた。しかしAIが登場したことで、コードそのものをコピーせずに「仕様」を理解し、全く新しいコードとして再実装できるようになった。法的には、仕様自体は著作権で保護されないため、AIによる再実装はコピーレフトの義務を回避できる可能性が高い。記事の著者は「ソースコードからAIで仕様を生成できるなら、GPLプロジェクトの本質的な知的貢献は仕様にある。しかし仕様は著作権で保護されない」というジレンマを指摘する。HNコメントでは「そもそもAIモデルの学習データにGPLコードが含まれている時点でライセンス違反が起きている」という意見や、「GPLはもともと著作権を著作権で戦うハックだった。AIはそのハックを無効化した」という分析が話題になった。一方で「クリーンルーム実装（著作権付きコードを見ずに仕様書だけから実装する手法）はAI以前から合法だった」という反論もある。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+オープンソースの根幹を揺るがす問題。GPLやLGPLで保護されてきた膨大なオープンソースコードが、AIを使って許容型ライセンスに「洗浄」される可能性がある。ソフトウェア開発者にとって、自分のコードの権利をどう守るか、そしてAI時代の著作権とライセンスはどうあるべきかを考えさせる重要な記事。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「GPLの先人たちは著作権を著作権で戦う権利のために闘った。その精神は守られるべき」（jrochkind1）— 歴史的文脈の重要性
+- 「AIがもたらす影響は著作権そのものの概念を超えている。知的財産の根本的な再考が必要」（zmmmmm）— より大きな枠組みでの議論
+- 「GPLは著作権を使ったハック。AIはそのハックを無効化した。新しい仕組みが必要」（ordu）— 構造的な分析
+- 「MinecraftのソースをCopilotで別言語に移植してオープンソースで公開したらどうなるか、テストすべき」（Gigachad）— 具体的な思考実験
+- 「ライセンス違反はAIモデルの学習段階で既に起きている」（munk-a）— 根本的な問題の指摘
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「クリーンルーム実装はAI以前から合法。AIは単にそれを効率化しただけ」（複数ユーザー）— 本質的に新しい問題ではないとの見方
+- 「メンテナーが自分のライブラリを好きなライセンスに変更するのは自由。問題視するのはおかしい」（複数ユーザー）— メンテナーの権利
+- 「GPLは常にこの種の回避に脆弱だった。AIは問題を可視化しただけ」（複数ユーザー）— GPLの元々の限界
+- 「仕様が著作権で保護されないのは正しい。そうでなければAPIを実装することすらできなくなる」（複数ユーザー）— 仕様の非保護は必要
+- 「感情的な議論ではなく、法的なフレームワークで解決すべき問題」（複数ユーザー）— 冷静な対応を求める声
+
+</details>
+
+<hr />
+
+<h2 id="4-fontcrafter-手書き文字をフォントに変換するツール">4. FontCrafter: 手書き文字をフォントに変換するツール</h2>
+<p><strong>原題</strong>: FontCrafter: Turn your handwriting into a real font
+<strong>URL</strong>: <a href="https://arcade.pirillo.com/fontcrafter.html">https://arcade.pirillo.com/fontcrafter.html</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47306655">https://news.ycombinator.com/item?id=47306655</a>
+<strong>スコア</strong>: 415 / <strong>コメント</strong>: 133件 / <strong>合計</strong>: 548</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+自分の手書き文字を本物のフォントファイルに変換できるWebツール。テンプレートを印刷し、手書きで文字を書き、スキャンした画像をドロップするだけでフォントが完成する。処理はすべてブラウザ内で行われ、サーバーにデータが送信されることはない。以前は複数のサービスが同様のツールを提供していたが、Calligraphrという会社がそれらを買収・統合してサブスクリプション（定額課金）制にしたため、無料の代替手段として注目を集めている。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+FontCrafterの使い方はシンプルで、テンプレートシートを印刷→手書きで3行分の文字を記入→スキャンまたは写真撮影→Webページにドロップという流れ。3行の使い方はユーザーが選べる（例: 1行目と2行目を大文字・小文字に、3行目を数字・記号にするなど）。リガチャ（合字: 特定の文字の組み合わせで自然なつながりを表現する仕組み）にも対応しており、手書きらしい自然な見た目のフォントが作れる。ただし、テンプレートの行の割り当て方は最後に選ぶ仕組みのため、「先に知りたかった」という声も。20年前にもWindows XPのタブレット版で似たことができたという懐かしむコメントや、アーティストのAmy Goodchildがフォントではなくパス（図形の軌跡）として手書き文字をJavaScriptにエンコードしたプロジェクトも紹介されていた。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+技術的には新しくないが、「ブラウザだけで完結」「サーバー不要」「無料」という三拍子が揃っている点が価値。Calligraphrの独占状態への不満を持つユーザーにとっての代替手段であり、オープンなWebツールの好例。デザイナーや個人プロジェクトで手書きフォントを使いたい人にはすぐ役立つ。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「以前は複数の無料ツールがあったが、Calligraphrに買収されてサブスク制になった。無料の代替は嬉しい」（ghrl）— 独占への対抗
+- 「20年前にXPタブレットで同じことをやった。懐かしい」（rkagerer）— 歴史的な振り返り
+- 「Amy Goodchildのアプローチ（フォントではなくJSパスとして手書きをエンコード）も面白い」（mft_）— 別アプローチの紹介
+- 「医者の手書きをフォントにしたら読めるようになるかな」（axegon_）— ユーモアのあるコメント
+- 「ブラウザ内処理でプライバシーが守られるのが良い」（複数ユーザー）— サーバーレスの利点
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「3行の割り当て方が最後に分かる。先に説明してほしかった」（rustyhancock）— UXの改善点
+- 「スキャン画像の品質によっては結果がかなり悪い」（複数ユーザー）— 入力品質への依存
+- 「リガチャ対応と言っても限定的。本格的なフォント制作には不十分」（複数ユーザー）— 機能の限界
+- 「フォントのメトリクス（文字間隔やベースライン）の調整ができない」（複数ユーザー）— プロ向け機能の欠如
+- 「手書きフォントは読みにくい。実用的なユースケースが限られる」（複数ユーザー）— 実用性への疑問
+
+</details>
+
+<hr />
+
+<h2 id="5-bluesky-ceoのjay-graberが退任">5. Bluesky CEOのJay Graberが退任</h2>
+<p><strong>原題</strong>: Bluesky CEO Jay Graber is stepping down
+<strong>URL</strong>: <a href="https://bsky.social/about/blog/03-09-2026-a-new-chapter-for-bluesky">https://bsky.social/about/blog/03-09-2026-a-new-chapter-for-bluesky</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47313884">https://news.ycombinator.com/item?id=47313884</a>
+<strong>スコア</strong>: 277 / <strong>コメント</strong>: 240件 / <strong>合計</strong>: 517</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+分散型SNSのBlueskyを創業期から率いてきたJay GraberがCEOを退任し、CIO（Chief Innovation Officer: 最高イノベーション責任者）に転身する。後任CEOはAutomattic（WordPressの親会社）の元CEOでVC（ベンチャーキャピタル: スタートアップに投資するファンド）パートナーのToni Schneider。Graber自身は「ATプロトコル（Blueskyの基盤となる分散型ソーシャルプロトコル）のエコシステム開発に集中したい」と説明している。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+Jay Graberは2019年からオープンなソーシャルメディアプロトコルの構築を目指してBlueskyを立ち上げた。Blueskyアプリはもともとプロトコルの「参照実装」（お手本となるアプリ）として始まったが、数千万人のユーザーを抱えるプラットフォームに成長した。今回の交代について、BlueskyのエンジニアであるpfrazeはHNで「Jayが自分から決めたこと。CEOは運営業務に追われるので、よりビジョンに集中できるCIOへの移行は良い判断」と説明。Jay本人もHNコメントに登場し「以前から進めてきた移行で、エコシステムの発展に専念する」と述べた。しかしコミュニティの反応は懐疑的で、「新CEOがVCパートナーで元Automattic CEO。投資家の利益が優先されるのでは」という懸念が多い。また「ATプロトコル自体がTwitterより悪い設計。広告やロックインにより強固なモデルを提供してしまう」という根本的な批判もあった。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+Twitter/X離れの受け皿として注目されてきたBlueskyの転換点。創業者がCEOを退き、VC寄りの人物が後任に就くパターンは、理想主義的なプロジェクトが商業化に向かう典型的なサイン。分散型SNSの未来と、オープンプロトコルの理念がビジネスの現実とどう折り合いをつけるのか、今後の展開が注目される。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Jayが自分で決めたこと。CEOは運営に忙殺されるので、ビジョンに集中できるCIOは良い判断」（pfraze）— Blueskyエンジニアからの内部視点
+- 「以前から進めてきた移行で、エコシステムの発展に専念できる」（arcalinea/Jay本人）— 創業者本人の説明
+- 「Toniは長年のアドバイザーでBlueskyのビジョンにコミットしている」（arcalinea）— 後任への信頼
+- 「Automatticの経験はオープンソース+ビジネスのバランスに活きるはず」（複数ユーザー）— WordPress運営の実績
+- 「CEOの交代自体は企業の成長過程として普通のこと」（複数ユーザー）— 冷静な見方
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「新CEOはVCパートナーで元Automattic CEO。Blueskyのオープンな理念と相容れない」（multisport）— 最も支持されたコメント
+- 「ATプロトコル自体が根本的に悪い設計。Twitterよりロバストな広告モデルを提供してしまう」（jrm4）— プロトコルレベルの批判
+- 「ライブスポーツを追うならTwitterはまだ他に代わるものがない」（haunter）— Blueskyの弱点
+- 「CEOがビジョナリーからオペレーターに交代するのは商業化の始まり」（複数ユーザー）— パターンへの警戒
+- 「Blueskyはもう中央集権的なプラットフォームになりつつある」（複数ユーザー）— 分散化への疑問
+
+</details>
+
+<hr />
+
+<h2 id="6-波動関数崩壊で六角形マップを自動生成する">6. 波動関数崩壊で六角形マップを自動生成する</h2>
+<p><strong>原題</strong>: Building a Procedural Hex Map with Wave Function Collapse
+<strong>URL</strong>: <a href="https://felixturner.github.io/hex-map-wfc/article/">https://felixturner.github.io/hex-map-wfc/article/</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47311815">https://news.ycombinator.com/item?id=47311815</a>
+<strong>スコア</strong>: 367 / <strong>コメント</strong>: 52件 / <strong>合計</strong>: 419</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+4,100個の六角形タイルを使って中世風の島マップを自動生成するプロジェクト。WFC（Wave Function Collapse（波動関数崩壊）: 量子力学の概念を借りた手続き型生成アルゴリズム。各タイルが「すべての可能性を持つ状態」から「1つの確定状態」に崩壊していく）とWebGPU（ブラウザから直接GPUを操作する新しいAPI）を使って実装されている。著者はAD&amp;D（Advanced Dungeons &amp; Dragons）のランダムダンジョン表にインスピレーションを受けたと語っている。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+WFCアルゴリズムの考え方はこうだ。まず全てのタイル位置に「すべてのタイルの可能性」がある状態からスタートする。次に、最も可能性が少ないタイル位置を1つ選び、ランダムに1つのタイルに確定させる（これが「崩壊」）。確定すると、隣接するタイルの可能性が制約される（海の隣に溶岩は来ない、など）。この制約の伝播（ある決定が周囲に波及する様子）を繰り返し、全タイルが確定するまで続ける。矛盾が生じたらバックトラッキング（行き詰まったら前の状態に戻ってやり直す手法）を行う。著者はバックトラックを500ステップに制限している。HNコメントではOskar Stålbergの「Townscaper」（同様の手法を使ったゲーム）が紹介されたり、「バックトラッキングの部分をもっと掘り下げてほしい。制約プログラミング（制約充足問題を解く計算機科学の分野）は非常に奥深い分野」という指摘もあった。また、ビットフィールド（各ビットで可能なタイルの有無を表現する効率的なデータ構造）を使えばパフォーマンスが向上するというアドバイスも。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+ゲーム開発やプロシージャル生成（手続き型生成: ルールに基づいてコンテンツを自動的に作り出す手法）に興味がある人には必見。WFCは比較的シンプルなアルゴリズムだが、驚くほど美しい結果を生み出す。WebGPUという最新技術と組み合わせたブラウザ上のデモとして、技術的にも視覚的にも楽しめる。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Oskar StålbergがTownscaperでWFCを使っている。彼のGDC講演がおすすめ」（rhdunn）— 関連プロジェクトの紹介
+- 「Jasper FlickのUnity六角形地形チュートリアルとの対比が面白い」（jcalx）— プリメイドタイル vs 動的生成の比較
+- 「ビットフィールドを使えばスーパーポジション（重ね合わせ状態）の表現が効率的になる」（jesse__）— 実装のアドバイス
+- 「WFCバイナリフォーマットのデコーダをゼロから書いた。仕様が非常に明確」（pasxizeis）— 仕様の品質への評価
+- 「子供の頃のD&amp;Dランダムダンジョン表のワクワク感を思い出した」（複数ユーザー）— 原体験への共感
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「デモが11世代Core i5 + Iris Xeで5FPSしか出ない。もっと効率的にできるのでは」（djray）— パフォーマンスの問題
+- 「バックトラッキングの部分を軽く流しすぎ。制約プログラミングは非常に深い分野」（porphyra）— 技術的な深掘り不足
+- 「WebGPUはまだブラウザの対応状況にばらつきがある」（複数ユーザー）— 互換性の問題
+- 「4,100タイルのアセット制作が大変すぎる。再利用性が低い」（複数ユーザー）— 実用面の課題
+- 「美しいが、ゲームに組み込むにはさらに多くの作業が必要」（複数ユーザー）— デモと製品の距離
+
+</details>
+
+<hr />
+
+<h2 id="7-jollaが新型スマートフォンを出荷予定sailfish-os交換可能バッテリー搭載">7. Jollaが新型スマートフォンを出荷予定——Sailfish OS・交換可能バッテリー搭載</h2>
+<p><strong>原題</strong>: Jolla on track to ship new phone with Sailfish OS, user-replaceable battery
+<strong>URL</strong>: <a href="https://liliputing.com/the-new-jolla-phone-with-sailfish-os-is-on-track-to-start-shipping-in-the-first-half-of-2026/">https://liliputing.com/the-new-jolla-phone-with-sailfish-os-is-on-track-to-start-shipping-in-the-first-half-of-2026/</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47311456">https://news.ycombinator.com/item?id=47311456</a>
+<strong>スコア</strong>: 181 / <strong>コメント</strong>: 117件 / <strong>合計</strong>: 298</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+フィンランドのJolla（ヨラ）社が、独自のSailfish OS（LinuxベースのモバイルOS: Nokiaの元社員が開発を始めた）を搭載したスマートフォンを2026年前半に出荷予定。ユーザーが自分でバッテリーを交換できる設計で、GoogleやAppleに依存しないスマートフォンの選択肢として注目されている。Androidアプリの互換レイヤー（Android用アプリをSailfish OS上で動かす仕組み）も搭載しており、ネイティブアプリが少ない弱点を補っている。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+Sailfish OSはNokia→Microsoftの買収劇の中で生まれたプロジェクト。Nokiaの元社員たちがMeego（Nokiaが開発していたLinuxベースのモバイルOS）の精神を引き継いで開発を続けている。「バニラ」Linux（標準的なLinuxに近い構成）であるため、dnsmasqによる広告ブロックやSSHサーバーの設定など、デスクトップLinuxと同じ感覚でカスタマイズできるのが強み。しかしHNコメントでは「Google/Apple以外のスマートフォンはもう実用的ではない。銀行アプリや政府サービスがロックダウンされたOSを前提としている」という厳しい現実が多く指摘された。実際にSailfish OSを4年間使ったユーザーからは「OSは素晴らしいが、Androidアプリの互換性が完璧ではなく、ネイティブアプリは減り続けている」という声も。記事自体が「AIスロップ」（AIが自動生成した低品質な記事）ではないかという指摘もあった。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+スマートフォン市場のGoogle/Apple二極化に対するオルタナティブとして、一定のファンベースを持つプロジェクト。EUの修理する権利（Right to Repair）の流れとも合致する交換可能バッテリーは時代に合っている。ただし現実的には、アプリエコシステムの壁が非常に高く、日常使いのメインスマートフォンとしてはまだ厳しい。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Sailfish OSを家族で何年も使っていた。dnsmasq広告ブロックやSSHなど、Linuxそのものの使い勝手が素晴らしい」（vrinsd）— 長年のユーザーの評価
+- 「Xperia XA2+で4年間使った。OSは本当に素晴らしかった」（elseleigh）— 実体験に基づく好評価
+- 「交換可能バッテリーは大歓迎。スマートフォンのバッテリー劣化は最大の不満」（複数ユーザー）— ハードウェア設計への支持
+- 「Google/Appleの二極支配に対抗する選択肢があること自体が重要」（複数ユーザー）— 競争の重要性
+- 「成功を祈る」（muhehe）— 初代ユーザーからのエール
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「銀行アプリや政府サービスがロックダウンされたOS前提。Google/Apple以外のスマートフォンはもう実用的ではない」（nottorp）— 現実的な壁
+- 「記事がAIスロップ。The Registerの方が良い記事がある」（r-w）— 記事品質への批判
+- 「初代から大して進歩していない。過去にも多くのスクリューアップがあった」（muhehe）— 長年の失望
+- 「Androidアプリの互換性が完璧でなく、ネイティブアプリは減り続けている」（elseleigh）— エコシステムの衰退
+- 「成功してほしいが、もう期待できない」（muhehe）— 愛着と諦めの混在
+
+</details>
+
+<hr />
+
+<h2 id="8-jslinuxがx86_64に対応">8. JSLinuxがx86_64に対応</h2>
+<p><strong>原題</strong>: JSLinux Now Supports x86_64
+<strong>URL</strong>: <a href="https://bellard.org/jslinux/">https://bellard.org/jslinux/</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47311484">https://news.ycombinator.com/item?id=47311484</a>
+<strong>スコア</strong>: 227 / <strong>コメント</strong>: 62件 / <strong>合計</strong>: 289</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+天才プログラマーとして知られるFabrice Bellard（FFmpegやQEMUの作者）が開発するJSLinux（JavaScript/WebAssemblyでCPUをエミュレートし、ブラウザ上でLinuxを動かすプロジェクト）が、新たにx86_64（64ビットのx86アーキテクチャ: 現代のPC用CPUの標準的な命令セット）に対応した。AVX-512（CPUの拡張命令セット: 大量のデータを一度に処理する512ビット幅のベクトル演算が可能）やAPX（Advanced Performance Extensions）もサポートしている。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+JSLinuxではブラウザ上でAlpine Linux、Windows 2000、さらにRISC-V（オープンソースのCPUアーキテクチャ）版Linuxなどが動作する。今回のx86_64対応により、64ビットのプログラムも実行可能になった。HNのbrucehoultがベンチマークを実施し、x86_64版Alpine LinuxとRISC-V版Linuxの性能を比較したところ、x86_64の方がRISC-Vより約1.7倍高速だったが「RISC-Vの実装がまだ最適化されていない可能性がある」とも述べている。興味深いコメントとしては、simonwの「これ（またはWASM Linux）をコーディングエージェント（AI）に直接ブラウザ内で仮想OSを操作させるために使いたい」という発想や、maxlohの「残念ながら64ビットエミュレーション層のソースコードは公開されていない。よりオープンソースな代替としてcontainer2wasmがある」という指摘があった。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+Fabrice Bellardの作品というだけで注目に値する。ブラウザ内でOSが動くというのは技術的に驚異的であり、教育用途やサンドボックス（安全に隔離された実行環境）としての可能性がある。特にAIエージェントに仮想環境を提供するというアイデアは、今後のWeb開発の方向性を示唆している。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Primeベンチマークでx86_64がRISC-Vの1.7倍速。興味深いデータ」（brucehoult）— 詳細なベンチマーク
+- 「信じられない人物だ！」（notorandit）— Bellardへの賞賛
+- 「Windows 2000のインターフェースを見ると癒される。現代のUIはひどい」（blackhaz）— ノスタルジー
+- 「これをWASM Linux + コーディングエージェントでブラウザ内仮想OS操作に使いたい」（simonw）— 革新的なユースケースの提案
+- 「AVX-512とAPXまでサポートしているのがすごい」（複数ユーザー）— 技術的な完成度
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「64ビットエミュレーション層のソースコードが公開されていない」（maxloh）— オープンソース性への懸念
+- 「container2wasmの方がよりオープンで使いやすい」（maxloh）— 代替手段の提案
+- 「エミュレーション速度はネイティブに比べて圧倒的に遅い。実用には向かない」（複数ユーザー）— パフォーマンスの限界
+- 「デモとしては面白いが、日常的に使うシナリオが思いつかない」（複数ユーザー）— 実用性への疑問
+- 「WebGPUアクセラレーションがあればもっと実用的になるのでは」（複数ユーザー）— 改善の余地
+
+</details>
+
+<hr />
+
+<h2 id="9-darpaの新型x-76実験機ジェットの速度とヘリの自由度を両立">9. DARPAの新型X-76実験機——ジェットの速度とヘリの自由度を両立</h2>
+<p><strong>原題</strong>: DARPA’s new X-76
+<strong>URL</strong>: <a href="https://www.darpa.mil/news/2026/darpa-new-x-76-speed-of-jet-freedom-of-helicopter">https://www.darpa.mil/news/2026/darpa-new-x-76-speed-of-jet-freedom-of-helicopter</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47311669">https://news.ycombinator.com/item?id=47311669</a>
+<strong>スコア</strong>: 142 / <strong>コメント</strong>: 142件 / <strong>合計</strong>: 284</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+DARPA（Defense Advanced Research Projects Agency: 米国防高等研究計画局。インターネットやGPSの原型を生んだ研究機関）がSPRINTプログラムの実験機「X-76」を発表した。Bell Textron社が製造を担当し、「ジェット機の速度」と「ヘリコプターの場所を選ばない自由度」を両立する機体を目指している。つまり滑走路が不要で、かつ高速飛行が可能な航空機の実現を狙う。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+X-76はV-22オスプレイ（ティルトローター機: プロペラの角度を変えてヘリコプターモードとジェットモードを切り替える航空機）の発展形とも言えるコンセプト。ローター（回転翼）を使って垂直離着陸し、巡航時にはローターを折りたたんでジェットエンジンで高速飛行する設計。クラッチ（動力の接続/切断を行う機構）でブレードを切り離し、飛行中に格納するというメカニズムが特徴的。Bell社はこの設計を長年研究しており、「Fold-Away Rotor Aircraft」と呼ばれるコンセプトが基になっている。HNコメントでは「パワーポイントだけのプロジェクトではなく、実際にBell社との長年の設計作業の継続」との補足があった。一方で「オスプレイの事故歴を考えると、この複雑な機構はメンテナンスの悪夢になるのでは」という懸念や、「V-280 Valor（次世代ティルトローター機）と比べて何が改善されるのか」という疑問も。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+航空技術の最前線として興味深い。ティルトローター機のコンセプトは以前から存在するが、ローターの折りたたみという新しいアプローチで速度と自由度のトレードオフを克服しようとしている。軍事技術だが、この種の垂直離着陸＋高速飛行の技術はeVTOL（電動垂直離着陸機: 空飛ぶタクシーなど）にも応用できる可能性がある。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「パワーポイントプロジェクトではなく、Bell社との長年の設計作業の継続」（mrDmrTmrJ）— プロジェクトの実質性を強調
+- 「『行き先に道は要らない』。オスプレイの発展が楽しみ」（reactordev）— 技術への期待
+- 「Fold-Away Rotor Aircraftのコンセプトが詳しく解説された記事がある」（mrDmrTmrJ）— 技術的背景の共有
+- 「垂直離着陸＋高速飛行は長年の夢。実現に一歩近づいた」（複数ユーザー）— コンセプトへの支持
+- 「DARPAのXプレーンシリーズは常に技術の限界を押し広げてきた」（複数ユーザー）— 歴史的な文脈
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「ジェットの速度、ヘリの自由度、だから学校を効率的に爆撃できる」（sega_sai）— 軍事利用への皮肉
+- 「オスプレイの事故歴を思い出す。この複雑な機構はメンテナンスの悪夢では」（dmbche）— 安全性への懸念
+- 「クラッチとブレード格納機構がメンテナンスの悪夢に見える」（PowerElectronix）— 整備性への疑問
+- 「V-280 Valorと比べて何が改善されるのか不明」（PowerElectronix）— 既存機との差別化
+- 「DARPAのXプレーンの多くは実戦配備されなかった」（複数ユーザー）— 実用化への懐疑
+
+</details>
+
+<hr />
+
+<h2 id="10-oracle昨日のデータセンターを明日の借金で建設中">10. Oracle、昨日のデータセンターを明日の借金で建設中</h2>
+<p><strong>原題</strong>: Oracle is building yesterday’s data centers with tomorrow’s debt
+<strong>URL</strong>: <a href="https://www.cnbc.com/2026/03/09/oracle-is-building-yesterdays-data-centers-with-tomorrows-debt.html">https://www.cnbc.com/2026/03/09/oracle-is-building-yesterdays-data-centers-with-tomorrows-debt.html</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47315128">https://news.ycombinator.com/item?id=47315128</a>
+<strong>スコア</strong>: 173 / <strong>コメント</strong>: 81件 / <strong>合計</strong>: 254</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+AIチップの進化がデータセンターの建設速度を追い抜いているという問題を、Oracleの事例で解説した記事。OpenAIはテキサス州アビリーンのStargate（スターゲート: OracleとOpenAIの共同データセンタープロジェクト）の拡張をもう計画していない。理由は、現在建設中の施設に入るNVIDIAのBlackwell（現行世代のAIチップ）が、完成時にはもう旧世代になっているから。Oracleは莫大な借金でデータセンターを建設しているが、完成した頃には時代遅れになるリスクを抱えている。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+Oracleの問題は構造的だ。AIデータセンターの建設には数年かかるが、NVIDIAのチップは毎年のように世代交代する。現在のBlackwellの次にはVera Rubin（次世代チップのコードネーム）が控えており、1ラックあたりの消費電力は200kWから将来的にさらに上昇すると見込まれている。データセンターの電力・冷却インフラは後から変更が難しいため、今の設計で建てると数年後のチップに対応できない可能性がある。ただしHNコメントでは「CNBCの報道は正確ではない。データセンターはフェーズごとに建設されるし、Oracleは当然NVIDIAのロードマップにアクセスできる」という反論も。LLM推論（大規模言語モデルを実行する処理）を専門にする企業からは「問題は『昨日のデータセンター』ではなく、テナントの契約が実際の需要を反映していないこと」という指摘もあった。前日のHNでも「Oracleが2〜3万人削減してAIデータセンター資金に充てる」という記事が話題になっており、Oracleのリスクが連日注目されている。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+AIバブルの具体的なリスクが数字で見える記事。インフラ投資の巨額化と技術の急速な陳腐化という矛盾は、AI業界全体の問題。技術者にとっても、自分が関わるインフラの設計がどれくらいの時間軸で有効かを考えるきっかけになる。Oracleの経営判断の是非を超えて、AI投資の持続可能性を問う重要な議論。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 4件）</summary>
+
+- 「ASIC（Application-Specific Integrated Circuit: 特定用途向けに設計された集積回路）の効率性向上により、推論コストは急速に下がるはず」（複数ユーザー）— 技術進化への期待
+- 「Oracleのデータベースは政府・銀行で広く使われている。その資産価値は大きい」（mgilroy）— 既存事業の強み
+- 「StarGateはフェーズごとに建設される。Oracle はNVIDIAのロードマップにアクセスできる」（wmf）— CNBCの報道への訂正
+- 「問題は『昨日のDC』ではなく、テナント契約が実需を反映していないこと」（reissbaker）— より正確な問題分析
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「Oracleが破産してWarner Bros.の敵対的買収から手を引くことを期待」（mikelitoris）— Oracleへの反感
+- 「古いデータセンターGPUの行き先は？NVIDIAが転売禁止条項をつけるかも」（sowbug）— 資産の減価リスク
+- 「より面白い問題は、Oracleにどれくらい寿命があるか、敵対的買収がいつ合理的になるか」（mgilroy）— 経営の持続性への疑問
+- 「昨日のデータセンターを明日の借金で建てる——見事な要約」（複数ユーザー）— タイトルへの共感
+- 「AI投資のリターンに対する懐疑論が広がっている」（複数ユーザー）— バブル懸念
+
+</details>
+
+<hr />
+
+<h2 id="用語集">用語集</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>用語</th>
+      <th>解説</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>TWh（テラワット時）</strong></td>
+      <td>大規模な電力量の単位。1TWhは10億kWh。国家レベルの電力消費量を表す際に使う</td>
+    </tr>
+    <tr>
+      <td><strong>デュープロセス条項</strong></td>
+      <td>アメリカ合衆国憲法修正第14条の規定。政府が個人の生命・自由・財産を奪う際には公正な手続きが必要とする原則</td>
+    </tr>
+    <tr>
+      <td><strong>コピーレフト（GPL/LGPL）</strong></td>
+      <td>オープンソースライセンスの一種。派生物にも同じライセンスの適用を義務づけることで、コードの自由を保護する</td>
+    </tr>
+    <tr>
+      <td><strong>WFC（Wave Function Collapse）</strong></td>
+      <td>量子力学の概念を借りた手続き型生成アルゴリズム。制約条件に基づいてタイルやパターンを自動配置する</td>
+    </tr>
+    <tr>
+      <td><strong>WebGPU</strong></td>
+      <td>ブラウザからGPUに直接アクセスする新しいAPI。WebGLの後継として、より高性能な3D描画や汎用計算が可能</td>
+    </tr>
+    <tr>
+      <td><strong>ATプロトコル</strong></td>
+      <td>Blueskyが開発した分散型ソーシャルメディア用のオープンプロトコル。ユーザーがサーバーを自由に選べる設計</td>
+    </tr>
+    <tr>
+      <td><strong>Sailfish OS</strong></td>
+      <td>フィンランドのJolla社が開発するLinuxベースのモバイルOS。Nokiaの元社員が立ち上げた</td>
+    </tr>
+    <tr>
+      <td><strong>x86_64</strong></td>
+      <td>現代のPC用CPUの標準的な64ビット命令セット。AMD64とも呼ばれ、IntelとAMDの両方のCPUで使われる</td>
+    </tr>
+    <tr>
+      <td><strong>DARPA</strong></td>
+      <td>米国防高等研究計画局。インターネット（ARPANET）やGPSの原型を生んだ研究機関</td>
+    </tr>
+    <tr>
+      <td><strong>ASIC</strong></td>
+      <td>特定用途向けに設計された集積回路。汎用GPUより特定のタスク（AI推論など）で高効率</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+
+<script>
+(function() {
+  const source = document.getElementById('source');
+  if (!source) return;
+
+  // ========== Date extraction from page title ==========
+  const pageTitle = source.getAttribute('data-title') || '';
+  const dateMatch = pageTitle.match(/(\d{4})-(\d{2})-(\d{2})/);
+  const dateStr = dateMatch
+    ? dateMatch[1] + '.' + dateMatch[2] + '.' + dateMatch[3]
+    : '';
+  const shortDate = dateMatch
+    ? parseInt(dateMatch[2]) + '/' + parseInt(dateMatch[3])
+    : '';
+
+  // ========== Parse source content ==========
+  const h1 = source.querySelector('h1');
+  const allH2s = Array.from(source.querySelectorAll('h2'));
+
+  // Intro paragraph (first <p> after h1)
+  let introText = '';
+  if (h1) {
+    let next = h1.nextElementSibling;
+    while (next && (next.tagName === 'HR' || next.tagName === 'BR')) {
+      next = next.nextElementSibling;
+    }
+    if (next && next.tagName === 'P') {
+      introText = next.textContent.trim();
+    }
+  }
+
+  // Collect sections: each h2 + all siblings until next h2
+  const sections = allH2s.map(h2 => {
+    const content = [];
+    let sib = h2.nextElementSibling;
+    while (sib && sib.tagName !== 'H2') {
+      if (sib.tagName !== 'HR') content.push(sib);
+      sib = sib.nextElementSibling;
+    }
+    return { heading: h2, content };
+  });
+
+  // Separate articles (h2 starts with digit) from glossary
+  const articles = sections.filter(s => /^\d/.test(s.heading.textContent.trim()));
+  const glossarySec = sections.find(s => s.heading.textContent.includes('用語集'));
+
+  // ========== Parse glossary terms ==========
+  const glossaryTerms = [];
+  if (glossarySec) {
+    const table = glossarySec.content.find(el => el.tagName === 'TABLE');
+    if (table) {
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 2) {
+          glossaryTerms.push({
+            name: cells[0].textContent.trim(),
+            desc: cells[1].textContent.trim()
+          });
+        }
+      });
+    }
+  }
+
+  // ========== Match glossary terms to articles ==========
+  function findRelevantTerms(contentElements) {
+    const text = contentElements.map(el => el.textContent).join(' ');
+    return glossaryTerms.filter(term => {
+      const baseName = term.name.replace(/（.*/, '').replace(/\(.*/, '').trim();
+      return text.includes(baseName);
+    });
+  }
+
+  // ========== Parse a single article ==========
+  function parseArticle(heading, contentElements) {
+    const fullText = contentElements.map(el => el.textContent).join('\n');
+    const headingText = heading.textContent.replace(/^\d+\.\s*/, '').trim();
+
+    // Metadata — extract via regex from full text (handles single-paragraph metadata)
+    let origTitle = '';
+    let m = fullText.match(/原題[:：]\s*(.+?)(?=\s*URL[:：]|\n|$)/);
+    if (m) origTitle = m[1].trim();
+
+    let url = '';
+    m = fullText.match(/URL[:：]\s*(https?:\/\/\S+)/);
+    if (m) url = m[1].trim();
+
+    let hnUrl = '';
+    m = fullText.match(/HN[:：]\s*(https?:\/\/\S+)/);
+    if (m) hnUrl = m[1].trim();
+
+    let score = '', comments = '', total = '';
+    m = fullText.match(/スコア[:：]\s*([\d,]+)/);
+    if (m) score = m[1].replace(/,/g, '');
+    m = fullText.match(/コメント[:：]\s*([\d,]+)件?/);
+    if (m) comments = m[1].replace(/,/g, '');
+    m = fullText.match(/合計[:：]\s*([\d,]+)/);
+    if (m) total = m[1].replace(/,/g, '');
+
+    // Section content — from paragraphs with known labels
+    let summary = '', detail = '', whyNotable = '';
+    contentElements.forEach(el => {
+      if (el.tagName !== 'P') return;
+      const strong = el.querySelector('strong');
+      if (!strong) return;
+      const label = strong.textContent.trim();
+      const afterLabel = el.textContent.replace(label, '').trim();
+      if (/^ざっくり/.test(label)) summary = afterLabel;
+      else if (/^もう少し/.test(label)) detail = afterLabel;
+      else if (/^なぜ注目/.test(label)) whyNotable = afterLabel;
+    });
+
+    // Details blocks (comment sections)
+    const detailsBlocks = contentElements.filter(el => el.tagName === 'DETAILS');
+
+    return { headingText, origTitle, url, hnUrl, score, comments, total,
+             summary, detail, whyNotable, detailsBlocks };
+  }
+
+  // ========== Escape HTML for safe insertion ==========
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ========== Build Carousel ==========
+  const carousel = document.getElementById('carousel');
+  const totalSlides = 1 + articles.length;
+
+  // --- Slide 0: Title ---
+  const titleSlide = document.createElement('div');
+  titleSlide.className = 'slide slide--title';
+  titleSlide.innerHTML =
+    '<div class="slide-inner">' +
+      (dateStr ? '<div class="date-badge">' + esc(dateStr) + '</div>' : '') +
+      '<h1>HN Digest<span> — ' + esc(shortDate) + '</span></h1>' +
+      '<p>' + esc(introText) + '</p>' +
+      '<div class="article-count">' + articles.length + ' articles</div>' +
+      '<div class="arrow-hint">&#8594; スワイプまたは矢印キーで次へ</div>' +
+    '</div>';
+  carousel.appendChild(titleSlide);
+
+  // --- Article Slides ---
+  articles.forEach((section, idx) => {
+    const art = parseArticle(section.heading, section.content);
+    const relevantTerms = findRelevantTerms(section.content);
+
+    const slide = document.createElement('div');
+    slide.className = 'slide slide--article';
+
+    // Details HTML (with open attribute + fix raw markdown lists)
+    const detailsHTML = art.detailsBlocks.map(el => {
+      const clone = el.cloneNode(true);
+      clone.setAttribute('open', '');
+      // If kramdown didn't convert markdown lists inside <details>,
+      // the content will be raw text with "- " prefixes. Fix it.
+      if (!clone.querySelector('ul') && !clone.querySelector('ol')) {
+        const summary = clone.querySelector('summary');
+        const summaryText = summary ? summary.textContent.trim() : '';
+        const rawText = clone.textContent.replace(summaryText, '').trim();
+        if (rawText.includes('- ') || rawText.includes('「')) {
+          const lines = rawText.split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
+          const items = lines.map(l => l.replace(/^[-–—]\s*/, ''));
+          const ul = document.createElement('ul');
+          items.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            ul.appendChild(li);
+          });
+          // Remove all content except summary, then append the list
+          while (clone.lastChild && clone.lastChild !== summary) {
+            clone.removeChild(clone.lastChild);
+          }
+          clone.appendChild(ul);
+        }
+      }
+      return clone.outerHTML;
+    }).join('\n');
+
+    // Sidebar glossary (desktop)
+    let sidebarHTML = '';
+    if (relevantTerms.length > 0) {
+      sidebarHTML =
+        '<aside class="article-sidebar">' +
+          '<div class="sidebar-label">用語</div>' +
+          relevantTerms.map(t =>
+            '<div class="sidebar-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+        '</aside>';
+    }
+
+    // Inline glossary (mobile)
+    let inlineGlossaryHTML = '';
+    if (relevantTerms.length > 0) {
+      inlineGlossaryHTML =
+        '<div class="inline-glossary">' +
+          '<div class="sidebar-label">関連用語</div>' +
+          '<div class="inline-terms">' +
+          relevantTerms.map(t =>
+            '<div class="inline-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+          '</div>' +
+        '</div>';
+    }
+
+    // Links
+    const urlLink = art.url
+      ? '<a href="' + esc(art.url) + '" target="_blank" rel="noopener">元記事 &#8599;</a>'
+      : '';
+    const hnLink = art.hnUrl
+      ? '<a href="' + esc(art.hnUrl) + '" target="_blank" rel="noopener">HN &#8599;</a>'
+      : '';
+
+    // Build sections conditionally
+    let sectionsHTML = '';
+    if (art.summary) {
+      sectionsHTML +=
+        '<div class="section-label">ざっくり言うと</div>' +
+        '<p>' + esc(art.summary) + '</p>';
+    }
+    if (art.detail) {
+      sectionsHTML +=
+        '<div class="section-label">もう少し詳しく</div>' +
+        '<p>' + esc(art.detail) + '</p>';
+    }
+    if (art.whyNotable) {
+      sectionsHTML +=
+        '<div class="section-label">なぜ注目？</div>' +
+        '<p>' + esc(art.whyNotable) + '</p>';
+    }
+
+    const mainContent =
+      '<div class="article-main">' +
+        '<div class="article-number">ARTICLE ' + (idx + 1) + '</div>' +
+        '<h2>' + esc(art.headingText) + '</h2>' +
+        (art.origTitle ? '<div class="meta-row"><span>' + esc(art.origTitle) + '</span></div>' : '') +
+        '<div class="meta-row">' + urlLink + hnLink + '</div>' +
+        '<div class="stats">' +
+          (art.score ? '<div class="stat"><strong>' + esc(art.score) + '</strong> pts</div>' : '') +
+          (art.comments ? '<div class="stat"><strong>' + esc(art.comments) + '</strong> comments</div>' : '') +
+          (art.total ? '<div class="stat">Total <strong>' + esc(art.total) + '</strong></div>' : '') +
+        '</div>' +
+        sectionsHTML +
+        detailsHTML +
+        inlineGlossaryHTML +
+      '</div>';
+
+    slide.innerHTML =
+      '<div class="article-layout">' +
+        mainContent +
+        sidebarHTML +
+      '</div>';
+
+    carousel.appendChild(slide);
+  });
+
+  // ========== Navigation Dots ==========
+  const navDots = document.getElementById('navDots');
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'スライド ' + (i + 1) + ' へ');
+    dot.addEventListener('click', () => goToSlide(i));
+    navDots.appendChild(dot);
+  }
+
+  // ========== State & Navigation ==========
+  let currentSlide = 0;
+  const progressBar = document.getElementById('progressBar');
+  const miniHeader = document.getElementById('miniHeader');
+  const arrowLeft = document.getElementById('arrowLeft');
+  const arrowRight = document.getElementById('arrowRight');
+
+  function updateUI(index) {
+    currentSlide = index;
+    const progress = totalSlides > 1 ? (index / (totalSlides - 1)) * 100 : 100;
+    progressBar.style.width = progress + '%';
+    miniHeader.textContent = (index + 1) + ' / ' + totalSlides;
+
+    navDots.querySelectorAll('.nav-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === index);
+    });
+
+    arrowLeft.classList.toggle('hidden', index === 0);
+    arrowRight.classList.toggle('hidden', index === totalSlides - 1);
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides) return;
+    carousel.children[index].scrollIntoView({
+      behavior: 'smooth', block: 'nearest', inline: 'start'
+    });
+  }
+
+  // ========== Scroll Detection ==========
+  let scrollTimeout;
+  carousel.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const index = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+      updateUI(index);
+    }, 50);
+  }, { passive: true });
+
+  // ========== Arrow Buttons ==========
+  arrowLeft.addEventListener('click', () => goToSlide(currentSlide - 1));
+  arrowRight.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+  // ========== Keyboard Navigation ==========
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(currentSlide - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goToSlide(currentSlide + 1); }
+  });
+
+  // ========== Initial State ==========
+  updateUI(0);
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>HN Digest — 3/5</title>
+<meta name="description" content="Hacker Newsの最新記事を日本語で毎日まとめています">
+<link rel="icon" href="/hn-newsdigest/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/hn-newsdigest/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ========== Reset & Base ========== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'DM Sans', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background-color: #0c0d12;
+    color: #c8cad0;
+    line-height: 1.8;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(249, 115, 22, 0.35);
+    color: #fff;
+  }
+
+  /* ========== Progress Bar ========== */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f97316, #fb923c);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.15s ease-out;
+  }
+
+  /* ========== Mini Header ========== */
+  .mini-header {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #777b88;
+    letter-spacing: 0.05em;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    user-select: none;
+  }
+
+  /* ========== Home Button ========== */
+  .home-btn {
+    position: fixed;
+    top: 12px;
+    left: 20px;
+    z-index: 900;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #555a6a;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .home-btn:hover {
+    color: #f97316;
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  /* ========== Scroll Container ========== */
+  .carousel {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    height: 100vh;
+    width: 100vw;
+    scrollbar-width: none;
+  }
+
+  .carousel::-webkit-scrollbar { display: none; }
+
+  /* ========== Slide ========== */
+  .slide {
+    flex: 0 0 100vw;
+    min-width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 32px 100px;
+    position: relative;
+  }
+
+  .slide--article { justify-content: center; }
+
+  .slide-inner {
+    max-width: 640px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+  }
+
+  .slide-inner::-webkit-scrollbar { width: 4px; }
+  .slide-inner::-webkit-scrollbar-track { background: transparent; }
+  .slide-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  /* ========== Article Layout: content + glossary sidebar ========== */
+  .article-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    max-width: 960px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+  }
+
+  .article-main {
+    flex: 1;
+    min-width: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+    padding-right: 8px;
+  }
+
+  .article-main::-webkit-scrollbar { width: 4px; }
+  .article-main::-webkit-scrollbar-track { background: transparent; }
+  .article-main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  .article-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+  }
+
+  .article-sidebar::-webkit-scrollbar { width: 3px; }
+  .article-sidebar::-webkit-scrollbar-track { background: transparent; }
+  .article-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-term {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .sidebar-term:hover {
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  .sidebar-term .term-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #fb923c;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-term .term-desc {
+    font-size: 0.78rem;
+    color: #777b88;
+    line-height: 1.6;
+  }
+
+  /* ========== Title Slide ========== */
+  .slide--title { text-align: center; }
+
+  .slide--title h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    color: #ecedf2;
+  }
+
+  .slide--title h1 span { color: #f97316; }
+
+  .slide--title p {
+    font-size: 1.1rem;
+    color: #777b88;
+    line-height: 1.9;
+  }
+
+  .slide--title .date-badge {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 6px 18px;
+    border-radius: 24px;
+    margin-bottom: 24px;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(251, 146, 60, 0.15);
+  }
+
+  .slide--title .article-count {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    letter-spacing: 0.05em;
+  }
+
+  .slide--title .arrow-hint {
+    margin-top: 48px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    animation: pulse-hint 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-hint {
+    0%, 100% { opacity: 0.5; transform: translateX(0); }
+    50% { opacity: 1; transform: translateX(6px); }
+  }
+
+  /* ========== Article Slide ========== */
+  .slide--article .article-number {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 4px 12px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    letter-spacing: 0.06em;
+    border: 1px solid rgba(251, 146, 60, 0.12);
+  }
+
+  .slide--article h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: #ecedf2;
+    letter-spacing: -0.01em;
+  }
+
+  .slide--article .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    color: #555a6a;
+  }
+
+  .slide--article .meta-row a {
+    color: #f97316;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .slide--article .meta-row a:hover {
+    color: #fb923c;
+    text-decoration: underline;
+  }
+
+  .slide--article .stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .slide--article .stats .stat {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 6px 14px;
+    border-radius: 8px;
+    color: #888d9e;
+    font-weight: 500;
+  }
+
+  .slide--article .stats .stat strong {
+    color: #f97316;
+    font-weight: 700;
+  }
+
+  .slide--article .section-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #f97316;
+    margin-bottom: 6px;
+    margin-top: 20px;
+  }
+
+  .slide--article p {
+    font-size: 0.95rem;
+    color: #a0a4b2;
+    margin-bottom: 12px;
+    line-height: 1.9;
+  }
+
+  /* ========== Comments (open by default) ========== */
+  .slide--article details {
+    margin-top: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .slide--article details + details { margin-top: 8px; }
+
+  .slide--article summary {
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #c8cad0;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+    transition: background 0.15s;
+    list-style: none;
+  }
+
+  .slide--article summary::-webkit-details-marker { display: none; }
+
+  .slide--article summary::before {
+    content: '− ';
+    font-weight: 700;
+    color: #f97316;
+    margin-right: 4px;
+  }
+
+  .slide--article details:not([open]) summary::before { content: '+ '; }
+
+  .slide--article summary:hover {
+    background: rgba(249, 115, 22, 0.06);
+  }
+
+  .slide--article details ul {
+    list-style: none;
+    padding: 12px 16px;
+  }
+
+  .slide--article details li {
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .slide--article details li:last-child { border-bottom: none; }
+
+  /* Details with plain paragraph (no list) */
+  .slide--article details > p {
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+  }
+
+  /* ========== Navigation Arrows ========== */
+  .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 800;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #888d9e;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .nav-arrow:hover {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);
+  }
+
+  .nav-arrow:active { transform: translateY(-50%) scale(0.92); }
+
+  .nav-arrow--left { left: 20px; }
+  .nav-arrow--right { right: 20px; }
+
+  .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+
+  /* ========== Navigation Dots ========== */
+  .nav-dots {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 800;
+    display: flex;
+    gap: 10px;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 10px 18px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: none;
+    padding: 0;
+  }
+
+  .nav-dot:hover { background: rgba(255, 255, 255, 0.3); }
+
+  .nav-dot.active {
+    background: #f97316;
+    width: 28px;
+    border-radius: 5px;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+  }
+
+  /* ========== Inline Glossary (mobile) ========== */
+  .inline-glossary .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 10px;
+  }
+
+  .inline-glossary .inline-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .inline-glossary .inline-term {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+
+  .inline-glossary .inline-term .term-name {
+    font-weight: 600;
+    color: #fb923c;
+  }
+
+  .inline-glossary .inline-term .term-desc {
+    color: #777b88;
+    margin-top: 2px;
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 960px) {
+    .article-sidebar { display: none; }
+    .inline-glossary {
+      display: block !important;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  @media (min-width: 961px) {
+    .inline-glossary { display: none !important; }
+  }
+
+  @media (max-width: 700px) {
+    .slide { padding: 50px 20px 90px; }
+    .slide--title h1 { font-size: 2rem; }
+    .slide--article h2 { font-size: 1.25rem; }
+    .nav-arrow { width: 40px; height: 40px; font-size: 1rem; }
+    .nav-arrow--left { left: 10px; }
+    .nav-arrow--right { right: 10px; }
+    .home-btn .home-btn-text { display: none; }
+    .nav-dots { gap: 6px; padding: 8px 12px; }
+    .nav-dot { width: 8px; height: 8px; }
+    .nav-dot.active { width: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Mini Header -->
+<div class="mini-header" id="miniHeader"></div>
+
+<!-- Home Button -->
+<a href="/hn-newsdigest/" class="home-btn" aria-label="ホームに戻る">
+  <span>&#8592;</span>
+  <span class="home-btn-text">HN Digest</span>
+</a>
+
+<!-- Navigation Arrows -->
+<button class="nav-arrow nav-arrow--left hidden" id="arrowLeft" aria-label="前のスライド">&#8592;</button>
+<button class="nav-arrow nav-arrow--right" id="arrowRight" aria-label="次のスライド">&#8594;</button>
+
+<!-- Carousel Container -->
+<div class="carousel" id="carousel"></div>
+
+<!-- Navigation Dots -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- Hidden source content rendered by Jekyll/kramdown -->
+<div id="source" data-title="HN Digest — 3/5" style="display:none">
+<h1 id="hn-digest--35">HN Digest — 3/5</h1>
+
+<h2 id="1-macbook-neo--appleが599ドルの超低価格macbookを発表">1. MacBook Neo — Appleが599ドルの超低価格MacBookを発表</h2>
+
+<p><strong>原題</strong>: MacBook Neo
+<strong>URL</strong>: https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47247645
+<strong>スコア</strong>: 1779 / <strong>コメント</strong>: 2089件 / <strong>合計</strong>: 3868</p>
+
+<p><strong>ざっくり言うと:</strong>
+Appleが「MacBook Neo」という新しいノートパソコンを発表した。最大の特徴は、なんと<strong>599ドル（教育向けは499ドル）</strong>という破格の価格設定。これまでMacBookは最安でも999ドル前後だったので、約4割の大幅値下げとなる。13インチのLiquid Retinaディスプレイ、アルミニウム筐体、最大16時間のバッテリー駆動を備え、ブラッシュ、インディゴ、シルバー、シトラスの4色展開。チップにはA18 Proを搭載し、日常的なタスクやオンデバイスAI処理もこなせる。</p>
+
+<p><strong>もう少し詳しく:</strong>
+MacBook Neoは、Appleが「Mac体験をもっと多くの人に届けたい」というコンセプトで開発した廉価モデル。プロセッサにはiPhoneにも使われているA18 Proチップを採用しており、Intelの最新Core Ultra 5搭載PCと比較して、Web閲覧で約50%高速、AI処理で約3倍高速とAppleは主張している。ただし、MacBook Airとの違いもはっきりしている。メモリは8GBに固定でアップグレード不可、MagSafe非搭載、USB-Cポート2つのうち1つはUSB 2.0（480Mb/sという非常に遅い規格）に制限、Thunderbolt非対応のためAppleの新型Studio Displayは接続不可。つまり、プロ用途には向かないが「初めてのMac」や教育用途には十分な性能を持つ。これまでAppleはWalmart経由で2020年発売のM1 MacBook Airを649ドルで販売していたが、それを正式に置き換える形になる。macOS Tahoeを搭載し、Apple Intelligenceにも対応する。</p>
+
+<p><strong>なぜ注目？:</strong>
+MacBookが600ドルを切る価格で買えるのは歴史上初めてで、Appleのポジショニングを根本的に変える一手。Microsoftの899ドルのSurface Laptopを大幅に下回る価格設定は、教育市場や新興国市場で大きなインパクトを持つ。Chromebookの市場を奪いに行く明確な戦略とも読める。8GBメモリという制約が開発者にとって「ユーザーのメモリは少ない」という前提でソフトウェアを作る良いきっかけになるかも、という指摘も興味深い。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「自分の高校時代（2010年）はMacBook Proが1200ドルもしたのに、今の学生はこの価格でMacが手に入る。素晴らしい時代だ」（Shalomboy）— 教育市場への恩恵を強調
+- 「これまでAppleがWalmartで売っていた649ドルのM1 MacBook Airは2020年のモデルそのまま。今回のNeoはずっと良い選択肢」（billyhoffman）— 旧型廉価モデルとの比較
+- 「8GBメモリ前提で開発する文化が広がるなら歓迎」（reacharavindh）— メモリ効率の良いソフト開発への期待
+- 「Microsoftにとって大きな脅威。899ドルのSurface Laptopよりずっと安く、画面品質も上」（lateforwork）— 競合比較
+- 「教育市場でChromebookに対抗できる初めてのMac」（複数ユーザー）— Chromebook市場への参入
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「USB-Cの片方がUSB 2.0の480Mb/sって2026年にはありえない。外付けドライブのバックアップに永遠にかかる」（theopsimist）— スペックの制限を懸念
+- 「8GBメモリ固定・アップグレード不可は厳しい。数年後に使い物にならなくなる」（複数ユーザー）— 将来性への不安
+- 「Thunderbolt非対応でApple自身のStudio Displayが使えないのは矛盾している」（theopsimist）— エコシステムとの不整合
+- 「599ドルでも高い国はたくさんある。本当に世界中にMacを届けたいならもっと安くすべき」（複数ユーザー）— 価格設定への批判
+- 「A18 ProはiPhoneのチップ。本当にMac用途で長く使えるのか疑問」（複数ユーザー）— チップ性能への懸念
+
+</details>
+
+<hr />
+
+<h2 id="2-qwenに何かが起きている--alibaba-aiチームの主要メンバーが次々退職">2. Qwenに何かが起きている — Alibaba AIチームの主要メンバーが次々退職</h2>
+
+<p><strong>原題</strong>: Something is afoot in the land of Qwen
+<strong>URL</strong>: https://simonwillison.net/2026/Mar/4/qwen/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47249343
+<strong>スコア</strong>: 661 / <strong>コメント</strong>: 296件 / <strong>合計</strong>: 957</p>
+
+<p><strong>ざっくり言うと:</strong>
+中国のAlibaba（アリババ）が開発するオープンウェイトAIモデル「Qwen（通義千問）」のチームで大きな混乱が起きている。技術リーダーだったLin Junyang（林俊陽）氏がX（旧Twitter）上で突然の退職を表明し、その後も複数の主要メンバーが離脱。原因は、Googleの Geminiチームから引き抜いた新しい研究者をQwenチームのトップに据えるという組織再編と言われている。最新のQwen 3.5は非常に優秀なモデルとして評価されていただけに、今後の開発に大きな影響が出る可能性がある。</p>
+
+<p><strong>もう少し詳しく:</strong>
+Qwenは、Alibabaが開発する大規模言語モデル（LLM）ファミリーで、オープンウェイト（モデルの重みを公開し、誰でもダウンロードして使える形態）で提供されていることが特徴。最新のQwen 3.5は、特にローカル環境でのコーディング支援において非常に優れた性能を発揮しており、35Bパラメータのモデルでも実用的なエージェント型コーディングが可能と評価されていた。林氏は2024年以降のオープンウェイトモデル公開を主導した中心人物で、Alibabaの最年少P10（上級技術職）の一人。退職のきっかけはAlibaba内部の組織再編で、DAU（Daily Active Users: 日間アクティブユーザー数）をKPIとして課そうとする動きに研究チームが反発したとも報じられている。36Kr（中国のテック系メディア）の報道によると、Alibaba CEOの呉永銘氏が緊急の全体会議を開いたほどの事態。</p>
+
+<p><strong>なぜ注目？:</strong>
+Qwenは現在最も優れたオープンウェイトモデルの一つで、世界中の開発者やスタートアップが利用している。チームの崩壊はオープンソースAIエコシステム全体に影響しかねない。また、この出来事は「研究チーム vs 事業チーム」という大企業あるあるの構図を示しており、優秀な研究成果を出しても、ビジネス指標（DAUなど）を求められると研究者が離れてしまうという課題を浮き彫りにしている。米国のAI企業がこうした人材を獲得しようとする動きも注目されている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Qwen3.5-35B-A3Bをテストしたが、このサイズでは最も優秀なエージェント型コーディングモデル」（sosodev）— モデルの技術的評価
+- 「ローカルモデルはトークン消費を気にしなくていいので、試行錯誤が許容される。Qwenがこの分野をリードしている」（lzaborowski）— ローカル実行の利点
+- 「なぜ米国の研究所がこうした研究者を大量に引き抜かないのか不思議」（softwaredoug）— 人材流出と獲得競争
+- 「Qwenのオープンソース戦略は業界全体に貢献してきた」（複数ユーザー）— オープンソースへの評価
+- 「リソースが少ない中でこれだけの成果を出したのは林氏のリーダーシップのおかげ」（Qwenチームメンバーの証言）— チームリーダーへの敬意
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「これらの企業はどうやって収益を上げているのか？ Qwen、GLM、Kimiなど全部無料で公開している」（nopurpose）— ビジネスモデルへの疑問
+- 「DAUをKPIにするのは研究チームには不適切だが、企業としては当然の判断」（hintymad）— 組織管理の難しさ
+- 「中国企業の内部政治が優秀な技術チームを潰すのはよくある話」（複数ユーザー）— 組織構造への批判
+- 「オープンウェイトモデルに依存しすぎるリスクもある。いつ公開が止まるかわからない」（複数ユーザー）— 依存リスクの指摘
+- 「Googleから来た新リーダーがQwenの方針を変えてしまう可能性がある」（複数ユーザー）— 方針転換への懸念
+
+</details>
+
+<hr />
+
+<h2 id="3-anthropic-ceoopenaiの軍事契約をめぐる発言をまっかな嘘と批判">3. Anthropic CEO、OpenAIの軍事契約をめぐる発言を「まっかな嘘」と批判</h2>
+
+<p><strong>原題</strong>: Dario Amodei calls OpenAI’s messaging around military deal ‘straight up lies’
+<strong>URL</strong>: https://techcrunch.com/2026/03/04/anthropic-ceo-dario-amodei-calls-openais-messaging-around-military-deal-straight-up-lies-report-says/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47255662
+<strong>スコア</strong>: 565 / <strong>コメント</strong>: 302件 / <strong>合計</strong>: 867</p>
+
+<p><strong>ざっくり言うと:</strong>
+Anthropicの共同創業者でCEOのDario Amodei氏が、社内メモでOpenAIのSam Altman氏を厳しく批判した。Anthropicは米国防総省（DoD、トランプ政権下では「戦争省（Department of War）」に改称）との2億ドル規模の契約交渉で、国内大規模監視や自律型兵器への利用禁止を確約するよう求めたが、DoD側が拒否。代わりにOpenAIが契約を獲得した。Altman氏はOpenAIの契約にも同様の保護条項があると主張したが、Amodei氏はこれを「straight up lies（まっかな嘘）」「safety theater（安全の見せかけ）」と呼んだ。</p>
+
+<p><strong>もう少し詳しく:</strong>
+背景として、Anthropicはすでに2億ドルのDoD契約を保有していたが、DoD側が「あらゆる合法的用途」への無制限アクセスを要求したことに反発。Anthropicは、国内大規模監視と自律型兵器への非使用を明文化するよう主張したが、合意に至らなかった。その後すぐにOpenAIが契約を獲得し、Altmanは「合法的用途（all lawful purposes）」の範囲内で使用を制限していると説明した。しかしAmodei氏によれば、Anthropicが拒否した理由はまさに「合法的用途」という文言の曖昧さであり、OpenAIが同じ条件で契約したという主張は虚偽だと指摘。一方で、Anthropic自身も監視企業Palantirと提携しているという矛盾を指摘する声もある。</p>
+
+<p><strong>なぜ注目？:</strong>
+AI企業の軍事利用に対する姿勢の違いが鮮明になった出来事。AI技術が国家安全保障に直結する時代において、「どこまでの利用を許容するか」という線引きは業界全体の信頼性に関わる重大な問題。また、フロンティアモデルの訓練には莫大な資金が必要で、DoD級の予算を持つ顧客を失うことのビジネス上のインパクトも大きい。倫理と収益のジレンマがリアルに現れている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「OpenAIが数時間以内に'同じ条件で'契約を取ったのは明らかに怪しい。DoDかOpenAIのどちらかが条件を誤魔化している」（mrandish）— 契約の不透明さを指摘
+- 「完璧な企業はないが、今のところAnthropicが一番マシに見える。株があれば買いたい」（juleiie）— Anthropicへの相対的評価
+- 「Darioの全文メモを読むと、かなり具体的で説得力がある」（virgildotcodes）— メモの内容への評価
+- 「倫理的な線を引くことにはビジネスリスクがあるが、Anthropicはそれを選んだ」（複数ユーザー）— 倫理的姿勢の支持
+- 「AI軍事利用の透明性は民主主義にとって重要」（複数ユーザー）— 社会的意義
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「Anthropicは監視企業Palantirと提携しておきながら、DoDの監視利用に反対するのは矛盾している」（6Az4Mj4D）— ダブルスタンダードの指摘
+- 「これは倫理の戦いではなく、巨額の軍事予算を逃した企業の負け惜しみとも読める」（epicprogrammer）— 財務的動機の指摘
+- 「結局どちらの企業も利益のために動いている。善悪で語るのは単純すぎる」（複数ユーザー）— 両社への懐疑
+- 「フロンティアモデルの訓練には天文学的な資金が必要。DoD予算を断る余裕があるのか」（epicprogrammer）— 資金調達の現実
+- 「社内メモをメディアにリークすること自体がPR戦術」（複数ユーザー）— 動機への疑念
+
+</details>
+
+<hr />
+
+<h2 id="4-google-workspace-cli--google全サービスを一つのコマンドで操作">4. Google Workspace CLI — Google全サービスを一つのコマンドで操作</h2>
+
+<p><strong>原題</strong>: Google Workspace CLI
+<strong>URL</strong>: https://github.com/googleworkspace/cli
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47255881
+<strong>スコア</strong>: 568 / <strong>コメント</strong>: 196件 / <strong>合計</strong>: 764</p>
+
+<p><strong>ざっくり言うと:</strong>
+GoogleのDrive、Gmail、Calendar、SheetsなどすべてのWorkspaceサービスをコマンドラインから操作できるCLIツール「gws」が公開された。面白いのは、固定のコマンドリストを持たず、GoogleのDiscovery Service（APIの仕様情報を公開するサービス）をリアルタイムに読み取って、利用可能なコマンドを動的に生成する仕組み。つまり、GoogleがAPIを追加すれば自動的に対応する。AIエージェント向けのスキル（40種類以上）も内蔵し、JSON形式で出力するためLLM（大規模言語モデル）との連携も容易。</p>
+
+<p><strong>もう少し詳しく:</strong>
+<code class="language-plaintext highlighter-rouge">gws</code>はNode.js 18以上で動作し、<code class="language-plaintext highlighter-rouge">npm install -g @googleworkspace/cli</code>でインストールできる。Rustで書かれたバイナリもGitHub Releasesで提供されており、Nixにも対応。各リソースに<code class="language-plaintext highlighter-rouge">--help</code>が付いており、<code class="language-plaintext highlighter-rouge">--dry-run</code>でリクエストのプレビューも可能。MCP（Model Context Protocol）サーバーとしても動作するため、AIエージェントがGoogle Workspaceを直接操作するための基盤になりうる。ただし、Google公式サポートのプロダクトではなく、「This is not an officially supported Google product」という免責事項がREADMEの下部に記載されている。まだv1.0前のアクティブ開発中で、破壊的変更がある可能性がある。</p>
+
+<p><strong>なぜ注目？:</strong>
+AIエージェントがGoogle Workspaceを操作する標準的な方法が存在しなかった中、MCPサーバー対応のCLIが登場したことで、エージェント開発のハードルが大きく下がる。一方で、Google非公式であることの注意喚起も多い。Discovery Serviceからコマンドを動的生成するアーキテクチャは、他のAPIラッパーにも応用できる面白いアイデア。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「AIエージェントのためにCLIを書き直すという発想が面白い」（tclancy）— メインコントリビューターのブログ記事を紹介
+- 「Terraformのような宣言的なワークフローでGoogle Driveを管理できるextrasuiteも便利」（ksri）— 関連ツールの紹介
+- 「Discovery Serviceから動的にコマンドを生成するアーキテクチャが賢い」（複数ユーザー）— 技術的アプローチへの評価
+- 「curlでREST APIを叩く必要がなくなるのは地味にありがたい」（複数ユーザー）— 開発体験の改善
+- 「MCPサーバーとして動作するのは大きい。エージェントとの統合が簡単」（複数ユーザー）— AIエージェント連携への期待
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「'This is not an officially supported Google product' がREADMEの一番上にあるべきだ」（shanehoban）— 公式性の不透明さ
+- 「最初の印象ではGoogle公式製品に見えた。紛らわしい」（hrmtst93837）— ブランディングへの批判
+- 「エージェント向けのCLI生成自体は、今のコーディングAIなら簡単にできる。特別なツールは不要」（jillesvangurp）— 差別化の薄さ
+- 「Google APIはいつ廃止されるかわからないのが怖い」（複数ユーザー）— Googleのサービス継続性への不信
+- 「v1.0前で破壊的変更ありだと、本番環境では使えない」（複数ユーザー）— 安定性への懸念
+
+</details>
+
+<hr />
+
+<h2 id="5-新しいflashを作る--newgroundsがオープンソースのアニメーション制作ツールを開発中">5. 新しいFlashを作る — Newgroundsがオープンソースのアニメーション制作ツールを開発中</h2>
+
+<p><strong>原題</strong>: Building a new Flash
+<strong>URL</strong>: https://bill.newgrounds.com/news/post/1607118
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47253177
+<strong>スコア</strong>: 537 / <strong>コメント</strong>: 160件 / <strong>合計</strong>: 697</p>
+
+<p><strong>ざっくり言うと:</strong>
+かつてWeb上のゲームやアニメーションの主役だったAdobe Flash。2020年末にサポートが終了し、膨大な作品群がそのまま再生不能になってしまった。そのFlashの精神を受け継ぐ新しいオープンソースのオーサリングツール（制作ツール）がNewgrounds（Flash全盛期を支えたゲーム・アニメーション投稿サイト）のメンバーによって開発されている。特筆すべきは、古い.flaファイル（Flashの制作データ）をインポートして編集できる機能。単なる再生ではなく、編集可能な形で開けるオープンソースツールはこれが唯一。</p>
+
+<p><strong>もう少し詳しく:</strong>
+Flashは2000年代にWeb上のインタラクティブコンテンツの標準だった。絵を描き、アニメーションにし、プログラムで動きを付けるという一連の作業が一つのツールで完結する「楽しい開発環境」として愛されていた。しかしセキュリティ問題やモバイル対応の遅れなどからAppleのSteve Jobsが2010年に排除を宣言し、最終的に2020年末でサポート終了。現在のWebではHTML5、CSS3、JavaScriptで同等のことが技術的には可能だが、Flashの「描いて→動かして→コードを書く」という統合的なワークフローを再現するツールはなかった。この新プロジェクトはまさにその穴を埋めようとしている。ムービークリップのエクスポートやヒットディテクション（衝突判定）など、Flashならではの機能も再現を目指している。</p>
+
+<p><strong>なぜ注目？:</strong>
+Flashは単なるプラグインではなく、一つの文化だった。Newgrounds、Homestar Runner、無数のFlashゲームなど、Web上のクリエイティブ文化を支えた基盤。そのデジタル遺産（.flaファイル）を救済し、かつ現代の環境で同様のクリエイティブ体験を提供しようとする試みは、テクノロジーの保存という観点でも意義がある。コメント欄にはFlash時代のクリエイターたちが懐かしみながらも熱心にフィードバックを寄せている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Flashは史上最も楽しい開発環境だった。絵を描いて、ムービークリップにして、コードで制御。あの体験は他にない」（tombert）— Flash体験への郷愁と評価
+- 「.flaファイルをインポートして編集できるのは驚異的。オープンソースでは唯一」（HanClinto）— 後方互換性への評価
+- 「当時AdobeでFlashクローラーを作った。数百万のFlash作品をインデックスした」（random3）— Flash時代の規模感
+- 「Newgroundsで昔ゲームを作っていた。Flashの統合環境は本当に特別だった」（cableshaft）— クリエイターの証言
+- 「素晴らしいプロジェクト。Shift押しながら直線が引ける機能も追加してほしい」（Klonoar）— 具体的な機能リクエスト
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「現代のWebで同じことは全部できる。一番価値があるのは.flaインポーターだけでは」（kriro）— 必要性への疑問
+- 「Flash自体のセキュリティ問題は深刻だった。新しいツールがそれを繰り返さないか心配」（複数ユーザー）— セキュリティ懸念
+- 「オーサリングツールは作れても、Flashの配布・再生エコシステムは再現できない」（複数ユーザー）— エコシステムの欠如
+- 「ニッチすぎて持続可能なプロジェクトになるか疑問」（複数ユーザー）— プロジェクト継続性の心配
+- 「ノスタルジーで始めたプロジェクトが実用的になるかは別の話」（複数ユーザー）— 実用性への疑問
+
+</details>
+
+<hr />
+
+<h2 id="6-it-turns-outわかったことには-ライターが使う便利すぎるフレーズの分析">6. 「It turns out（わかったことには）」— ライターが使う便利すぎるフレーズの分析</h2>
+
+<p><strong>原題</strong>: “It turns out” (2010)
+<strong>URL</strong>: https://jsomers.net/blog/it-turns-out
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47248319
+<strong>スコア</strong>: 281 / <strong>コメント</strong>: 88件 / <strong>合計</strong>: 369</p>
+
+<p><strong>ざっくり言うと:</strong>
+James Somersによる2010年のエッセイが再浮上。英語の文章でよく使われる「It turns out（わかったことには、実は〜だった）」というフレーズがなぜ便利なのか、そしてなぜライターはこれに頼りすぎるべきではないのかを分析した文章。特にPaul Graham（Yコンビネータ創設者でエッセイストとしても有名）の文章での使い方を題材にしている。</p>
+
+<p><strong>もう少し詳しく:</strong>
+「It turns out」は英語で3つの用法がある。(1) 予想と違った結果を伝える時（「あの新しいデリ、ローストビーフがないんだって」）、(2) 物語の意外な展開を示す時（「実はその男が犯人だった」）、(3) 論理の飛躍を滑らかに見せる時。問題は3番目で、書き手が本来すべき「なぜそうなのか」の説明を省略し、「It turns out」で読者に「まあそういうことらしい」と受け入れさせてしまう。つまり、論証の手抜きを覆い隠す接続表現になりうるというのがSomersの主張。このフレーズは「何かが自明ではないこと」を示唆するため、読者は反論しづらくなるという心理的効果もある。</p>
+
+<p><strong>なぜ注目？:</strong>
+テック系の文章やブログで「It turns out」は非常に頻出するフレーズで、HN読者にとって身近な話題。2010年の記事が2026年に再浮上すること自体、この問題提起の普遍性を示している。コメント欄ではDouglas Adamsによる同フレーズのユーモラスな分析も引用されている。文章を書くすべての人にとって、自分の書き癖を見直すきっかけになる良いエッセイ。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「'It turns out'は相手を愚かに感じさせずに訂正できる便利なフレーズでもある」（wongarsu）— フレーズの肯定的な側面
+- 「Douglas Adamsもこのフレーズの便利さをユーモラスに指摘していた」（gwd）— 文学的な引用
+- 「否定的な結果を報告する時にも使える：'オーバークロックしてみた。安定しないことがわかった'」（kryptiskt）— 実用的な使い方
+- 「2010年の投稿時にpg本人がHNでコメントしていた」（xnorswap）— 歴史的コンテキスト
+- 「当時の反論記事も面白い。'It turns out'は実は無害だという主張」（jonahx）— 反論の紹介
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 3件）</summary>
+
+- 「些細な文体の癖を大げさに分析しすぎている」（複数ユーザー）— 分析の過剰さ
+- 「すべてのライターがPaul Grahamのように書いているわけではない。対象が偏っている」（複数ユーザー）— 一般化の問題
+- 「このフレーズを使わないようにすると、かえって文章が不自然になることもある」（複数ユーザー）— 実用性との矛盾
+
+</details>
+
+<hr />
+
+<h2 id="7-moss--ブラシがプログラムで動くピクセルお絵かきツール">7. Moss — ブラシがプログラムで動くピクセルお絵かきツール</h2>
+
+<p><strong>原題</strong>: Moss is a pixel canvas where every brush is a tiny program
+<strong>URL</strong>: https://www.moss.town/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47245491
+<strong>スコア</strong>: 252 / <strong>コメント</strong>: 27件 / <strong>合計</strong>: 279</p>
+
+<p><strong>ざっくり言うと:</strong>
+MOSSは「ブラシが生きている」ピクセルエディタ。普通のお絵かきアプリでは、筆やペンのように色を塗るだけだが、MOSSのブラシは一つ一つが小さなプログラムになっている。色がにじんだり、蔓（つる）のように伸びたり、水滴のように垂れたり、パターンを自動生成したりと、それぞれ異なる「振る舞い」を持つ。50種類以上のブラシが用意されており、すべてのブラシのコードを自分で書き換えてカスタマイズできる。</p>
+
+<p><strong>もう少し詳しく:</strong>
+MOSSのキャンバスでは、各ピクセルがデータを持ち、ブラシがそのデータを操作する。色が蓄積し、パターンが創発的に現れ、偶然の産物がお気に入りの作品になる。「5分だけ触るつもりが、気付いたら1時間経っていた」タイプのツール。シンプルなペイントやインクから、蔓の成長、水のしたたり、ジェネレーティブなチェック柄まで多彩なブラシがある。完成した作品を保存して共有すると、受け取った人も同じブラシとパレットで遊べる。開発者のheyitsgarrettはAseprite（ドット絵エディタ）、Procreate（iPadお絵かきアプリ）、PICO-8（レトロゲーム開発環境）からインスピレーションを受けたと語っている。</p>
+
+<p><strong>なぜ注目？:</strong>
+プログラミングとアートの交差点にある面白いプロジェクト。「ブラシ=プログラム」という発想は、創造的なコーディングの入口としても機能する。TodePond（実験的プログラミングのYouTuber）の動画を思い出すという声もあり、プログラマブルなクリエイティブツールへの関心の高さがうかがえる。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「すごくクール。TodePondの動画を思い出す」（flexagoon）— 類似プロジェクトとの比較
+- 「タイムラプス機能や、使用ブラシ一覧の表示機能があると面白い」（jpereira）— 建設的なフィードバック
+- 「Aseprite、Procreate、PICO-8からインスピレーションを得た。プログラマブルブラシのアイデアを形にした」（heyitsgarrett）— 開発者本人のコメント
+- 「Shift押しながら直線を引く機能がほしい」（Klonoar）— 実用的な要望
+- 「YouTubeのトランスクリプトで描画アプリを作る動画を思い出した。創造性の限界を超えるツール」（b1temy）— 発想への感嘆
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 2件）</summary>
+
+- 「面白いが実用的な用途は限定的」（複数ユーザー）— 実用性への疑問
+- 「プログラマブルブラシは楽しいが、一般ユーザーにはとっつきにくい」（複数ユーザー）— アクセシビリティの課題
+
+</details>
+
+<hr />
+
+<h2 id="8-bmwドイツの工場にヒューマノイドロボットを初導入">8. BMW、ドイツの工場にヒューマノイドロボットを初導入</h2>
+
+<p><strong>原題</strong>: BMW Group to deploy humanoid robots in production in Germany for the first time
+<strong>URL</strong>: https://www.press.bmwgroup.com/global/article/detail/T0455864EN/bmw-group-to-deploy-humanoid-robots-in-production-in-germany-for-the-first-time?language=en
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47253892
+<strong>スコア</strong>: 132 / <strong>コメント</strong>: 115件 / <strong>合計</strong>: 247</p>
+
+<p><strong>ざっくり言うと:</strong>
+BMWがドイツ・ライプツィヒ工場にヒューマノイドロボット（人型ロボット）を導入するパイロットプロジェクトを発表した。Physical AI（物理的AI: デジタルのAIを実際の機械やロボットに組み合わせる技術）をヨーロッパの自動車生産に持ち込む初の試み。昨年、米国サウスカロライナ州スパータンバーグ工場での実証実験を成功させており、その知見を活かしてヨーロッパでの展開に進む。</p>
+
+<p><strong>もう少し詳しく:</strong>
+BMWは「Physical AI」という概念を掲げ、デジタルAIと物理的なロボットを組み合わせた生産システムの実現を目指している。導入されるロボットはHexagon Roboticsのもので、2つの車輪で自立するデザイン。バッテリーや部品の生産ラインでの活用を想定している。BMWの生産システムにはすでにAIが統合されており、品質検査や物流の最適化に使われている。ただし、コメント欄では「これは本当にヒューマノイドなのか？ 手も足も人間と全然違う。従来の産業ロボットに人型のシルエットを被せただけでは？」という指摘もあり、「ヒューマノイド」の定義自体が議論になっている。</p>
+
+<p><strong>なぜ注目？:</strong>
+テスラのOptimusなどヒューマノイドロボットの製造業導入は世界的なトレンドだが、ドイツではIG Metall（金属産業労働組合）がテスラの同様の取り組みに抗議しており、労働者の雇用を脅かすものとして警戒している。製造業の自動化は技術的な達成であると同時に、雇用・労働の問題でもある。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 4件）</summary>
+
+- 「Physical AIという概念は面白い。デジタルAIが物理世界で動く時代が来ている」（複数ユーザー）— コンセプトへの興味
+- 「米国での実証実験を経てヨーロッパに展開するのは堅実なアプローチ」（複数ユーザー）— 段階的導入の評価
+- 「Hexagon Roboticsという欧州のロボット企業が作っている」（dmix）— 製造元の特定
+- 「BMWのデジタルツインと統合されたIT基盤は先進的」（複数ユーザー）— IT基盤への評価
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「小さな車輪2つだけで重心の高いロボットが倒れないのが不思議」（hybridtupel）— 物理的な安定性への疑問
+- 「これを'ヒューマノイド'と呼ぶのは無理がある。手も足も人間と全然違う」（avaer）— 定義への異議
+- 「ドイツ企業がデジタル化と言うと、まだ紙と鉛筆でデータを記録している現場を思い出す」（Maxion）— ドイツ産業界のIT化の遅れ
+- 「IG Metallがテスラの同様の取り組みに抗議している。労働者の反発は大きい」（hnburnsy）— 労働問題
+- 「マーケティング用のバズワードで実態が伴わない可能性」（複数ユーザー）— 過大宣伝への懸念
+
+</details>
+
+<hr />
+
+<h2 id="9-dulce-et-decorum-est--第一次世界大戦の反戦詩1921年">9. Dulce et Decorum Est — 第一次世界大戦の反戦詩（1921年）</h2>
+
+<p><strong>原題</strong>: Dulce et Decorum Est (1921)
+<strong>URL</strong>: https://www.poetryfoundation.org/poems/46560/dulce-et-decorum-est
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47254322
+<strong>スコア</strong>: 132 / <strong>コメント</strong>: 71件 / <strong>合計</strong>: 203</p>
+
+<p><strong>ざっくり言うと:</strong>
+Wilfred Owen（ウィルフレッド・オーウェン）が第一次世界大戦中に書いた詩「Dulce et Decorum Est」がHNのトップページに登場。タイトルはラテン語で「祖国のために死ぬことは甘美で名誉なことだ」という意味だが、詩の内容はその正反対。毒ガス攻撃で苦しみ死んでいく兵士の姿をリアルに描写し、「戦争は栄光なんかじゃない」と突きつける強烈な反戦詩。オーウェン自身は終戦わずか7日前に戦死した。</p>
+
+<p><strong>もう少し詳しく:</strong>
+この詩はJessie Pope（戦争を「ゲーム」に例えて若者に入隊を呼びかけたプロパガンダ詩人）への直接的な反論として書かれた。塹壕を這う疲弊した兵士たち、「Gas! Gas!」という叫び声、マスクを間に合わせられず毒ガスに倒れる仲間の姿が生々しく描かれている。最終行で「Dulce et decorum est pro patria mori（祖国のために死ぬことは甘美で名誉なこと）」というホラティウスの格言を「The old Lie（古い嘘）」と断じるところがクライマックス。英国のGCSE（中等教育修了一般資格）の英語授業でも定番の教材だが、学校では詩の持つ衝撃が薄まってしまうという声も。Pat Barkerの小説『Regeneration』三部作は、オーウェンとSassoon（同時代の戦争詩人）のPTSD治療施設での交流をフィクションとして描いている。</p>
+
+<p><strong>なぜ注目？:</strong>
+テック系のHNに詩がトップ入りするのは珍しい。国際情勢の緊張が高まる中、戦争の現実を思い起こさせるコンテンツとして多くの支持を集めたと考えられる。コメント欄も思慮深い議論が多く、化学兵器の実際の有効性に関する軍事史的な分析なども引用されている。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「英国の中学で読んだ。学校では詩が退屈になりがちだが、この詩のインパクトは忘れられない」（StackBPoppin）— 教育的体験
+- 「Jessie Popeへの直接的な反論という文脈が詩の力を倍増させる」（kibibu）— 歴史的文脈の提供
+- 「高校の英語教師がこの詩を毒ガスで死ぬ兵士の演技で教えてくれた。忘れられない授業」（oniony）— 教育的インパクト
+- 「オーウェンは終戦7日前に戦死。Pat Barkerの'Regeneration'三部作も読む価値がある」（ggm）— 関連作品の紹介
+- 「化学兵器は実はそれほど軍事的に有効ではないという分析も面白い」（lidavidm）— 軍事史的視点
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 2件）</summary>
+
+- 「学校のカリキュラムが詩を無味乾燥にしてしまう問題がある」（StackBPoppin）— 教育制度への批判
+- 「反戦詩としては'The Box'の方が好み」（StackBPoppin）— 他の作品との比較
+
+</details>
+
+<hr />
+
+<h2 id="10-99万9999分プレゼント-vodafoneから届いた謎のsms">10. 「99万9999分プレゼント」— Vodafoneから届いた謎のSMS</h2>
+
+<p><strong>原題</strong>: You Just Reveived
+<strong>URL</strong>: https://dylan.gr/1772520728
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47257637
+<strong>スコア</strong>: 160 / <strong>コメント</strong>: 41件 / <strong>合計</strong>: 201</p>
+
+<p><strong>ざっくり言うと:</strong>
+家族で1台のスマートフォンと1台のガラケーにSIMカードを差し替えて使っているブロガーが、Vodafoneから「999,999分の無料通話をプレゼント」というSMSを受け取った話。タイプミス（”Reveived”）も含まれており、自動化されたシステムからのメッセージなのに誤字があるのは不思議。実際に999,999分は付与されたが、使用期限は5日間（7,200分）で、1分ずつしか消費できないという制限付き。</p>
+
+<p><strong>もう少し詳しく:</strong>
+筆者はこの奇妙なメッセージの原因を推理する。完全自動化ならタイプミスは起きないはず→LLM（大規模言語モデル）の幻覚？→いや、SMSシステムにLLMは使わないだろう→テスト中の開発者が実際の電話番号を誤って使った？→それならプレースホルダーの999,999という値も説明がつく。テレコム業界で働くHNユーザーも「QA用の番号と実際の番号を区別する仕組みがないので、テストデータが本番に流れることがある」と証言。結局、チャージを長期間していないユーザーへの呼び戻し施策か、単なるテストデータの流出かは不明。</p>
+
+<p><strong>なぜ注目？:</strong>
+技術的な話題ではないが、テレコムのシステムの裏側が垣間見える面白い観察。プリペイドSIMを家族で共有するという生活スタイルへの驚きの声も多く、「月20ユーロでほぼ無制限のフランスから見ると90年代にタイムスリップした気分」というコメントも。テスト環境と本番環境の分離という、あらゆるソフトウェア開発で共通する課題を身近な例で示している。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 4件）</summary>
+
+- 「テレコムで働いているが、QA用の番号と実番号の区別がないので本番に流れることがある」（firefoxd）— 業界内部者の証言
+- 「家族でSIMカードを差し替えて使う生活に興味津々。理由が気になる」（jaksa）— 生活スタイルへの関心
+- 「"unlimited data"の速度制限の方が気になる」（userbinator）— 技術的な視点
+- 「5日間の期限は離脱ユーザーの呼び戻し施策としてよくある手法」（Quarrelsome）— マーケティングの分析
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 3件）</summary>
+
+- 「フランスでは月20ユーロでほぼ無制限。この話を読んで90年代に戻った気分」（japoneris）— 通信環境の格差
+- 「分単位で課金するモバイルプランがまだ存在するのが驚き」（userbinator）— 時代遅れのビジネスモデル
+- 「こんな些細なバグに長文ブログを書くのは過剰」（複数ユーザー）— コンテンツの価値への疑問
+
+</details>
+
+<hr />
+
+<h2 id="用語集">用語集</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>用語</th>
+      <th>解説</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>オープンウェイト</td>
+      <td>AIモデルの学習済みパラメータ（重み）を公開すること。誰でもダウンロードして自分の環境で動かせる</td>
+    </tr>
+    <tr>
+      <td>LLM（Large Language Model）</td>
+      <td>大規模言語モデル。ChatGPTやClaudeのように、大量のテキストデータで訓練されたAI</td>
+    </tr>
+    <tr>
+      <td>MCP（Model Context Protocol）</td>
+      <td>AIエージェントが外部ツールやサービスと連携するための標準プロトコル</td>
+    </tr>
+    <tr>
+      <td>Discovery Service</td>
+      <td>GoogleがAPI仕様を機械可読な形で公開するサービス。ツールがAPIの機能を自動的に把握できる</td>
+    </tr>
+    <tr>
+      <td>Physical AI</td>
+      <td>デジタルのAIを物理的なロボットや機械と組み合わせ、現実世界で動作させる技術概念</td>
+    </tr>
+    <tr>
+      <td>Liquid Retina</td>
+      <td>Appleの高精細ディスプレイ技術。広い色域と高解像度が特徴</td>
+    </tr>
+    <tr>
+      <td>Thunderbolt</td>
+      <td>Intel/Appleが開発した高速データ転送規格。外部モニタや高速ストレージの接続に使う</td>
+    </tr>
+    <tr>
+      <td>.flaファイル</td>
+      <td>Adobe Flashの制作データファイル。アニメーションやインタラクティブコンテンツのソースデータを含む</td>
+    </tr>
+    <tr>
+      <td>DAU（Daily Active Users）</td>
+      <td>日間アクティブユーザー数。サービスの利用状況を測る指標</td>
+    </tr>
+    <tr>
+      <td>KPI（Key Performance Indicator）</td>
+      <td>重要業績評価指標。組織やプロジェクトの成果を測る数値目標</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+
+<script>
+(function() {
+  const source = document.getElementById('source');
+  if (!source) return;
+
+  // ========== Date extraction from page title ==========
+  const pageTitle = source.getAttribute('data-title') || '';
+  const dateMatch = pageTitle.match(/(\d{4})-(\d{2})-(\d{2})/);
+  const dateStr = dateMatch
+    ? dateMatch[1] + '.' + dateMatch[2] + '.' + dateMatch[3]
+    : '';
+  const shortDate = dateMatch
+    ? parseInt(dateMatch[2]) + '/' + parseInt(dateMatch[3])
+    : '';
+
+  // ========== Parse source content ==========
+  const h1 = source.querySelector('h1');
+  const allH2s = Array.from(source.querySelectorAll('h2'));
+
+  // Intro paragraph (first <p> after h1)
+  let introText = '';
+  if (h1) {
+    let next = h1.nextElementSibling;
+    while (next && (next.tagName === 'HR' || next.tagName === 'BR')) {
+      next = next.nextElementSibling;
+    }
+    if (next && next.tagName === 'P') {
+      introText = next.textContent.trim();
+    }
+  }
+
+  // Collect sections: each h2 + all siblings until next h2
+  const sections = allH2s.map(h2 => {
+    const content = [];
+    let sib = h2.nextElementSibling;
+    while (sib && sib.tagName !== 'H2') {
+      if (sib.tagName !== 'HR') content.push(sib);
+      sib = sib.nextElementSibling;
+    }
+    return { heading: h2, content };
+  });
+
+  // Separate articles (h2 starts with digit) from glossary
+  const articles = sections.filter(s => /^\d/.test(s.heading.textContent.trim()));
+  const glossarySec = sections.find(s => s.heading.textContent.includes('用語集'));
+
+  // ========== Parse glossary terms ==========
+  const glossaryTerms = [];
+  if (glossarySec) {
+    const table = glossarySec.content.find(el => el.tagName === 'TABLE');
+    if (table) {
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 2) {
+          glossaryTerms.push({
+            name: cells[0].textContent.trim(),
+            desc: cells[1].textContent.trim()
+          });
+        }
+      });
+    }
+  }
+
+  // ========== Match glossary terms to articles ==========
+  function findRelevantTerms(contentElements) {
+    const text = contentElements.map(el => el.textContent).join(' ');
+    return glossaryTerms.filter(term => {
+      const baseName = term.name.replace(/（.*/, '').replace(/\(.*/, '').trim();
+      return text.includes(baseName);
+    });
+  }
+
+  // ========== Parse a single article ==========
+  function parseArticle(heading, contentElements) {
+    const fullText = contentElements.map(el => el.textContent).join('\n');
+    const headingText = heading.textContent.replace(/^\d+\.\s*/, '').trim();
+
+    // Metadata — extract via regex from full text (handles single-paragraph metadata)
+    let origTitle = '';
+    let m = fullText.match(/原題[:：]\s*(.+?)(?=\s*URL[:：]|\n|$)/);
+    if (m) origTitle = m[1].trim();
+
+    let url = '';
+    m = fullText.match(/URL[:：]\s*(https?:\/\/\S+)/);
+    if (m) url = m[1].trim();
+
+    let hnUrl = '';
+    m = fullText.match(/HN[:：]\s*(https?:\/\/\S+)/);
+    if (m) hnUrl = m[1].trim();
+
+    let score = '', comments = '', total = '';
+    m = fullText.match(/スコア[:：]\s*([\d,]+)/);
+    if (m) score = m[1].replace(/,/g, '');
+    m = fullText.match(/コメント[:：]\s*([\d,]+)件?/);
+    if (m) comments = m[1].replace(/,/g, '');
+    m = fullText.match(/合計[:：]\s*([\d,]+)/);
+    if (m) total = m[1].replace(/,/g, '');
+
+    // Section content — from paragraphs with known labels
+    let summary = '', detail = '', whyNotable = '';
+    contentElements.forEach(el => {
+      if (el.tagName !== 'P') return;
+      const strong = el.querySelector('strong');
+      if (!strong) return;
+      const label = strong.textContent.trim();
+      const afterLabel = el.textContent.replace(label, '').trim();
+      if (/^ざっくり/.test(label)) summary = afterLabel;
+      else if (/^もう少し/.test(label)) detail = afterLabel;
+      else if (/^なぜ注目/.test(label)) whyNotable = afterLabel;
+    });
+
+    // Details blocks (comment sections)
+    const detailsBlocks = contentElements.filter(el => el.tagName === 'DETAILS');
+
+    return { headingText, origTitle, url, hnUrl, score, comments, total,
+             summary, detail, whyNotable, detailsBlocks };
+  }
+
+  // ========== Escape HTML for safe insertion ==========
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ========== Build Carousel ==========
+  const carousel = document.getElementById('carousel');
+  const totalSlides = 1 + articles.length;
+
+  // --- Slide 0: Title ---
+  const titleSlide = document.createElement('div');
+  titleSlide.className = 'slide slide--title';
+  titleSlide.innerHTML =
+    '<div class="slide-inner">' +
+      (dateStr ? '<div class="date-badge">' + esc(dateStr) + '</div>' : '') +
+      '<h1>HN Digest<span> — ' + esc(shortDate) + '</span></h1>' +
+      '<p>' + esc(introText) + '</p>' +
+      '<div class="article-count">' + articles.length + ' articles</div>' +
+      '<div class="arrow-hint">&#8594; スワイプまたは矢印キーで次へ</div>' +
+    '</div>';
+  carousel.appendChild(titleSlide);
+
+  // --- Article Slides ---
+  articles.forEach((section, idx) => {
+    const art = parseArticle(section.heading, section.content);
+    const relevantTerms = findRelevantTerms(section.content);
+
+    const slide = document.createElement('div');
+    slide.className = 'slide slide--article';
+
+    // Details HTML (with open attribute + fix raw markdown lists)
+    const detailsHTML = art.detailsBlocks.map(el => {
+      const clone = el.cloneNode(true);
+      clone.setAttribute('open', '');
+      // If kramdown didn't convert markdown lists inside <details>,
+      // the content will be raw text with "- " prefixes. Fix it.
+      if (!clone.querySelector('ul') && !clone.querySelector('ol')) {
+        const summary = clone.querySelector('summary');
+        const summaryText = summary ? summary.textContent.trim() : '';
+        const rawText = clone.textContent.replace(summaryText, '').trim();
+        if (rawText.includes('- ') || rawText.includes('「')) {
+          const lines = rawText.split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
+          const items = lines.map(l => l.replace(/^[-–—]\s*/, ''));
+          const ul = document.createElement('ul');
+          items.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            ul.appendChild(li);
+          });
+          // Remove all content except summary, then append the list
+          while (clone.lastChild && clone.lastChild !== summary) {
+            clone.removeChild(clone.lastChild);
+          }
+          clone.appendChild(ul);
+        }
+      }
+      return clone.outerHTML;
+    }).join('\n');
+
+    // Sidebar glossary (desktop)
+    let sidebarHTML = '';
+    if (relevantTerms.length > 0) {
+      sidebarHTML =
+        '<aside class="article-sidebar">' +
+          '<div class="sidebar-label">用語</div>' +
+          relevantTerms.map(t =>
+            '<div class="sidebar-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+        '</aside>';
+    }
+
+    // Inline glossary (mobile)
+    let inlineGlossaryHTML = '';
+    if (relevantTerms.length > 0) {
+      inlineGlossaryHTML =
+        '<div class="inline-glossary">' +
+          '<div class="sidebar-label">関連用語</div>' +
+          '<div class="inline-terms">' +
+          relevantTerms.map(t =>
+            '<div class="inline-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+          '</div>' +
+        '</div>';
+    }
+
+    // Links
+    const urlLink = art.url
+      ? '<a href="' + esc(art.url) + '" target="_blank" rel="noopener">元記事 &#8599;</a>'
+      : '';
+    const hnLink = art.hnUrl
+      ? '<a href="' + esc(art.hnUrl) + '" target="_blank" rel="noopener">HN &#8599;</a>'
+      : '';
+
+    // Build sections conditionally
+    let sectionsHTML = '';
+    if (art.summary) {
+      sectionsHTML +=
+        '<div class="section-label">ざっくり言うと</div>' +
+        '<p>' + esc(art.summary) + '</p>';
+    }
+    if (art.detail) {
+      sectionsHTML +=
+        '<div class="section-label">もう少し詳しく</div>' +
+        '<p>' + esc(art.detail) + '</p>';
+    }
+    if (art.whyNotable) {
+      sectionsHTML +=
+        '<div class="section-label">なぜ注目？</div>' +
+        '<p>' + esc(art.whyNotable) + '</p>';
+    }
+
+    const mainContent =
+      '<div class="article-main">' +
+        '<div class="article-number">ARTICLE ' + (idx + 1) + '</div>' +
+        '<h2>' + esc(art.headingText) + '</h2>' +
+        (art.origTitle ? '<div class="meta-row"><span>' + esc(art.origTitle) + '</span></div>' : '') +
+        '<div class="meta-row">' + urlLink + hnLink + '</div>' +
+        '<div class="stats">' +
+          (art.score ? '<div class="stat"><strong>' + esc(art.score) + '</strong> pts</div>' : '') +
+          (art.comments ? '<div class="stat"><strong>' + esc(art.comments) + '</strong> comments</div>' : '') +
+          (art.total ? '<div class="stat">Total <strong>' + esc(art.total) + '</strong></div>' : '') +
+        '</div>' +
+        sectionsHTML +
+        detailsHTML +
+        inlineGlossaryHTML +
+      '</div>';
+
+    slide.innerHTML =
+      '<div class="article-layout">' +
+        mainContent +
+        sidebarHTML +
+      '</div>';
+
+    carousel.appendChild(slide);
+  });
+
+  // ========== Navigation Dots ==========
+  const navDots = document.getElementById('navDots');
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'スライド ' + (i + 1) + ' へ');
+    dot.addEventListener('click', () => goToSlide(i));
+    navDots.appendChild(dot);
+  }
+
+  // ========== State & Navigation ==========
+  let currentSlide = 0;
+  const progressBar = document.getElementById('progressBar');
+  const miniHeader = document.getElementById('miniHeader');
+  const arrowLeft = document.getElementById('arrowLeft');
+  const arrowRight = document.getElementById('arrowRight');
+
+  function updateUI(index) {
+    currentSlide = index;
+    const progress = totalSlides > 1 ? (index / (totalSlides - 1)) * 100 : 100;
+    progressBar.style.width = progress + '%';
+    miniHeader.textContent = (index + 1) + ' / ' + totalSlides;
+
+    navDots.querySelectorAll('.nav-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === index);
+    });
+
+    arrowLeft.classList.toggle('hidden', index === 0);
+    arrowRight.classList.toggle('hidden', index === totalSlides - 1);
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides) return;
+    carousel.children[index].scrollIntoView({
+      behavior: 'smooth', block: 'nearest', inline: 'start'
+    });
+  }
+
+  // ========== Scroll Detection ==========
+  let scrollTimeout;
+  carousel.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const index = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+      updateUI(index);
+    }, 50);
+  }, { passive: true });
+
+  // ========== Arrow Buttons ==========
+  arrowLeft.addEventListener('click', () => goToSlide(currentSlide - 1));
+  arrowRight.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+  // ========== Keyboard Navigation ==========
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(currentSlide - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goToSlide(currentSlide + 1); }
+  });
+
+  // ========== Initial State ==========
+  updateUI(0);
+})();
+</script>
+
+</body>
+</html>

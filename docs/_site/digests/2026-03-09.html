@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>HN Digest — 3/9</title>
+<meta name="description" content="Hacker Newsの最新記事を日本語で毎日まとめています">
+<link rel="icon" href="/hn-newsdigest/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/hn-newsdigest/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ========== Reset & Base ========== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'DM Sans', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background-color: #0c0d12;
+    color: #c8cad0;
+    line-height: 1.8;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(249, 115, 22, 0.35);
+    color: #fff;
+  }
+
+  /* ========== Progress Bar ========== */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f97316, #fb923c);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.15s ease-out;
+  }
+
+  /* ========== Mini Header ========== */
+  .mini-header {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #777b88;
+    letter-spacing: 0.05em;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    user-select: none;
+  }
+
+  /* ========== Home Button ========== */
+  .home-btn {
+    position: fixed;
+    top: 12px;
+    left: 20px;
+    z-index: 900;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #555a6a;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .home-btn:hover {
+    color: #f97316;
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  /* ========== Scroll Container ========== */
+  .carousel {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    height: 100vh;
+    width: 100vw;
+    scrollbar-width: none;
+  }
+
+  .carousel::-webkit-scrollbar { display: none; }
+
+  /* ========== Slide ========== */
+  .slide {
+    flex: 0 0 100vw;
+    min-width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 32px 100px;
+    position: relative;
+  }
+
+  .slide--article { justify-content: center; }
+
+  .slide-inner {
+    max-width: 640px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+  }
+
+  .slide-inner::-webkit-scrollbar { width: 4px; }
+  .slide-inner::-webkit-scrollbar-track { background: transparent; }
+  .slide-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  /* ========== Article Layout: content + glossary sidebar ========== */
+  .article-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    max-width: 960px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+  }
+
+  .article-main {
+    flex: 1;
+    min-width: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+    padding-right: 8px;
+  }
+
+  .article-main::-webkit-scrollbar { width: 4px; }
+  .article-main::-webkit-scrollbar-track { background: transparent; }
+  .article-main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  .article-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+  }
+
+  .article-sidebar::-webkit-scrollbar { width: 3px; }
+  .article-sidebar::-webkit-scrollbar-track { background: transparent; }
+  .article-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-term {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .sidebar-term:hover {
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  .sidebar-term .term-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #fb923c;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-term .term-desc {
+    font-size: 0.78rem;
+    color: #777b88;
+    line-height: 1.6;
+  }
+
+  /* ========== Title Slide ========== */
+  .slide--title { text-align: center; }
+
+  .slide--title h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    color: #ecedf2;
+  }
+
+  .slide--title h1 span { color: #f97316; }
+
+  .slide--title p {
+    font-size: 1.1rem;
+    color: #777b88;
+    line-height: 1.9;
+  }
+
+  .slide--title .date-badge {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 6px 18px;
+    border-radius: 24px;
+    margin-bottom: 24px;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(251, 146, 60, 0.15);
+  }
+
+  .slide--title .article-count {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    letter-spacing: 0.05em;
+  }
+
+  .slide--title .arrow-hint {
+    margin-top: 48px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    animation: pulse-hint 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-hint {
+    0%, 100% { opacity: 0.5; transform: translateX(0); }
+    50% { opacity: 1; transform: translateX(6px); }
+  }
+
+  /* ========== Article Slide ========== */
+  .slide--article .article-number {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 4px 12px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    letter-spacing: 0.06em;
+    border: 1px solid rgba(251, 146, 60, 0.12);
+  }
+
+  .slide--article h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: #ecedf2;
+    letter-spacing: -0.01em;
+  }
+
+  .slide--article .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    color: #555a6a;
+  }
+
+  .slide--article .meta-row a {
+    color: #f97316;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .slide--article .meta-row a:hover {
+    color: #fb923c;
+    text-decoration: underline;
+  }
+
+  .slide--article .stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .slide--article .stats .stat {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 6px 14px;
+    border-radius: 8px;
+    color: #888d9e;
+    font-weight: 500;
+  }
+
+  .slide--article .stats .stat strong {
+    color: #f97316;
+    font-weight: 700;
+  }
+
+  .slide--article .section-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #f97316;
+    margin-bottom: 6px;
+    margin-top: 20px;
+  }
+
+  .slide--article p {
+    font-size: 0.95rem;
+    color: #a0a4b2;
+    margin-bottom: 12px;
+    line-height: 1.9;
+  }
+
+  /* ========== Comments (open by default) ========== */
+  .slide--article details {
+    margin-top: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .slide--article details + details { margin-top: 8px; }
+
+  .slide--article summary {
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #c8cad0;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+    transition: background 0.15s;
+    list-style: none;
+  }
+
+  .slide--article summary::-webkit-details-marker { display: none; }
+
+  .slide--article summary::before {
+    content: '− ';
+    font-weight: 700;
+    color: #f97316;
+    margin-right: 4px;
+  }
+
+  .slide--article details:not([open]) summary::before { content: '+ '; }
+
+  .slide--article summary:hover {
+    background: rgba(249, 115, 22, 0.06);
+  }
+
+  .slide--article details ul {
+    list-style: none;
+    padding: 12px 16px;
+  }
+
+  .slide--article details li {
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .slide--article details li:last-child { border-bottom: none; }
+
+  /* Details with plain paragraph (no list) */
+  .slide--article details > p {
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+  }
+
+  /* ========== Navigation Arrows ========== */
+  .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 800;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #888d9e;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .nav-arrow:hover {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);
+  }
+
+  .nav-arrow:active { transform: translateY(-50%) scale(0.92); }
+
+  .nav-arrow--left { left: 20px; }
+  .nav-arrow--right { right: 20px; }
+
+  .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+
+  /* ========== Navigation Dots ========== */
+  .nav-dots {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 800;
+    display: flex;
+    gap: 10px;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 10px 18px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: none;
+    padding: 0;
+  }
+
+  .nav-dot:hover { background: rgba(255, 255, 255, 0.3); }
+
+  .nav-dot.active {
+    background: #f97316;
+    width: 28px;
+    border-radius: 5px;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+  }
+
+  /* ========== Inline Glossary (mobile) ========== */
+  .inline-glossary .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 10px;
+  }
+
+  .inline-glossary .inline-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .inline-glossary .inline-term {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+
+  .inline-glossary .inline-term .term-name {
+    font-weight: 600;
+    color: #fb923c;
+  }
+
+  .inline-glossary .inline-term .term-desc {
+    color: #777b88;
+    margin-top: 2px;
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 960px) {
+    .article-sidebar { display: none; }
+    .inline-glossary {
+      display: block !important;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  @media (min-width: 961px) {
+    .inline-glossary { display: none !important; }
+  }
+
+  @media (max-width: 700px) {
+    .slide { padding: 50px 20px 90px; }
+    .slide--title h1 { font-size: 2rem; }
+    .slide--article h2 { font-size: 1.25rem; }
+    .nav-arrow { width: 40px; height: 40px; font-size: 1rem; }
+    .nav-arrow--left { left: 10px; }
+    .nav-arrow--right { right: 10px; }
+    .home-btn .home-btn-text { display: none; }
+    .nav-dots { gap: 6px; padding: 8px 12px; }
+    .nav-dot { width: 8px; height: 8px; }
+    .nav-dot.active { width: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Mini Header -->
+<div class="mini-header" id="miniHeader"></div>
+
+<!-- Home Button -->
+<a href="/hn-newsdigest/" class="home-btn" aria-label="ホームに戻る">
+  <span>&#8592;</span>
+  <span class="home-btn-text">HN Digest</span>
+</a>
+
+<!-- Navigation Arrows -->
+<button class="nav-arrow nav-arrow--left hidden" id="arrowLeft" aria-label="前のスライド">&#8592;</button>
+<button class="nav-arrow nav-arrow--right" id="arrowRight" aria-label="次のスライド">&#8594;</button>
+
+<!-- Carousel Container -->
+<div class="carousel" id="carousel"></div>
+
+<!-- Navigation Dots -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- Hidden source content rendered by Jekyll/kramdown -->
+<div id="source" data-title="HN Digest — 3/9" style="display:none">
+<h1 id="hn-digest--39">HN Digest — 3/9</h1>
+
+<hr />
+
+<h2 id="1-qwen-35をローカルで動かす方法">1. Qwen 3.5をローカルで動かす方法</h2>
+<p><strong>原題</strong>: How to run Qwen 3.5 locally
+<strong>URL</strong>: <a href="https://unsloth.ai/docs/models/qwen3.5">https://unsloth.ai/docs/models/qwen3.5</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47292522">https://news.ycombinator.com/item?id=47292522</a>
+<strong>スコア</strong>: 370 / <strong>コメント</strong>: 113件 / <strong>合計</strong>: 483</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+Alibaba（アリババ）が出した新しいAIモデルファミリー「Qwen 3.5」を、自分のパソコンで動かすためのガイド。Qwen 3.5は0.8Bから397Bまで幅広いサイズがあり、22GBのメモリを持つMacなら35Bや27Bモデルが動かせる。256Kトークンのコンテキスト長（一度に処理できるテキスト量）、201言語対応、思考モード/非思考モードの切り替えなど、かなり高機能。Unslothというツールが独自の量子化（GGUF（モデルを圧縮して軽くするフォーマット））を提供していて、4bitでも重要なレイヤーを8bitや16bitに自動的に引き上げる「Dynamic 2.0」方式を採用している。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+Qwen 3.5はMoE（Mixture of Experts（全パラメータのうち一部だけを使って推論する効率的なアーキテクチャ））を採用しているモデルが含まれている。例えば35B-A3Bは全体で350億パラメータだが、実際に使われるのは30億パラメータだけなので、見た目のサイズより遥かに軽い。Unslothはこれらのモデルを一般的なハードウェアで動かせるようにGGUFフォーマットで量子化を行っている。量子化とは、モデルの精度を多少犠牲にしてメモリ使用量を大幅に減らす手法。最新のアップデートではimatrix（重要度行列）データを改善し、チャット・コーディング・長文コンテキスト・ツール呼び出しの性能が向上した。antirez氏（Redisの作者）のベンチマークによると、think（思考）モードではDeepSeekの83%程度の性能だが、no-thinkモードでは53%程度。ただしno-thinkモードは圧倒的に速いため、用途によってはこちらの方が実用的。消費者向けGPUでも100トークン/秒の速度が出るとの報告もあり、オンラインLLMサービスを上回る速度。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+ローカルLLM（大規模言語モデル）の民主化が急速に進んでいる象徴的な記事。22GBのMacでそこそこ賢いAIモデルが動くというのは、つい1年前では考えられなかった。プライバシーが気になる用途やオフライン環境での利用、APIコストの削減など、ローカル実行のメリットは大きい。特にMoEアーキテクチャの普及により「パラメータ数は大きいが実行は軽い」モデルが増えており、今後もこのトレンドは加速するだろう。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「5070ti 16GBでLM Studioを使って9Bモデルが安定100トークン/秒出る。初めて消費者向けハードウェアで実用的なモデルが使えた」（moqizhengz）— コンシューマGPUでの実用性を実証
+- 「M1 Max 64GBで27Bモデルのプロンプト処理が約580トークン/秒。思考モードで最大55トークン/秒生成」（d4rkp4ttern）— Apple Silicon での性能も良好
+- 「Qwen3.5シリーズは本当にすごい。ベンチマークだけでなく実際の出力品質も高い」（moqizhengz）— ベンチマークと実用が一致
+- 「UnslothのDynamic 2.0量子化は重要なレイヤーを高精度に保つ賢いアプローチ」（複数ユーザー）— 量子化手法への評価
+- 「ローカルで動くモデルがここまで来たのは感慨深い」（複数ユーザー）— ローカルLLMの進化への感想
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「量子化オプションが多すぎて、IQ4_XS、Q4_K_S、Q4_K_Mの違いがわからない。説明が不足している」（mingodad）— ユーザビリティの課題
+- 「'fewer parameters, less quantization' vs 'more parameters, more quantization' の選び方がわからない」（tasuki）— 選択肢が複雑
+- 「DeepSeekのthinkモードと比較すると83%程度。まだ差がある」（antirez）— トップモデルとの性能差
+- 「MXFP4レイヤーを廃止するなど方針が頻繁に変わる」（複数ユーザー）— 安定性への懸念
+- 「no-thinkモードの53%はかなり低い」（antirez）— 非思考モードの品質
+
+</details>
+
+<hr />
+
+<h2 id="2-appleの512gb-mac-studioが消えたメモリ不足の静かな認知">2. Appleの512GB Mac Studioが消えた——メモリ不足の静かな認知</h2>
+<p><strong>原題</strong>: Apple’s 512GB Mac Studio vanishes, a quiet acknowledgment of the RAM shortage
+<strong>URL</strong>: <a href="https://arstechnica.com/gadgets/2026/03/apples-512gb-mac-studio-vanishes-a-quiet-acknowledgement-of-the-ram-shortage/">https://arstechnica.com/gadgets/2026/03/apples-512gb-mac-studio-vanishes-a-quiet-acknowledgement-of-the-ram-shortage/</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47296302">https://news.ycombinator.com/item?id=47296302</a>
+<strong>スコア</strong>: 285 / <strong>コメント</strong>: 159件 / <strong>合計</strong>: 444</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+AppleがMac Studioの512GBメモリモデルをひっそりとラインナップから外した。背景にはAIブームによるメモリチップの世界的な供給不足がある。Appleは公式には言及していないが、256GBモデルの価格も1,600ドルから2,000ドルに値上げされており、メモリ調達コストの上昇が製品ラインに直接影響している。AI向けデータセンターがメモリを大量消費しているため、消費者向け製品にしわ寄せが来ている形。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+AI向けGPU（NVIDIA H100やH200など）は大量のHBM（High Bandwidth Memory（高帯域メモリ: GPU専用の超高速メモリ））を必要とし、これがメモリ市場全体を逼迫させている。Mac StudioのM4 Ultraチップはユニファイドメモリ（CPUとGPUが共有するメモリ）を採用しており、同じメモリサプライチェーンの影響を受ける。コメント欄ではM5 Ultraの準備が進んでいるとの見方が強く、既存のM4 Ultra在庫を売り切るための戦略的な判断という説もある。また、配送時期がApril/Mayまで伸びていることから在庫が非常に逼迫していることがわかる。Apple Watch Ultra 3やiPhone 17 Pro Maxも256GBストレージモデルを廃止するなど、メモリ/ストレージ不足の影響はApple製品全体に及んでいる。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+AIブームの「見えないコスト」が消費者に波及し始めている好例。メモリ不足はAppleだけの問題ではなく、PC、スマートフォン、ゲーム機など幅広い電子機器に影響する可能性がある。開発者にとっては、大容量メモリのMacが手に入りにくくなることで、ローカルLLM実行やXcodeでの大規模プロジェクトビルドにも影響しうる。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「M5 Ultraの生産立ち上げ中で、メモリ供給契約をそちらに振り向けているのでは」（827a）— 合理的な経営判断との見方
+- 「M5 Ultra Mac Studioが3ヶ月以内にリリースされる可能性」（bombcar）— 新製品への期待
+- 「Appleはスポット価格ではなく事前契約で調達しているはず。契約切り替えのタイミングかも」（chiph）— 供給チェーンの内情を推測
+- 「MacBook Neoが599ドルで出たのは良いニュース」（記事内容）— 低価格帯は充実
+- 「今週の他の製品はRAMとストレージ増量で同価格だった」（記事内容）— 全体的には改善傾向
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「256GBモデルが1,600ドルから2,000ドルに値上げ。25%の価格上昇は大きい」（ErneX）— 消費者への負担増
+- 「配送がApril/Mayまで伸びている。在庫が本当に逼迫している」（marcuskaz）— 供給問題の深刻さ
+- 「M5 Ultraが出ないかもしれないという噂もある。M6 Ultra待ちになる可能性」（bombcar）— 製品ロードマップへの不安
+- 「AIバブルのツケが消費者に回ってきている」（複数ユーザー）— AI投資への批判
+- 「512GBモデルがないとローカルLLMを動かすには不十分」（複数ユーザー）— AI開発者への影響
+
+</details>
+
+<hr />
+
+<h2 id="3-クラウドvmベンチマーク-2026">3. クラウドVMベンチマーク 2026</h2>
+<p><strong>原題</strong>: Cloud VM benchmarks 2026
+<strong>URL</strong>: <a href="https://devblog.ecuadors.net/cloud-vm-benchmarks-2026-performance-price-1i1m.html">https://devblog.ecuadors.net/cloud-vm-benchmarks-2026-performance-price-1i1m.html</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47293119">https://news.ycombinator.com/item?id=47293119</a>
+<strong>スコア</strong>: 302 / <strong>コメント</strong>: 134件 / <strong>合計</strong>: 436</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+2026年版のクラウドVM（仮想マシン）ベンチマーク比較記事。AWS、GCP、Azure、Hetznerなど主要クラウドプロバイダーの44種類のVMファミリーを、複数リージョンでテスト。AMD Turinプロセッサが圧倒的な性能を見せ、価格性能比ではHetznerが非常に優秀という結果になった。2025年10月からテストを開始し、同じインスタンスタイプでもリージョンによって性能差があることも判明した。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+AMD EPYC Turin（第5世代EPYCプロセッサ）がベンチマークの上位を独占。特にシングルコア性能の向上が著しく、前世代のGenoa（ジェノア）からさらに大きく飛躍した。面白いのは、クラウドで使われるTurinよりも、AMD EPYC 4565p（デスクトップ向け）がシングルコアで最大2倍速いという報告もある点。これはクラウドVMが物理CPUの一部しか割り当てられないことや、NUMA（Non-Uniform Memory Access（メモリアクセスの距離によって速度が変わるアーキテクチャ））の影響がある。価格性能比ではHetznerが圧倒的で、大手クラウドの半額以下で同等の性能が得られるケースも。Azureは料金体系が複雑で、Turin/Granite RapidsのVMがまだクローズドプレビューという点で他社に遅れを取っている。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+クラウドインフラのコスト最適化は開発チームにとって永遠のテーマ。AMDがIntelに対して圧倒的な優位を保っている現状が数字で裏付けられた。Hetznerのような欧州系の安価なプロバイダーが大手と同等以上の性能を出していることは、スタートアップや個人開発者にとって重要な情報。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「AMD EPYC 4565pがクラウドのTurinをシングルコアで最大2倍上回る。自前サーバーのコスパが圧倒的」（zackify）— オンプレミスの価値
+- 「Genoa→Turinの飛躍はすごい。Lisa Suとチームに脱帽」（nixgeek）— AMDへの賞賛
+- 「本当に素晴らしい記事。テストの幅と深さが見事」（preserves, Google Compute Engine社員）— 競合からも高評価
+- 「Hetznerの価格性能比が圧倒的に良い」（preserves）— 安価プロバイダーの実力
+- 「Blue Dot というクラウドリソース比較CLIツールを知った」（chrisweekly）— 関連ツールの発見
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「Azureの料金体系が複雑すぎる。料金ツールも他社より使いにくい」（記事内容）— Azureの課題
+- 「AzureのTurin VMはまだクローズドプレビュー。記事の情報がやや古い部分がある」（e-master）— 情報の正確性
+- 「同じインスタンスタイプでもリージョンで性能差があるのは困る」（記事内容）— 一貫性の欠如
+- 「ベンチマークはsynthetic（人工的）。実際のワークロードでは結果が異なる可能性」（複数ユーザー）— ベンチマークの限界
+- 「Hetznerはサポートやエンタープライズ機能で大手に劣る」（複数ユーザー）— 安さだけでは選べない
+
+</details>
+
+<hr />
+
+<h2 id="4-pypyがメンテナンスされなくなっている問題">4. PyPyがメンテナンスされなくなっている問題</h2>
+<p><strong>原題</strong>: Warn about PyPy being unmaintained
+<strong>URL</strong>: <a href="https://github.com/astral-sh/uv/pull/17643">https://github.com/astral-sh/uv/pull/17643</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47293415">https://news.ycombinator.com/item?id=47293415</a>
+<strong>スコア</strong>: 276 / <strong>コメント</strong>: 145件 / <strong>合計</strong>: 421</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+Pythonのパッケージマネージャ「uv」に、PyPy（Pythonの高速な代替実装）が活発に開発されていないことを警告するPR（Pull Request（コードの変更提案））が出された。PyPyはCPython（通常のPython）よりも最大5倍以上高速に動作するJIT（Just-In-Time（実行時にコードをコンパイルして高速化する技術））コンパイラを搭載した実装だが、コア開発者が不足しておりPython 3.12対応すら完了していない。numpyもPyPyのサポートを段階的に終了しつつある。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+PyPyのコア開発者であるcfbolztereick氏がHNコメントで直接説明している。「PyPyはメンテナンスされていないわけではない。バグ修正やJITの改善は行っている。ただし、CPythonの新バージョンに追従する人手が足りない」とのこと。PyPyは技術的には素晴らしい成果で、Microsoftの「Faster CPython」チームが4年かけて1.5倍の高速化しか達成できなかったのに対し、PyPyは数十年にわたり5倍以上の高速化を実現してきた。しかし資金と人材の問題でCPythonの進化速度についていけなくなっている。PRのタイトルが当初「unmaintained（メンテナンスされていない）」だったのが「no longer under active development（活発な開発が行われていない）」に変更されるなど、表現を巡る議論も起きた。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+オープンソースプロジェクトの持続可能性という根本的な問題を浮き彫りにしている。技術的に優れたプロジェクトでも、資金と人材がなければ維持できない。PyPyを使っているプロジェクトは移行計画を考える必要がある。また、PyPI（パッケージインデックス）とPyPy（Python実装）を混同する人が多いので注意。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「PyPyは素晴らしい成果。MSのFaster CPythonが4年で1.5倍なのにPyPyは5倍以上」（pansa2）— 技術的成果への敬意
+- 「コア開発者がHNで直接状況を説明してくれるのはありがたい」（cfbolztereick）— 透明性
+- 「3.12対応の作業が始まっている」（cfbolztereick）— 完全に死んではいない
+- 「財政的・コーディング的な支援を歓迎する」（mattip, PyPyコア開発者）— 貢献のチャンス
+- 「PyPIとPyPyの違いを知れてよかった」（the_jeremy）— 教育的価値
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「'unmaintained'から'not actively developed'への変更は言葉遊びでは」（aragilar）— 実態は変わらない
+- 「CPythonの3.13でJITが入った。PyPyの存在意義が薄れている」（複数ユーザー）— CPythonの進化
+- 「numpyがサポートを切ったのは大きな打撃」（記事内容）— エコシステムからの離脱
+- 「PyPyはC拡張との互換性が常に問題だった」（pansa2）— 根本的な課題
+- 「ボランティアプロジェクトに依存するのは持続可能ではない」（複数ユーザー）— OSS持続性の問題
+
+</details>
+
+<hr />
+
+<h2 id="5-casnum--コンパスと定規で任意精度演算">5. CasNum — コンパスと定規で任意精度演算</h2>
+<p><strong>原題</strong>: CasNum
+<strong>URL</strong>: <a href="https://github.com/0x0mer/CasNum">https://github.com/0x0mer/CasNum</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47291292">https://news.ycombinator.com/item?id=47291292</a>
+<strong>スコア</strong>: 318 / <strong>コメント</strong>: 38件 / <strong>合計</strong>: 356</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+「コンパスと定規」という古代ギリシャの作図法だけで任意精度の算術演算を実装したライブラリ。さらに、ゲームボーイエミュレータのALU（Arithmetic Logic Unit（演算論理装置: CPUの計算を担当する部分））の全命令を幾何学的作図で実装するという壮大な（そしてまったく実用的でない）プロジェクト。ユーモアあふれるドキュメントも話題に。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+コンパスと定規による作図とは、ユークリッド幾何学の古典的な手法で、円を描くコンパスと直線を引く定規だけで図形を構成する方法。CasNumはこの手法を使って足し算、引き算、掛け算、割り算などの基本演算を実装している。例えば、2つの線分の長さの比を使って割り算を表現するといった具合。さらに驚くべきことに、改造版ゲームボーイエミュレータを組み込んでおり、ALUのオペコード（CPUの個々の命令）をすべて幾何学的作図で置き換えている。FAQの「速いのか？」に対する回答「ユークリッドを手で写すより速い」、「Doomは動くか？」に対する「これは数字であって、何かを’動かす’ものではない」といったユーモアも人気の理由。モール＝マスケローニの定理（コンパスだけで定規と同じ作図ができるという定理）を使えばさらに簡素化できるという指摘も。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+実用性はゼロだが、計算の本質を古代の数学で表現するというアイデアが面白い。コンピュータサイエンスの根底にある「計算とは何か」という問いに、全く違う角度から光を当てている。プログラミングのユーモアと数学の美しさが融合した好例。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「素晴らしいコメディ的な文章力。声を出して笑った」（rablackburn）— ドキュメントの面白さ
+- 「モール＝マスケローニの定理でコンパスだけに簡素化できる」（layer8）— 数学的な深掘り
+- 「投稿してくれてありがとう。どこで見つけたのか知りたい」（0x0mer, 作者本人）— 作者の感謝
+- 「'重要な作業を保存してから何でも実行してください' が最も共感できる」（rablackburn）— 開発者あるある
+- 「立方体の倍積問題の動画で作図計算を知ったばかりだった」（tingletech）— タイムリーな学び
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「FAQの 'Doomは動くか？' への回答が的確すぎる」（ggm）— 実用性のなさを認識
+- 「面白いけど実用的な用途が思いつかない」（複数ユーザー）— 実用性への疑問
+- 「パフォーマンスは当然ながら壊滅的」（記事内容）— 速度の問題
+- 「ゲームボーイエミュレータ部分は本当に動くのか疑問」（複数ユーザー）— 動作の信頼性
+- 「コンセプトは面白いが、PRとしてはネタ寄り」（複数ユーザー）— 技術的深さへの疑問
+
+</details>
+
+<hr />
+
+<h2 id="6-ps5にlinuxを移植してsteam-machineにした">6. PS5にLinuxを移植してSteam Machineにした</h2>
+<p><strong>原題</strong>: I ported Linux to the PS5 and turned it into a Steam Machine
+<strong>URL</strong>: <a href="https://xcancel.com/theflow0/status/2030011206040256841">https://xcancel.com/theflow0/status/2030011206040256841</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47296849">https://news.ycombinator.com/item?id=47296849</a>
+<strong>スコア</strong>: 219 / <strong>コメント</strong>: 85件 / <strong>合計</strong>: 304</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+モッダー（改造愛好家）のtheflow0氏がPS5にLinuxを移植し、Steamを動かすことに成功。レイトレーシング（光の反射や屈折をリアルに再現する描画技術）付きのGTA 5 Enhancedを実際にプレイしている動画を公開した。古いファームウェアのPS5でフルチェーンエクスプロイト（複数の脆弱性を連鎖させてシステムを乗っ取る手法）を使って実現している。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+PS5はカスタムAMD APU（CPUとGPUを統合したチップ）を搭載しており、Linuxを動かすにはGPUドライバの開発が最大の難関。PS5独自のカスタムI/Oコンプレックス（ハードウェア圧縮解凍ユニット）をLinux側でどう扱うかも課題だった。以前のBC-250（PS5のカスタムチップを搭載した別製品）でのLinux移植作業が今回の成果に貢献した可能性がある。GPUドライバが十分安定してSteamが動くレベルになっているのは技術的に非常に高い成果。ただし古いファームウェアが必要なため、最新のPS5では動かない。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+「自分が買ったハードウェアで自分のソフトウェアを動かす」という、当たり前のようで実は難しいことへの挑戦。ゲーム機メーカーはハードウェアをロックダウンする傾向があり、それに対する技術的な自由を求める動きは常にコミュニティの関心を集める。PS3時代のOtherOS機能を思い出す人も多い。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「Xboxも解放すべき。せめてSteam Linkを動かしたい」（gbraad）— 他プラットフォームへの期待
+- 「GPUドライバをSteamが動くレベルまで安定させたのは印象的」（coolcoder9520）— 技術力への賞賛
+- 「BC-250での作業が助けになったのでは」（tym0）— 技術の蓄積
+- 「自分のハードウェアで自分のソフトウェアを動かせることが嬉しい、というのが悲しい現実」（love2read）— DRMへの問題提起
+- 「HP Jornada筐体にモダンPCを入れたくなった」（dlcarrier）— 改造文化への共感
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「古いファームウェアが必要。最新PS5では使えない」（gchamonlive）— 制約が大きい
+- 「技術的な詳細がほとんど公開されていない」（gchamonlive）— 情報不足
+- 「エクスプロイトチェーンに依存しているので将来性が不透明」（複数ユーザー）— 持続性の問題
+- 「Sonyが対策すれば使えなくなる」（複数ユーザー）— メーカーとの攻防
+- 「実用的というよりはデモンストレーション的」（複数ユーザー）— 実用性への疑問
+
+</details>
+
+<hr />
+
+<h2 id="7-oracleai-データセンター資金のため最大3万人削減か">7. Oracle、AI データセンター資金のため最大3万人削減か</h2>
+<p><strong>原題</strong>: Oracle may slash up to 30k jobs to fund AI data-centers as US banks retreat
+<strong>URL</strong>: <a href="https://www.cio.com/article/4125103/oracle-may-slash-up-to-30000-jobs-to-fund-ai-data-center-expansion-as-us-banks-retreat.html">https://www.cio.com/article/4125103/oracle-may-slash-up-to-30000-jobs-to-fund-ai-data-center-expansion-as-us-banks-retreat.html</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47298183">https://news.ycombinator.com/item?id=47298183</a>
+<strong>スコア</strong>: 119 / <strong>コメント</strong>: 111件 / <strong>合計</strong>: 230</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+Oracleが2万〜3万人の人員削減とCerner（医療IT子会社）の売却を検討しているとの報道。目的はAIデータセンター拡張の資金確保。米国の銀行がOracleへの融資から撤退しつつあるため、自前でキャッシュフロー（事業から生まれる現金）を確保する必要に迫られている。削減で80〜100億ドルのキャッシュフローを創出する計算。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+Oracleの従業員数は約16万2,000人で、3万人削減は約18%に相当する大規模なリストラ。AIデータセンターへの投資は莫大な設備投資（CapEx（Capital Expenditure: 設備投資））を必要とし、投資家はFCF（Free Cash Flow（フリーキャッシュフロー: 自由に使える現金））の悪化を許容しない。銀行が融資から撤退している背景には、AIインフラ投資のリターンに対する懐疑論がある。「存在しないお金で、存在しないインフラのデータセンターを建て、存在しない将来の需要に対応し、支払い能力のない企業からの保証収入を当てにしている」という辛辣なコメントも。ASICの効率性向上により、今の設備投資が数年で陳腐化するリスクも指摘されている。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+AI投資の持続可能性に対する疑問が表面化し始めている。雇用を削って設備投資に充てるという構図は、AIバブルが実体経済に悪影響を及ぼし始めている象徴的な事例。技術者にとっても、大手企業のレイオフリスクは他人事ではない。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 4件）</summary>
+
+- 「ASICが推論で非常に効率的になっている。インフラ投資の形が変わるかも」（kelipso）— 技術進化への期待
+- 「Oracleが何をしている会社かようやくわかった。データベースソフトウェアか」（saos）— 素直な感想
+- 「AIインフラへの投資自体は必要なこと」（複数ユーザー）— 投資の方向性は正しい
+- 「Cernerの売却は合理的な選択肢」（複数ユーザー）— 事業整理への理解
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「AIが効率性を高めているのではなく、CapExのためにFCFが崩壊しているだけ」（onlyrealcuzzo）— AI効率化の嘘
+- 「存在しないお金で存在しないインフラを建てている。経済的伝染が始まった」（hedora）— バブル崩壊への警告
+- 「深い不況が数年続くだろう。お金を使う人がいなくなる」（bearjaws）— 経済への悲観
+- 「16万人中3万人削減は18%。これは壊滅的」（saos）— 規模の大きさへの驚き
+- 「現在価値のある仕事を壊して、将来のAI投資に充てるのは本末転倒」（bearjaws）— 優先順位への疑問
+
+</details>
+
+<hr />
+
+<h2 id="8-wasmを書く時のメモ">8. WASMを書く時のメモ</h2>
+<p><strong>原題</strong>: Notes on Writing WASM
+<strong>URL</strong>: <a href="https://notes.brooklynzelenka.com/Blog/Notes-on-Writing-Wasm">https://notes.brooklynzelenka.com/Blog/Notes-on-Writing-Wasm</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47295837">https://news.ycombinator.com/item?id=47295837</a>
+<strong>スコア</strong>: 142 / <strong>コメント</strong>: 54件 / <strong>合計</strong>: 196</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+RustでWASM（WebAssembly（ブラウザ上でネイティブに近い速度でコードを実行する技術））を書いてきた経験から得られたパターンやTipsをまとめた記事。wasm-bindgen（RustとJavaScript間のデータをやり取りするためのツール）との付き合い方が中心テーマ。wasm-bindgenは賛否両論あるが、コツを掴めば関係は改善するとのこと。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+WASMのインターフェースはC言語スタイルで非常にシンプル（数値しか渡せない）なため、高レベルなデータ構造をやり取りするにはwasm-bindgenのようなバインディングジェネレータが必要になる。記事の著者はwasm-bindgenのメンテナーへの感謝を述べつつも、その制約を認めている。tsifyというツールを使えばRustのserde（シリアライズ/デシリアライズライブラリ）のデータ構造からTypeScriptの型定義を自動生成でき、型安全性を保てる。一方で「自動バインディングは使わず、C++/JSのハイブリッドアプリのように手動で境界を管理すべき」という意見も。FirefoxがWeb APIをWASMから直接呼べるようにする提案を進めており、将来的にはwasm-bindgenが不要になる可能性も。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+WASMはブラウザだけでなく、サーバーサイドやエッジコンピューティングでも採用が広がっている。Rust + WASMの組み合わせは人気が高いが、実際に書くと痛みを伴う部分も多い。実践的なノウハウの共有は貴重。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「WASMの世界は少しずつ良くなっている」（mendyberger）— 改善の兆し
+- 「tsifyはRust/WASMの必須ツール。型安全性が保てる」（comagoosie）— 実用的なツール紹介
+- 「WASMバイナリフォーマットのデコーダをゼロから書いた。仕様が非常に明確」（pasxizeis）— 仕様の品質
+- 「FirefoxがWeb APIをWASMに直接公開する提案を進めている」（mendyberger）— 未来への期待
+- 「実践的な経験に基づいた良い記事」（複数ユーザー）— 記事の質
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「タイトルは'Notes on Writing WASM'なのに、実態はwasm-bindgenの問題点ばかり」（Tepix）— タイトル詐欺
+- 「embindと同じ問題。自動バインディングは複雑さと肥大化を招く。使うな」（flohofwoe）— 根本的な設計思想への批判
+- 「手動でC/JS境界を管理する方がシンプルで高速」（flohofwoe）— 別アプローチの提案
+- 「wasm-bindgenが'universally beloved'でないのは控えめな表現」（複数ユーザー）— ツールへの不満
+- 「WASMのC的インターフェースが根本的な制約」（mendyberger）— プラットフォームの限界
+
+</details>
+
+<hr />
+
+<h2 id="9-libreoffice欧州委員会に自らのガイダンス遵守を要請">9. LibreOffice：欧州委員会に自らのガイダンス遵守を要請</h2>
+<p><strong>原題</strong>: LibreOffice: Request to the European Commission to adhere to its own guidances
+<strong>URL</strong>: <a href="https://blog.documentfoundation.org/blog/2026/03/05/cra-guidances/">https://blog.documentfoundation.org/blog/2026/03/05/cra-guidances/</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47297453">https://news.ycombinator.com/item?id=47297453</a>
+<strong>スコア</strong>: 149 / <strong>コメント</strong>: 24件 / <strong>合計</strong>: 173</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+欧州委員会がCRA（Cyber Resilience Act（サイバーレジリエンス法: EU圏内で販売されるデジタル製品にセキュリティ要件を課す法律））のフィードバック用スプレッドシートをExcel形式（.xlsx）のみで提供していた問題。LibreOfficeの開発元であるThe Document Foundationが「EUのオープン標準ガイダンスに従ってODS（Open Document Spreadsheet）形式も提供すべき」と要請し、24時間以内にEU側が対応した。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+EUは自らのガイダンスでオープンフォーマットの使用を推奨しているにもかかわらず、政策フィードバックの手段としてMicrosoft Officeのライセンスを前提とするフォーマットのみを提供していた。The Document Foundationはこれを「手続き上の些細な見落とし」ではなく「プロセスに組み込まれた構造的バイアス」と指摘。ただし結果的にEU側は迅速に対応し、ODS版が追加された。提供されたODS版にはPDF拡張子が付いていたり、MS Office専用フォントが使われているといった問題も残っているが、対応自体は前向きに評価されている。そもそもフィードバックにスプレッドシートを使うこと自体への疑問の声も。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+オープンフォーマットとベンダーロックインの問題は、特にEUの公共セクターで重要なテーマ。政策立案プロセスへの参加に特定の商用ソフトウェアが必要という状況は、オープンソースコミュニティにとって看過できない問題。EUが24時間で対応したのは良いサイン。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「現在の記事には委員会がすでに要請を受け入れたと書いてある」（danmaz74）— 迅速な対応
+- 「24時間以内の対応は素晴らしい」（記事内容）— EU側の姿勢を評価
+- 「オープンフォーマットの重要性を再認識させてくれる」（複数ユーザー）— 啓蒙効果
+- 「The Document Foundationの行動力は見事」（複数ユーザー）— コミュニティの力
+- 「構造的バイアスの指摘は正しい」（記事内容）— 問題提起の的確さ
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+
+- 「単なる手続き上の見落としでは。構造的バイアスは言い過ぎ」（_fat_santa）— 問題の大きさへの疑問
+- 「政策担当者は実装者より能力が低いことが多い」（whirlwin）— 官僚の能力問題
+- 「ODS版をダウンロードしたら.pdf拡張子だった。リネームが必要」（dchest）— 対応の雑さ
+- 「ODS版にAptos Narrowフォント（MS Office）が使われている」（dchest）— 不完全な対応
+- 「そもそもフィードバックにスプレッドシートを使うのがおかしい」（jfengel）— 根本的な設計への疑問
+
+</details>
+
+<hr />
+
+<h2 id="10-framebook--初代macbookにframeworkの中身を移植">10. FrameBook — 初代MacBookにFrameworkの中身を移植</h2>
+<p><strong>原題</strong>: FrameBook
+<strong>URL</strong>: <a href="https://fb.edoo.gg">https://fb.edoo.gg</a>
+<strong>HN</strong>: <a href="https://news.ycombinator.com/item?id=47298044">https://news.ycombinator.com/item?id=47298044</a>
+<strong>スコア</strong>: 143 / <strong>コメント</strong>: 27件 / <strong>合計</strong>: 170</p>
+
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+2006年の初代MacBook（黒モデル）の筐体に、Framework Laptop（モジュラー設計で有名なノートPC）のパーツを移植して現代スペックに蘇らせるプロジェクト。64GBのRAMを搭載し、見た目はレトロだが中身は最新という魅力的なマシンに仕上がっている。</p>
+
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+作者は初代MacBookに特別な思い入れがあり、黒いMacBookはPowerBook G3以来の数少ない黒色MacBookだった。インスピレーションは古いMac/PCに最新パーツを入れるレトロフィット（既存の筐体に新しい部品を入れる改造）の記事や動画。Frameworkのマザーボードはモジュラー設計なので取り出しやすく、他の筐体に移植しやすい。ただしハンダ付けの技術が必要で、ワイヤーの絶縁体を通してハンダが吸い上がっている写真から、かなりの熱が基板パッドに伝わったのではという指摘も。完成品の重量が気になるところだが、現行MacBookより軽い可能性もある。</p>
+
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+Frameworkのモジュラー設計思想の可能性を示すプロジェクト。修理可能性（Right to Repair）やe-waste削減の観点からも、古い筐体を再利用するアイデアは時代に合っている。ThinkPadやTitanium PowerBookでやりたいという声も多く、レトロフィット文化の広がりを感じる。</p>
+
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+
+- 「64GB RAM搭載。HP Jordana筐体でも作りたい」（dlcarrier）— 他筐体への応用欲
+- 「Frameworkからe-bookリーダーが出たら最高」（seized）— Frameworkへの期待
+- 「お気に入りのThinkPadモデルでやりたい」（serf）— レトロフィット文化
+- 「チタニウムPowerBookの筐体でやりたい。美しいデザインだった」（asimovDev）— Apple旧デザインへの愛
+- 「MacBookプラスチック筐体を新しい中身で復活させるアイデアが好き」（tosh）— コンセプトへの共感
+
+</details>
+
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 3件）</summary>
+
+- 「ハンダ付けの技術が心配。ワイヤーの絶縁体を通して吸い上げている」（serf）— 製作品質への懸念
+- 「初代MacBookはパームレストの角が割れやすかった」（tosh）— 筐体の耐久性問題
+- 「完成品の重量が気になる」（tosh）— 実用面の疑問
+
+</details>
+
+<hr />
+
+<h2 id="用語集">用語集</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>用語</th>
+      <th>解説</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>GGUF</strong></td>
+      <td>AIモデルを圧縮して一般的なハードウェアで動かせるようにするファイルフォーマット</td>
+    </tr>
+    <tr>
+      <td><strong>MoE（Mixture of Experts）</strong></td>
+      <td>パラメータの一部だけを使って推論する効率的なAIアーキテクチャ。大きなモデルを軽く動かせる</td>
+    </tr>
+    <tr>
+      <td><strong>量子化（Quantization）</strong></td>
+      <td>モデルの数値精度を下げてメモリ使用量を減らす手法。4bit、8bitなどがある</td>
+    </tr>
+    <tr>
+      <td><strong>JIT（Just-In-Time）</strong></td>
+      <td>プログラム実行時にコードを機械語に変換して高速化する技術</td>
+    </tr>
+    <tr>
+      <td><strong>WASM（WebAssembly）</strong></td>
+      <td>ブラウザやサーバーでネイティブに近い速度でコードを実行する標準技術</td>
+    </tr>
+    <tr>
+      <td><strong>wasm-bindgen</strong></td>
+      <td>RustとJavaScript間のデータやり取りを自動化するツール</td>
+    </tr>
+    <tr>
+      <td><strong>HBM（High Bandwidth Memory）</strong></td>
+      <td>GPU向けの超高速メモリ。AIチップに大量に使われ、供給不足の原因に</td>
+    </tr>
+    <tr>
+      <td><strong>CRA（Cyber Resilience Act）</strong></td>
+      <td>EU圏内のデジタル製品にセキュリティ要件を課す法律</td>
+    </tr>
+    <tr>
+      <td><strong>Framework Laptop</strong></td>
+      <td>パーツの交換・修理が容易なモジュラー設計のノートPC</td>
+    </tr>
+    <tr>
+      <td><strong>CapEx（Capital Expenditure）</strong></td>
+      <td>設備投資。データセンター建設などの大型投資を指す</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+
+<script>
+(function() {
+  const source = document.getElementById('source');
+  if (!source) return;
+
+  // ========== Date extraction from page title ==========
+  const pageTitle = source.getAttribute('data-title') || '';
+  const dateMatch = pageTitle.match(/(\d{4})-(\d{2})-(\d{2})/);
+  const dateStr = dateMatch
+    ? dateMatch[1] + '.' + dateMatch[2] + '.' + dateMatch[3]
+    : '';
+  const shortDate = dateMatch
+    ? parseInt(dateMatch[2]) + '/' + parseInt(dateMatch[3])
+    : '';
+
+  // ========== Parse source content ==========
+  const h1 = source.querySelector('h1');
+  const allH2s = Array.from(source.querySelectorAll('h2'));
+
+  // Intro paragraph (first <p> after h1)
+  let introText = '';
+  if (h1) {
+    let next = h1.nextElementSibling;
+    while (next && (next.tagName === 'HR' || next.tagName === 'BR')) {
+      next = next.nextElementSibling;
+    }
+    if (next && next.tagName === 'P') {
+      introText = next.textContent.trim();
+    }
+  }
+
+  // Collect sections: each h2 + all siblings until next h2
+  const sections = allH2s.map(h2 => {
+    const content = [];
+    let sib = h2.nextElementSibling;
+    while (sib && sib.tagName !== 'H2') {
+      if (sib.tagName !== 'HR') content.push(sib);
+      sib = sib.nextElementSibling;
+    }
+    return { heading: h2, content };
+  });
+
+  // Separate articles (h2 starts with digit) from glossary
+  const articles = sections.filter(s => /^\d/.test(s.heading.textContent.trim()));
+  const glossarySec = sections.find(s => s.heading.textContent.includes('用語集'));
+
+  // ========== Parse glossary terms ==========
+  const glossaryTerms = [];
+  if (glossarySec) {
+    const table = glossarySec.content.find(el => el.tagName === 'TABLE');
+    if (table) {
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 2) {
+          glossaryTerms.push({
+            name: cells[0].textContent.trim(),
+            desc: cells[1].textContent.trim()
+          });
+        }
+      });
+    }
+  }
+
+  // ========== Match glossary terms to articles ==========
+  function findRelevantTerms(contentElements) {
+    const text = contentElements.map(el => el.textContent).join(' ');
+    return glossaryTerms.filter(term => {
+      const baseName = term.name.replace(/（.*/, '').replace(/\(.*/, '').trim();
+      return text.includes(baseName);
+    });
+  }
+
+  // ========== Parse a single article ==========
+  function parseArticle(heading, contentElements) {
+    const fullText = contentElements.map(el => el.textContent).join('\n');
+    const headingText = heading.textContent.replace(/^\d+\.\s*/, '').trim();
+
+    // Metadata — extract via regex from full text (handles single-paragraph metadata)
+    let origTitle = '';
+    let m = fullText.match(/原題[:：]\s*(.+?)(?=\s*URL[:：]|\n|$)/);
+    if (m) origTitle = m[1].trim();
+
+    let url = '';
+    m = fullText.match(/URL[:：]\s*(https?:\/\/\S+)/);
+    if (m) url = m[1].trim();
+
+    let hnUrl = '';
+    m = fullText.match(/HN[:：]\s*(https?:\/\/\S+)/);
+    if (m) hnUrl = m[1].trim();
+
+    let score = '', comments = '', total = '';
+    m = fullText.match(/スコア[:：]\s*([\d,]+)/);
+    if (m) score = m[1].replace(/,/g, '');
+    m = fullText.match(/コメント[:：]\s*([\d,]+)件?/);
+    if (m) comments = m[1].replace(/,/g, '');
+    m = fullText.match(/合計[:：]\s*([\d,]+)/);
+    if (m) total = m[1].replace(/,/g, '');
+
+    // Section content — from paragraphs with known labels
+    let summary = '', detail = '', whyNotable = '';
+    contentElements.forEach(el => {
+      if (el.tagName !== 'P') return;
+      const strong = el.querySelector('strong');
+      if (!strong) return;
+      const label = strong.textContent.trim();
+      const afterLabel = el.textContent.replace(label, '').trim();
+      if (/^ざっくり/.test(label)) summary = afterLabel;
+      else if (/^もう少し/.test(label)) detail = afterLabel;
+      else if (/^なぜ注目/.test(label)) whyNotable = afterLabel;
+    });
+
+    // Details blocks (comment sections)
+    const detailsBlocks = contentElements.filter(el => el.tagName === 'DETAILS');
+
+    return { headingText, origTitle, url, hnUrl, score, comments, total,
+             summary, detail, whyNotable, detailsBlocks };
+  }
+
+  // ========== Escape HTML for safe insertion ==========
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ========== Build Carousel ==========
+  const carousel = document.getElementById('carousel');
+  const totalSlides = 1 + articles.length;
+
+  // --- Slide 0: Title ---
+  const titleSlide = document.createElement('div');
+  titleSlide.className = 'slide slide--title';
+  titleSlide.innerHTML =
+    '<div class="slide-inner">' +
+      (dateStr ? '<div class="date-badge">' + esc(dateStr) + '</div>' : '') +
+      '<h1>HN Digest<span> — ' + esc(shortDate) + '</span></h1>' +
+      '<p>' + esc(introText) + '</p>' +
+      '<div class="article-count">' + articles.length + ' articles</div>' +
+      '<div class="arrow-hint">&#8594; スワイプまたは矢印キーで次へ</div>' +
+    '</div>';
+  carousel.appendChild(titleSlide);
+
+  // --- Article Slides ---
+  articles.forEach((section, idx) => {
+    const art = parseArticle(section.heading, section.content);
+    const relevantTerms = findRelevantTerms(section.content);
+
+    const slide = document.createElement('div');
+    slide.className = 'slide slide--article';
+
+    // Details HTML (with open attribute + fix raw markdown lists)
+    const detailsHTML = art.detailsBlocks.map(el => {
+      const clone = el.cloneNode(true);
+      clone.setAttribute('open', '');
+      // If kramdown didn't convert markdown lists inside <details>,
+      // the content will be raw text with "- " prefixes. Fix it.
+      if (!clone.querySelector('ul') && !clone.querySelector('ol')) {
+        const summary = clone.querySelector('summary');
+        const summaryText = summary ? summary.textContent.trim() : '';
+        const rawText = clone.textContent.replace(summaryText, '').trim();
+        if (rawText.includes('- ') || rawText.includes('「')) {
+          const lines = rawText.split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
+          const items = lines.map(l => l.replace(/^[-–—]\s*/, ''));
+          const ul = document.createElement('ul');
+          items.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            ul.appendChild(li);
+          });
+          // Remove all content except summary, then append the list
+          while (clone.lastChild && clone.lastChild !== summary) {
+            clone.removeChild(clone.lastChild);
+          }
+          clone.appendChild(ul);
+        }
+      }
+      return clone.outerHTML;
+    }).join('\n');
+
+    // Sidebar glossary (desktop)
+    let sidebarHTML = '';
+    if (relevantTerms.length > 0) {
+      sidebarHTML =
+        '<aside class="article-sidebar">' +
+          '<div class="sidebar-label">用語</div>' +
+          relevantTerms.map(t =>
+            '<div class="sidebar-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+        '</aside>';
+    }
+
+    // Inline glossary (mobile)
+    let inlineGlossaryHTML = '';
+    if (relevantTerms.length > 0) {
+      inlineGlossaryHTML =
+        '<div class="inline-glossary">' +
+          '<div class="sidebar-label">関連用語</div>' +
+          '<div class="inline-terms">' +
+          relevantTerms.map(t =>
+            '<div class="inline-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+          '</div>' +
+        '</div>';
+    }
+
+    // Links
+    const urlLink = art.url
+      ? '<a href="' + esc(art.url) + '" target="_blank" rel="noopener">元記事 &#8599;</a>'
+      : '';
+    const hnLink = art.hnUrl
+      ? '<a href="' + esc(art.hnUrl) + '" target="_blank" rel="noopener">HN &#8599;</a>'
+      : '';
+
+    // Build sections conditionally
+    let sectionsHTML = '';
+    if (art.summary) {
+      sectionsHTML +=
+        '<div class="section-label">ざっくり言うと</div>' +
+        '<p>' + esc(art.summary) + '</p>';
+    }
+    if (art.detail) {
+      sectionsHTML +=
+        '<div class="section-label">もう少し詳しく</div>' +
+        '<p>' + esc(art.detail) + '</p>';
+    }
+    if (art.whyNotable) {
+      sectionsHTML +=
+        '<div class="section-label">なぜ注目？</div>' +
+        '<p>' + esc(art.whyNotable) + '</p>';
+    }
+
+    const mainContent =
+      '<div class="article-main">' +
+        '<div class="article-number">ARTICLE ' + (idx + 1) + '</div>' +
+        '<h2>' + esc(art.headingText) + '</h2>' +
+        (art.origTitle ? '<div class="meta-row"><span>' + esc(art.origTitle) + '</span></div>' : '') +
+        '<div class="meta-row">' + urlLink + hnLink + '</div>' +
+        '<div class="stats">' +
+          (art.score ? '<div class="stat"><strong>' + esc(art.score) + '</strong> pts</div>' : '') +
+          (art.comments ? '<div class="stat"><strong>' + esc(art.comments) + '</strong> comments</div>' : '') +
+          (art.total ? '<div class="stat">Total <strong>' + esc(art.total) + '</strong></div>' : '') +
+        '</div>' +
+        sectionsHTML +
+        detailsHTML +
+        inlineGlossaryHTML +
+      '</div>';
+
+    slide.innerHTML =
+      '<div class="article-layout">' +
+        mainContent +
+        sidebarHTML +
+      '</div>';
+
+    carousel.appendChild(slide);
+  });
+
+  // ========== Navigation Dots ==========
+  const navDots = document.getElementById('navDots');
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'スライド ' + (i + 1) + ' へ');
+    dot.addEventListener('click', () => goToSlide(i));
+    navDots.appendChild(dot);
+  }
+
+  // ========== State & Navigation ==========
+  let currentSlide = 0;
+  const progressBar = document.getElementById('progressBar');
+  const miniHeader = document.getElementById('miniHeader');
+  const arrowLeft = document.getElementById('arrowLeft');
+  const arrowRight = document.getElementById('arrowRight');
+
+  function updateUI(index) {
+    currentSlide = index;
+    const progress = totalSlides > 1 ? (index / (totalSlides - 1)) * 100 : 100;
+    progressBar.style.width = progress + '%';
+    miniHeader.textContent = (index + 1) + ' / ' + totalSlides;
+
+    navDots.querySelectorAll('.nav-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === index);
+    });
+
+    arrowLeft.classList.toggle('hidden', index === 0);
+    arrowRight.classList.toggle('hidden', index === totalSlides - 1);
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides) return;
+    carousel.children[index].scrollIntoView({
+      behavior: 'smooth', block: 'nearest', inline: 'start'
+    });
+  }
+
+  // ========== Scroll Detection ==========
+  let scrollTimeout;
+  carousel.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const index = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+      updateUI(index);
+    }, 50);
+  }, { passive: true });
+
+  // ========== Arrow Buttons ==========
+  arrowLeft.addEventListener('click', () => goToSlide(currentSlide - 1));
+  arrowRight.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+  // ========== Keyboard Navigation ==========
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(currentSlide - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goToSlide(currentSlide + 1); }
+  });
+
+  // ========== Initial State ==========
+  updateUI(0);
+})();
+</script>
+
+</body>
+</html>
