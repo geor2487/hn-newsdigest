@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>HN Digest — 3/12</title>
+<meta name="description" content="Hacker Newsの最新記事を日本語で毎日まとめています">
+<link rel="icon" href="/hn-newsdigest/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/hn-newsdigest/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ========== Reset & Base ========== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'DM Sans', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background-color: #0c0d12;
+    color: #c8cad0;
+    line-height: 1.8;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(249, 115, 22, 0.35);
+    color: #fff;
+  }
+
+  /* ========== Progress Bar ========== */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f97316, #fb923c);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.15s ease-out;
+  }
+
+  /* ========== Mini Header ========== */
+  .mini-header {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #777b88;
+    letter-spacing: 0.05em;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    user-select: none;
+  }
+
+  /* ========== Home Button ========== */
+  .home-btn {
+    position: fixed;
+    top: 12px;
+    left: 20px;
+    z-index: 900;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #555a6a;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .home-btn:hover {
+    color: #f97316;
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  /* ========== Scroll Container ========== */
+  .carousel {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    height: 100vh;
+    width: 100vw;
+    scrollbar-width: none;
+  }
+
+  .carousel::-webkit-scrollbar { display: none; }
+
+  /* ========== Slide ========== */
+  .slide {
+    flex: 0 0 100vw;
+    min-width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 32px 100px;
+    position: relative;
+  }
+
+  .slide--article { justify-content: center; }
+
+  .slide-inner {
+    max-width: 640px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+  }
+
+  .slide-inner::-webkit-scrollbar { width: 4px; }
+  .slide-inner::-webkit-scrollbar-track { background: transparent; }
+  .slide-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  /* ========== Article Layout: content + glossary sidebar ========== */
+  .article-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    max-width: 960px;
+    width: 100%;
+    max-height: calc(100vh - 160px);
+  }
+
+  .article-main {
+    flex: 1;
+    min-width: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+    padding-right: 8px;
+  }
+
+  .article-main::-webkit-scrollbar { width: 4px; }
+  .article-main::-webkit-scrollbar-track { background: transparent; }
+  .article-main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  .article-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+  }
+
+  .article-sidebar::-webkit-scrollbar { width: 3px; }
+  .article-sidebar::-webkit-scrollbar-track { background: transparent; }
+  .article-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-term {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .sidebar-term:hover {
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  .sidebar-term .term-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #fb923c;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-term .term-desc {
+    font-size: 0.78rem;
+    color: #777b88;
+    line-height: 1.6;
+  }
+
+  /* ========== Title Slide ========== */
+  .slide--title { text-align: center; }
+
+  .slide--title h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    color: #ecedf2;
+  }
+
+  .slide--title h1 span { color: #f97316; }
+
+  .slide--title p {
+    font-size: 1.1rem;
+    color: #777b88;
+    line-height: 1.9;
+  }
+
+  .slide--title .date-badge {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 6px 18px;
+    border-radius: 24px;
+    margin-bottom: 24px;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(251, 146, 60, 0.15);
+  }
+
+  .slide--title .article-count {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    letter-spacing: 0.05em;
+  }
+
+  .slide--title .arrow-hint {
+    margin-top: 48px;
+    font-size: 0.85rem;
+    color: #555a6a;
+    animation: pulse-hint 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-hint {
+    0%, 100% { opacity: 0.5; transform: translateX(0); }
+    50% { opacity: 1; transform: translateX(6px); }
+  }
+
+  /* ========== Article Slide ========== */
+  .slide--article .article-number {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fb923c;
+    background: rgba(251, 146, 60, 0.1);
+    padding: 4px 12px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    letter-spacing: 0.06em;
+    border: 1px solid rgba(251, 146, 60, 0.12);
+  }
+
+  .slide--article h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: #ecedf2;
+    letter-spacing: -0.01em;
+  }
+
+  .slide--article .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    color: #555a6a;
+  }
+
+  .slide--article .meta-row a {
+    color: #f97316;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .slide--article .meta-row a:hover {
+    color: #fb923c;
+    text-decoration: underline;
+  }
+
+  .slide--article .stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .slide--article .stats .stat {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 6px 14px;
+    border-radius: 8px;
+    color: #888d9e;
+    font-weight: 500;
+  }
+
+  .slide--article .stats .stat strong {
+    color: #f97316;
+    font-weight: 700;
+  }
+
+  .slide--article .section-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #f97316;
+    margin-bottom: 6px;
+    margin-top: 20px;
+  }
+
+  .slide--article p {
+    font-size: 0.95rem;
+    color: #a0a4b2;
+    margin-bottom: 12px;
+    line-height: 1.9;
+  }
+
+  /* ========== Comments (open by default) ========== */
+  .slide--article details {
+    margin-top: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .slide--article details + details { margin-top: 8px; }
+
+  .slide--article summary {
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #c8cad0;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+    transition: background 0.15s;
+    list-style: none;
+  }
+
+  .slide--article summary::-webkit-details-marker { display: none; }
+
+  .slide--article summary::before {
+    content: '− ';
+    font-weight: 700;
+    color: #f97316;
+    margin-right: 4px;
+  }
+
+  .slide--article details:not([open]) summary::before { content: '+ '; }
+
+  .slide--article summary:hover {
+    background: rgba(249, 115, 22, 0.06);
+  }
+
+  .slide--article details ul {
+    list-style: none;
+    padding: 12px 16px;
+  }
+
+  .slide--article details li {
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .slide--article details li:last-child { border-bottom: none; }
+
+  /* Details with plain paragraph (no list) */
+  .slide--article details > p {
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: #888d9e;
+    line-height: 1.8;
+  }
+
+  /* ========== Navigation Arrows ========== */
+  .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 800;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #888d9e;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .nav-arrow:hover {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);
+  }
+
+  .nav-arrow:active { transform: translateY(-50%) scale(0.92); }
+
+  .nav-arrow--left { left: 20px; }
+  .nav-arrow--right { right: 20px; }
+
+  .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+
+  /* ========== Navigation Dots ========== */
+  .nav-dots {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 800;
+    display: flex;
+    gap: 10px;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 10px 18px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: none;
+    padding: 0;
+  }
+
+  .nav-dot:hover { background: rgba(255, 255, 255, 0.3); }
+
+  .nav-dot.active {
+    background: #f97316;
+    width: 28px;
+    border-radius: 5px;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+  }
+
+  /* ========== Inline Glossary (mobile) ========== */
+  .inline-glossary .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555a6a;
+    margin-bottom: 10px;
+  }
+
+  .inline-glossary .inline-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .inline-glossary .inline-term {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+
+  .inline-glossary .inline-term .term-name {
+    font-weight: 600;
+    color: #fb923c;
+  }
+
+  .inline-glossary .inline-term .term-desc {
+    color: #777b88;
+    margin-top: 2px;
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 960px) {
+    .article-sidebar { display: none; }
+    .inline-glossary {
+      display: block !important;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  @media (min-width: 961px) {
+    .inline-glossary { display: none !important; }
+  }
+
+  @media (max-width: 700px) {
+    .slide { padding: 50px 20px 90px; }
+    .slide--title h1 { font-size: 2rem; }
+    .slide--article h2 { font-size: 1.25rem; }
+    .nav-arrow { width: 40px; height: 40px; font-size: 1rem; }
+    .nav-arrow--left { left: 10px; }
+    .nav-arrow--right { right: 10px; }
+    .home-btn .home-btn-text { display: none; }
+    .nav-dots { gap: 6px; padding: 8px 12px; }
+    .nav-dot { width: 8px; height: 8px; }
+    .nav-dot.active { width: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Mini Header -->
+<div class="mini-header" id="miniHeader"></div>
+
+<!-- Home Button -->
+<a href="/hn-newsdigest/" class="home-btn" aria-label="ホームに戻る">
+  <span>&#8592;</span>
+  <span class="home-btn-text">HN Digest</span>
+</a>
+
+<!-- Navigation Arrows -->
+<button class="nav-arrow nav-arrow--left hidden" id="arrowLeft" aria-label="前のスライド">&#8592;</button>
+<button class="nav-arrow nav-arrow--right" id="arrowRight" aria-label="次のスライド">&#8594;</button>
+
+<!-- Carousel Container -->
+<div class="carousel" id="carousel"></div>
+
+<!-- Navigation Dots -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- Hidden source content rendered by Jekyll/kramdown -->
+<div id="source" data-title="HN Digest — 3/12" style="display:none">
+<h1 id="hn-digest-3-12">HN Digest — 3/12</h1>
+<h2 id="1-ai生成コメントを投稿するな-hnは人間同士の会話の場だ">1. AI生成コメントを投稿するな — HNは人間同士の会話の場だ</h2>
+<p><strong>原題</strong>: Don't post generated/AI-edited comments. HN is for conversation between humans
+<strong>URL</strong>: https://news.ycombinator.com/newsguidelines.html#generated
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47340079
+<strong>スコア</strong>: 3145 / <strong>コメント</strong>: 1197件 / <strong>合計</strong>: 4342</p>
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+Hacker Newsの運営がガイドラインを改訂し、AI生成・AI編集されたコメントの投稿を明確に禁止した。HNは人間同士が知的好奇心をもとに会話する場であり、LLM（大規模言語モデル: ChatGPTなどの基盤となるAI技術）が書いた文章はその趣旨に反するという考えだ。スコア3000超え・コメント1200件近くと、今年最大級の反響を呼んでいる。</p>
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+HNのガイドラインページに「Generated/AI-edited comments」というセクションが新設された。これは、コメント全体をAIに生成させるケースだけでなく、自分の文章をAIに「洗練」させて投稿するケースも含む。背景には、LLMの普及でAI生成テキストが爆発的に増え、オンラインフォーラムの質が低下しているという危機感がある。HNは「知的好奇心を満たすもの」を投稿するコミュニティとして20年近い歴史を持ち、その文化を守るための措置だ。AI企業に投資するYCombinator（HNの運営母体）が自らのプラットフォームでAI利用を制限するという皮肉も指摘されている。ただし、検出は技術的に難しく、最終的にはコミュニティの自律に頼る部分が大きい。</p>
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+AIが「人間の知識の平均値」を生成するのに対し、HNの価値は個人の独自の視点や専門知識にある。このルール変更は、AI時代におけるオンラインコミュニティの品質維持という普遍的な問題を象徴している。今後、他のフォーラムやSNSでも同様の議論が広がる可能性が高い。</p>
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+<ul>
+<li>「LLMで文法を直してもらっていたが、同僚や教授に『明らかにAI』と指摘された。多少の間違いは許容するがAI生成は許さないと言われた」（uni_baconcat）— 非ネイティブ話者のジレンマ</li>
+<li>「大歓迎。HNに来る理由は、賢い人たちの考えを聞くため。LLMから得られるものではない」（nkh）— コミュニティの本質的価値</li>
+<li>「100%支持。HNはテック業界で唯一定期的に読むフォーラム。投稿と会話の質が高いからこそ」（kjuulh）— 長年のユーザーからの賛同</li>
+<li>「生成AIは人類の知識の"平均値"を表している。全ての思考と創造性が平均化される未来は暗い」（caditinpiscinam）— AIの本質的限界への指摘</li>
+<li>「自分の考えを自分で考えることが大事。"最初の下書き"をAIに任せるのは、本当の努力を省くことだ」（nkh）— 思考プロセスの重要性</li>
+</ul>
+</details>
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+<ul>
+<li>「AI企業に資金提供しながら、自分のフォーラムではAI禁止というのは皮肉だ」（meiuqer）— YCombinatorとの矛盾</li>
+<li>「英語が母語でない人がAIで文法チェックするのも禁止なのか？線引きが曖昧」（uni_baconcat）— 非ネイティブへの影響</li>
+<li>「検出はほぼ不可能。結局は善意に頼るしかない」（複数ユーザー）— 実効性への疑問</li>
+<li>「AI関連記事ばかりが増えている方が問題。コンテンツの偏りも議論すべき」（kjuulh）— 記事選定の問題</li>
+<li>「スペルチェックとAI編集の境界はどこ？グレーゾーンが多すぎる」（複数ユーザー）— ルールの曖昧さ</li>
+</ul>
+</details>
+<hr />
+<h2 id="2-macbook-neo-600ドルのapple-siliconラップトップ">2. MacBook Neo — 600ドルのApple Siliconラップトップ</h2>
+<p><strong>原題</strong>: The MacBook Neo
+<strong>URL</strong>: https://daringfireball.net/2026/03/the_macbook_neo
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47334293
+<strong>スコア</strong>: 469 / <strong>コメント</strong>: 773件 / <strong>合計</strong>: 1242</p>
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+Appleが600ドルの新しいMacBook「Neo」を発売した。iPhone 16 ProのA18 Proチップ（SoC: System on a Chip、CPUやGPUなどを1つのチップに統合したもの）を搭載し、MacBookのラインナップを大幅に拡大した。John GruberがDaring Fireballで詳細レビューを掲載している。</p>
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+2015年の時点で、iPhone 6SのA9チップが当時のMacBookと同等のベンチマーク（性能測定）スコアを出していた。あれから10年、AppleのAシリーズチップがMacを動かせるほど強力であることがついに製品として実現した。MacBook NeoはA18 Proを搭載し、Mシリーズではなくiphone向けチップを使った初のMac。統合メモリアーキテクチャ（ユニファイドメモリ: CPUとGPUがメモリを共有する設計）により、低価格ながら優れた性能を実現している。ただし、カメラのハードウェアインジケーターライトが省略されており、プライバシー面での懸念も指摘されている。Gruberは「600〜700ドル帯のx86 PCラップトップで、あらゆる指標でNeoに勝てるものはない」と述べている。</p>
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+600ドルという価格帯でAppleが参入したことで、PC業界全体に影響を与える可能性がある。Windowsラップトップメーカーは、SKU（製品型番）の多さやマーケティングの混乱で既に苦境にあり、MacBook Neoが「コンシューマー向けラップトップの新基準」になるかもしれない。</p>
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+<ul>
+<li>「半年前に初めてMacBook Airを買ったが、大企業の製品がこんなに期待を超えるとは驚きだった」（Fraterkes）— 初Mac体験</li>
+<li>「"コンテンツ消費デバイス"というのは間違い。チップは強力で、本格的な作業もできる」（efficax）— 性能評価</li>
+<li>「コンシューマーPC業界は存亡の危機に近い。大手メーカーはSKUが多すぎてマーケティングが酷い」（KingMachiavelli）— PC業界への影響</li>
+<li>「Appleのハードウェアは一般に優れている」（drnick1）— ハードウェア品質の評価</li>
+<li>「M1以降のApple Siliconの進化を考えると、A18 ProでMacを出すのは当然の流れ」（複数ユーザー）— 技術的妥当性</li>
+</ul>
+</details>
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+<ul>
+<li>「Appleハードウェアは優れているが、ソフトウェア品質については反論する。macOSは年々バグが増えている」（drnick1）— ソフトウェア品質への懸念</li>
+<li>「カメラインジケーターライトがないのはプライバシー上の重大な後退」（saagarjha）— セキュリティ懸念</li>
+<li>「600ドルでも途上国では高額。真にグローバルな市場を狙うなら300ドル台が必要」（複数ユーザー）— 価格の相対性</li>
+<li>「Aシリーズチップの制約で、プロ用途には向かない。Mシリーズとの棲み分けが曖昧」（複数ユーザー）— ポジショニングの疑問</li>
+<li>「修理の困難さやポートの少なさは相変わらず。Appleエコシステムへのロックインが前提」（複数ユーザー）— Apple一般への批判</li>
+</ul>
+</details>
+<hr />
+<h2 id="3-temporal-javascriptの「時間」を修正する9年間の旅">3. Temporal: JavaScriptの「時間」を修正する9年間の旅</h2>
+<p><strong>原題</strong>: Temporal: The 9-year journey to fix time in JavaScript
+<strong>URL</strong>: https://bloomberg.github.io/js-blog/post/temporal/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47336989
+<strong>スコア</strong>: 587 / <strong>コメント</strong>: 197件 / <strong>合計</strong>: 784</p>
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+JavaScriptの日付・時刻処理を根本的に改善する新しいAPI「Temporal」が、9年の開発期間を経てついにブラウザに搭載され始めた。従来の`Date`オブジェクトは設計上の問題が多く、開発者を長年悩ませてきた。Bloombergのエンジニアが中心となって進めたこの提案の道のりが詳しく語られている。</p>
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+JavaScriptの`Date`オブジェクトは1995年にJavaから移植されたもので、タイムゾーン処理が不完全、ミュータブル（変更可能: 一度作ったオブジェクトの中身を後から書き換えられてしまう設計）、月が0始まりなど、多くの落とし穴がある。そのため、moment.jsやdate-fnsといった外部ライブラリが事実上の標準として使われてきた。Temporalは TC39（JavaScriptの標準化委員会）のプロセスを通じて、2017年のStage 1から2026年のStage 4まで段階的に進められた。「瞬間（Instant）」と「カレンダー上の日時」を明確に区別するなど、時間の本質的な複雑さに正面から向き合った設計になっている。Firefoxではボランティアの André Bargull が単独で実装を完了させた。</p>
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+Web開発者なら誰もが苦しんだ`Date`の問題がついに解決に向かう。ブラウザネイティブでタイムゾーン対応の日時処理ができるようになれば、moment.jsのような大きなライブラリを読み込む必要がなくなり、Webアプリのバンドルサイズ削減にも貢献する。9年という期間は、Web標準化の難しさと重要性を物語っている。</p>
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+<ul>
+<li>「Temporalは時間管理の本質的な複雑さに向き合うことを強制する。Dateが引き起こすミスを構造的に防げる」（wesselbindt）— 設計の正しさ</li>
+<li>「Pythonでも似たようなISO8601パース問題を10年かけて解決した。標準化は時間がかかる」（Animats）— 他言語との比較</li>
+<li>「Firefoxでは1人のボランティアが全実装を完了させた。素晴らしい貢献」（Vinnl）— コミュニティの力</li>
+<li>「JavaのJoda-Time→JSR310の旅と似ている。イミュータブルな日時型は正しいアプローチ」（plucas）— Java経験からの共感</li>
+<li>「moment.jsからの移行が楽しみ。バンドルサイズの削減も期待できる」（複数ユーザー）— 実用面での期待</li>
+</ul>
+</details>
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+<ul>
+<li>「APIはまだ好みではない。データとロジックの分離がされていない。JSONシリアライズを考えると不便」（VanCoding）— API設計への不満</li>
+<li>「9年は長すぎる。Web標準化プロセスに根本的な問題があるのでは」（複数ユーザー）— プロセスへの批判</li>
+<li>「既存のライブラリで十分。ブラウザネイティブにする必要性が薄い」（複数ユーザー）— 必要性への疑問</li>
+<li>「Stage 4になっても全ブラウザ対応まではさらに時間がかかる。polyfillは当分必要」（複数ユーザー）— 普及までの道のり</li>
+<li>「カレンダーシステムの多様性に対応しようとして、APIが複雑になりすぎている」（複数ユーザー）— 複雑性の懸念</li>
+</ul>
+</details>
+<hr />
+<h2 id="4-webassemblyをweb上の「一級市民」にする">4. WebAssemblyをWeb上の「一級市民」にする</h2>
+<p><strong>原題</strong>: Making WebAssembly a first-class language on the Web
+<strong>URL</strong>: https://hacks.mozilla.org/2026/02/making-webassembly-a-first-class-language-on-the-web/
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47331811
+<strong>スコア</strong>: 476 / <strong>コメント</strong>: 166件 / <strong>合計</strong>: 642</p>
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+Mozillaのエンジニアが、WebAssembly（Wasm: ブラウザ上で高速に動くバイナリ形式のプログラム）が現在「二級市民」として扱われている問題を指摘し、解決策としてWebAssembly Componentsを提案している。2017年のリリース以来、言語機能は充実してきたが、Web APIとの統合が不十分なままだ。</p>
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+Wasmは言語としてはSIMD（Single Instruction Multiple Data: 1つの命令で複数のデータを同時処理する技術）、GC（ガベージコレクション: 不要になったメモリを自動で解放する仕組み）、例外処理など多くの機能が追加されてきた。しかし、DOM操作やWeb APIへのアクセスには常にJavaScriptを経由する必要があり、開発者体験が悪い。この「Wasmの崖」が採用を阻んでいる。WebAssembly Componentsは、WasmモジュールがWeb APIに直接アクセスできるようにする仕組みで、言語固有のグルーコード（異なるシステムを繋ぐための仲介コード）を不要にすることを目指している。現状ではWasmを使うのは大企業が中心で、個人開発者やスタートアップにとっては導入コストが高すぎる。</p>
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+Wasmが真にWebの一級市民になれば、Rust・Go・C++などあらゆる言語でWebアプリを直接書ける世界が近づく。JavaScriptの独占が終わる可能性を秘めた、Web の未来に関わる重要な議論だ。</p>
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+<ul>
+<li>「"一級市民"が重要なのは、開発者がプラットフォームを拒否する理由はピーク性能ではなく摩擦だから」（ventuss_ovo）— 開発者体験の本質</li>
+<li>「WebAssembly Componentsの本を読むと実践的な理解が深まる」（hardwaresofton）— リソース共有</li>
+<li>「ツールチェーンの複雑さは本当にWasmの崖。毎回使うたびに認知的コストを感じる」（steve_adams_86）— 実体験からの共感</li>
+<li>「Web APIの巨大なモノリスを分解する良い機会」（ilaksh）— 構造改革の視点</li>
+<li>「Componentsの方向性は正しい。IDLベースのアプローチを最初からやるべきだった」（mananaysiempre）— 技術的評価</li>
+</ul>
+</details>
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+<ul>
+<li>「Interface Typesの人たちが最初にWebIDLサポートを放棄したのが失敗。5年前にできたはずのことだ」（mananaysiempre）— 過去の判断ミス</li>
+<li>「JavaScriptで十分な場面が多い。Wasmのユースケースは限定的」（複数ユーザー）— 必要性への疑問</li>
+<li>「また新しいIDLを作るのか。既存のものを使えばいい」（mananaysiempre）— 標準の乱立</li>
+<li>「ツールチェーンが複雑すぎて、結局大企業しか使えない状況は変わらない」（steve_adams_86）— 採用障壁</li>
+<li>「Wasmの本来の用途はパフォーマンスクリティカルな処理であり、DOM操作は目指すべきではない」（複数ユーザー）— 方向性への異論</li>
+</ul>
+</details>
+<hr />
+<h2 id="5-マッキンゼーのaiプラットフォーム「lilli」をハックした方法">5. マッキンゼーのAIプラットフォーム「Lilli」をハックした方法</h2>
+<p><strong>原題</strong>: How we hacked McKinsey's AI platform
+<strong>URL</strong>: https://codewall.ai/blog/how-we-hacked-mckinseys-ai-platform
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47333627
+<strong>スコア</strong>: 418 / <strong>コメント</strong>: 168件 / <strong>合計</strong>: 586</p>
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+セキュリティ企業CodeWallが、マッキンゼーの内部AIプラットフォーム「Lilli」を自律型攻撃エージェントで2時間以内にハックし、本番データベースへのフルアクセスを取得した。認証情報もインサイダー知識もなし、ドメイン名だけからのスタートだった。</p>
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+Lilliはマッキンゼーの4万3千人以上の従業員が使う社内AIプラットフォームで、10万件以上の内部文書に対するRAG（Retrieval-Augmented Generation: 外部データベースから情報を検索してAIの回答に組み込む手法）検索を提供している。攻撃エージェントはまずAPI文書が公開されていることを発見し、200以上のエンドポイントのうち22個が認証なしでアクセス可能だった。そのうちの1つで、JSONキー（フィールド名）がSQLに直接連結されるSQLインジェクション（SQL: データベースを操作する言語。インジェクションとは、悪意のあるSQL文を外部から注入する攻撃手法）の脆弱性を発見。15回のブラインドイテレーション（エラーメッセージから情報を少しずつ推測する手法）を経て、本番データが流出し始めた。数千万件のメッセージや従業員データにアクセスできた。</p>
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+「世界最高峰のコンサルティングファーム」でさえこのレベルのセキュリティ脆弱性を抱えていたという事実が衝撃的。さらに、AIエージェントが自律的にターゲットを選定して攻撃を実行したという点も、AI時代の脅威の変化を示している。プロンプトインジェクションではなく、古典的なSQLインジェクションだったのも皮肉な点だ。</p>
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+<ul>
+<li>「プロンプトインジェクションかと思ったら、古典的なSQLインジェクションだった。基本が大事」（joenot443）— 技術的な発見</li>
+<li>「AIエージェントがペンテストを自動化できる時代。攻撃者側もAIを使う前提でセキュリティを考えるべき」（複数ユーザー）— AI時代のセキュリティ</li>
+<li>「API文書を公開していたのが根本原因。基本的なセキュリティ対策の欠如」（複数ユーザー）— 原因分析</li>
+<li>「Lilliは元々VPN+SSO必須の内部ツールだった。いつ公開されたのかが気になる」（frankfrank13）— 内部事情</li>
+<li>「責任ある開示ポリシーに従って報告したのは正しい行動」（複数ユーザー）— 倫理的対応</li>
+</ul>
+</details>
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+<ul>
+<li>「CodeWallという会社は聞いたことがない。マッキンゼーからの公式な確認がない」（sigmar）— 信頼性への疑問</li>
+<li>「マッキンゼーが"世界クラスの技術チーム"という記述は業界の評判と合わない」（fhd2）— 誇張への指摘</li>
+<li>「"AIエージェントが自律的にターゲットを選んだ"のは、結局人間がセットアップした環境でのこと」（bee_rider）— タイトルの誇張</li>
+<li>「ペンテストの結果を宣伝に使うのは利益相反がある」（複数ユーザー）— マーケティング目的への懸念</li>
+<li>「外部ペンテスト企業が必須なのに脆弱性があったのは、プロセスの問題」（frankfrank13）— 組織的な問題</li>
+</ul>
+</details>
+<hr />
+<h2 id="6-bitnet-cpuで動く1000億パラメータの1ビットモデル">6. BitNet: CPUで動く1000億パラメータの1ビットモデル</h2>
+<p><strong>原題</strong>: BitNet: 100B Param 1-Bit model for local CPUs
+<strong>URL</strong>: https://github.com/microsoft/BitNet
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47334694
+<strong>スコア</strong>: 323 / <strong>コメント</strong>: 160件 / <strong>合計</strong>: 483</p>
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+MicrosoftがBitNet b1.58の推論フレームワーク「bitnet.cpp」を公開した。通常のLLM（大規模言語モデル）が16ビットや32ビットの浮動小数点数を使うのに対し、わずか1.58ビット（-1、0、1の3値）でモデルの重みを表現する。1000億パラメータのモデルでも単一CPUで人間の読書速度（5〜7トークン/秒）で動作する。</p>
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+従来のLLMは膨大なメモリと計算資源を必要とし、ローカル実行はハイエンドGPUが前提だった。BitNetは重みを3値（-1、0、1）に量子化（精度を下げてデータサイズを圧縮する手法）することで、メモリ使用量と消費電力を劇的に削減する。ARM CPUで1.37〜5.07倍の高速化、55〜70%の省エネを達成。x86 CPUでは2.37〜6.17倍の高速化と71〜82%の省エネ。ただし、同等の性能を得るにはFP16（16ビット浮動小数点）モデルの4〜5倍のパラメータ数が必要とされる。現時点ではGPU推論もサポートされ、NPU（Neural Processing Unit: AI処理専用チップ）対応も予定されている。</p>
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+LLMをクラウドに頼らずローカルで動かせるようになる可能性を広げる技術。プライバシーやコスト、オフライン利用の面で大きなインパクトがある。ただし「1ビット」というタイトルはやや誤解を招きやすく、実際は「1.58ビット（3値）」であり、100Bモデルが訓練済みで公開されているわけではなく推論フレームワークが公開された段階という点に注意。</p>
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+<ul>
+<li>「2ビットで-1,0,1,2を表現できる。脳の抑制性シナプスが20-30%であることと対応するかも」（htk）— 生物学的な類推</li>
+<li>「M2 Max 96GBで70Bモデルをローカル実行している。メモリ帯域幅がボトルネックだが、1.58ビットなら改善の余地がある」（LuxBennu）— 実用経験</li>
+<li>「"最小限のLLM"は何かという問いに対する1つの回答」（giancarlostoro）— コンセプトへの関心</li>
+<li>「エッジデバイスでのAI推論の未来を変える可能性」（複数ユーザー）— 技術的展望</li>
+<li>「llama.cppと同じアプローチで、推論の民主化が進む」（複数ユーザー）— オープンソースの意義</li>
+</ul>
+</details>
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+<ul>
+<li>「タイトルが誤解を招く — 100Bの訓練済みモデルは存在せず、推論フレームワークがあるだけ」（LuxBennu）— タイトルの正確性</li>
+<li>「1ビットか1トリットか？名称が紛らわしい」（nickcw）— 用語の混乱</li>
+<li>「同等性能に4-5倍のパラメータが必要なら、実質的なメリットは限定的」（herf）— 効率への疑問</li>
+<li>「利用可能なモデルが非常に少ない。エコシステムが育つか不透明」（複数ユーザー）— 実用性の課題</li>
+<li>「量子化でどれだけ品質が落ちるか、ベンチマーク以外の実用評価が不足」（複数ユーザー）— 品質への懸念</li>
+</ul>
+</details>
+<hr />
+<h2 id="7-科学詐欺を大規模に可能にする組織の存在">7. 科学詐欺を大規模に可能にする組織の存在</h2>
+<p><strong>原題</strong>: Entities enabling scientific fraud at scale (2025)
+<strong>URL</strong>: https://doi.org/10.1073/pnas.2420092122
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47335349
+<strong>スコア</strong>: 275 / <strong>コメント</strong>: 191件 / <strong>合計</strong>: 466</p>
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+PNAS（米国科学アカデミー紀要: 世界トップクラスの学術誌）に掲載された論文が、論文工場やサイテーションリング（引用リング: 互いの論文を引用し合って引用数を水増しする組織的な手法）など、科学的不正を組織的・大規模に実行する「エンティティ」の実態を明らかにした。</p>
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+学術界では「論文数」「被引用数」が研究者の評価指標として使われている。これがグッドハートの法則（ある指標が目標になると、その指標自体が歪められる現象）の典型例となっている。論文工場は架空の実験データを含む論文を大量生産し、サイテーションリングで互いの引用数を水増しする。問題の規模は大きく、世界の大学ランキングで数学・コンピュータサイエンス分野の上位に不正が疑われる機関が入っているという指摘もある。LLMの登場により、架空の論文生成がさらに容易になる懸念もある。一方、主要ジャーナルが再現性研究やネガティブ結果の論文掲載を拒否する傾向が、この問題を助長しているとの批判もある。</p>
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+科学的知見の信頼性は社会の基盤。不正論文が混入することで、医療や政策決定にも影響が出る。「科学を信じない」という一般市民の態度の一因にもなっている。AIによる論文生成が容易になる中、学術界の自浄作用が問われている。</p>
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+<ul>
+<li>「グッドハートの法則の典型。論文数・引用数を指標にすれば、正しさではなく量が目標になる」（pixl97）— 問題の本質</li>
+<li>「実際にN. Tvlgという偽著者の論文を受け取った。引数は論理的に聞こえるが実験データが存在しなかった」（canjobear）— 実体験</li>
+<li>「数学・CS分野のランキング上位に不正が疑われる大学がある」（pjdesno）— 具体的なデータ</li>
+<li>「問題の認知は広がっている。学術界が真剣に取り組むべき時」（複数ユーザー）— 対策の必要性</li>
+<li>「透明性のあるオープンサイエンスの推進が鍵」（複数ユーザー）— 解決策</li>
+</ul>
+</details>
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+<ul>
+<li>「主要ジャーナルが再現研究やネガティブ結果を拒否する姿勢が問題を助長している」（RobotToaster）— ジャーナル側の責任</li>
+<li>「賢い人が多いはずの学術界で不正が横行する矛盾。でも政治的対立者が"科学を信じない"と困惑する」（zahlman）— 信頼性の二面性</li>
+<li>「不正ネットワークの規模が大きすぎて、もはや自浄は困難」（pixl97）— 悲観的な見方</li>
+<li>「ランキング自体が問題。数値で測れない研究の質をどう評価するか」（複数ユーザー）— 評価システムの根本問題</li>
+<li>「AI生成論文が増えれば、問題はさらに悪化する一方」（複数ユーザー）— AI時代への懸念</li>
+</ul>
+</details>
+<hr />
+<h2 id="8-英国、700年の伝統を終わらせ世襲貴族を議会から排除">8. 英国、700年の伝統を終わらせ世襲貴族を議会から排除</h2>
+<p><strong>原題</strong>: Britain is ejecting hereditary nobles from Parliament after 700 years
+<strong>URL</strong>: https://apnews.com/article/uk-house-of-lords-hereditary-peers-expelled-535df8781dd01e8970acda1dca99d3d4
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47341845
+<strong>スコア</strong>: 220 / <strong>コメント</strong>: 223件 / <strong>合計</strong>: 443</p>
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+英国議会が、貴族院（House of Lords: 議会の上院。非公選）から世襲貴族を排除する法案を可決した。公爵、伯爵、子爵といった称号を「相続」して議席を得る制度が700年の歴史に幕を閉じる。</p>
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+英国の貴族院は800人以上のメンバーを抱え、中国の全国人民代表大会に次ぐ世界第2位の立法機関だ。700年間、世襲貴族が議席の大部分を占めていたが、1999年のブレア政権の改革で大幅に削減され、約92人が残っていた。今回の改革でその残りも排除される。興味深い皮肉として、1999年改革後に残った世襲貴族は互選（自分たちの中から投票で選ぶ方式）で議席を得ており、技術的には貴族院で唯一「選挙」を経たメンバーだった。代わりに「一代貴族」（Life Peers: 本人一代限りで任命される議員）が多数を占めるが、これも政府が任命するため民主性には議論がある。</p>
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+英国の民主主義は成文憲法を持たず、800年かけて「有機的に」進化してきた。この改革はその長い進化の一歩であり、伝統と民主主義のバランスという普遍的なテーマを含んでいる。</p>
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+<ul>
+<li>「英国の民主主義は成文憲法ではなく、800年かけて有機的に進化してきた。興味深い仕組みだ」（mindwok）— 歴史的視点</li>
+<li>「ギルバート&サリヴァンのオペラ『アイオランテ』にも"貴族院は何もしないが、それを見事にやる"という皮肉がある」（endoblast）— 文化的引用</li>
+<li>「世襲貴族が"唯一選挙を経た議員"だったという皮肉が面白い」（scrlk）— 制度の矛盾</li>
+<li>「時代遅れの制度を段階的に改革していくのは正しいアプローチ」（複数ユーザー）— 漸進的改革の支持</li>
+<li>「"才能が認められ実力が重要な場所であるべき"という政府の声明は正論」（Nick Thomas-Symonds）— 理念への賛同</li>
+</ul>
+</details>
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+<ul>
+<li>「世襲貴族を排除しても、一代貴族は政府任命。民主性が上がるとは限らない」（glaucon）— 改革の限界</li>
+<li>「同時に陪審裁判の廃止も進んでいる。民主的権利の後退では」（sb057）— 他の改革との関連</li>
+<li>「世襲貴族には独立性があった。政府任命の一代貴族はより政治的に従順になる懸念」（複数ユーザー）— 独立性の喪失</li>
+<li>「"改革"の名のもとに、実は政府の権力を強化しているだけでは」（複数ユーザー）— 権力集中の懸念</li>
+<li>「貴族院全体の改革なしに世襲貴族だけ排除するのは中途半端」（複数ユーザー）— 包括的改革の必要性</li>
+</ul>
+</details>
+<hr />
+<h2 id="9-aiボットに就職面接された体験記">9. AIボットに就職面接された体験記</h2>
+<p><strong>原題</strong>: I was interviewed by an AI bot for a job
+<strong>URL</strong>: https://www.theverge.com/featured-video/892850/i-was-interviewed-by-an-ai-bot-for-a-job
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47339164
+<strong>スコア</strong>: 223 / <strong>コメント</strong>: 214件 / <strong>合計</strong>: 437</p>
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+The Vergeの記者が、CodeSignal・Humanly・Eightfoldなどの企業が提供するAI面接ツールを3つ実際に体験してレポートした。AIアバターがビデオ通話で質問し、回答を分析する仕組みだが、「不気味の谷」（Uncanny Valley: 人間に似ているが完全ではないものに感じる違和感）を超えられなかったという。</p>
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+AI面接ツールの売り文句は「応募者全員に初回面接の機会を与えられる」「人間のバイアスを排除できる」というものだ。しかし、AIモデル自体がインターネット上のデータで訓練されており、性差別や人種差別などのバイアスを完全に排除することは原理的に不可能だ。記者は3つのプラットフォームを試したが、どれも「人間と話したい」という気持ちが勝ったという。就職活動が既にシステム的に非人間的なプロセスになっている中、AI面接はその傾向をさらに加速させる。「雇う前からこんなに非人間的な扱いをする企業に入社した後、どう扱われるのか」という指摘が鋭い。</p>
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+就職市場は数百万人が職を探している状況で、AI面接の導入は急速に広がっている。求職者にとっては「AIに応募書類を書かせ、AIに面接を受けさせる」という皮肉な未来が見え始めている。オンラインデートとの類似性を指摘するコメントも共感を呼んでいる。</p>
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+<ul>
+<li>「正式なプロセスを避けて、ネットワーキングで直接繋がるのが最善策」（m348e912）— 実践的アドバイス</li>
+<li>「企業が全応募者の声を聞けるという発想自体は良い」（複数ユーザー）— コンセプトの評価</li>
+<li>「いくつかのプラットフォームは他より自然に感じた」（記者）— 品質の差</li>
+<li>「AI面接を体験して記事にしたのは有益。多くの人が参考にできる」（複数ユーザー）— ジャーナリズムとしての価値</li>
+<li>「バイアス削減の試みとしては方向性は正しい」（複数ユーザー）— 目的への理解</li>
+</ul>
+</details>
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+<ul>
+<li>「LLMが面接したのなら、あなたの話を"聞いた"のではない。LLMが聞いただけだ」（makingstuffs）— 本質的な矛盾</li>
+<li>「面接前からこんなに非人間的な扱いなら、入社後はもっと酷いだろう」（JohnFen）— 企業文化への懸念</li>
+<li>「1913年以前のテキストで訓練されたLLMを使えばバイアスフリー…なわけがない」（kazinator）— バイアス排除の不可能性</li>
+<li>「面接プロセスは既に地獄。AIがそれをさらに悪化させている」（ossa-ma）— 市場の現状</li>
+<li>「結局、企業がコスト削減するためのツールであり、候補者のためではない」（複数ユーザー）— 動機への批判</li>
+</ul>
+</details>
+<hr />
+<h2 id="10-googleがwizの買収を完了">10. GoogleがWizの買収を完了</h2>
+<p><strong>原題</strong>: Google closes deal to acquire Wiz
+<strong>URL</strong>: https://www.wiz.io/blog/google-closes-deal-to-acquire-wiz
+<strong>HN</strong>: https://news.ycombinator.com/item?id=47336476
+<strong>スコア</strong>: 256 / <strong>コメント</strong>: 165件 / <strong>合計</strong>: 421</p>
+<p><span style="color: orange;"><strong>ざっくり言うと:</strong></span>
+GoogleがクラウドセキュリティスタートアップWiz（ウィズ）の買収を正式に完了した。約1年前に発表された取引で、Google Cloudのセキュリティ能力を大幅に強化する狙い。Wizはクラウド環境全体を可視化し、セキュリティリスクを検出するプラットフォームを提供している。</p>
+<p><span style="color: orange;"><strong>もう少し詳しく:</strong></span>
+Wizは2020年設立ながら急成長し、クラウドセキュリティ分野のリーダーとなった企業だ。コード・クラウド・ランタイム全体にわたるセキュリティの可視化が強みで、マルチクラウド（AWS、Azure、GCPなど複数のクラウドを併用する運用形態）環境に対応している。買収額は報道によると巨額で、イスラエルメディアは「政府が創業者に税金を米ドルで支払うよう要請した」と報じている。理由は、大規模な外貨取引がイスラエルシェケルの為替レートに影響を与える恐れがあるため。Wizの成功の鍵はクラウド非依存性だったが、Google傘下に入ることでAWSやAzure上の顧客を失うリスクもある。</p>
+<p><span style="color: orange;"><strong>なぜ注目？:</strong></span>
+Googleがクラウドセキュリティに本格投資する姿勢を示した。一方で「5年後にGoogle Wizがシャットダウン」というジョークも出ており、Googleの製品廃止の歴史（Google Reader、Stadia等）への警戒感が強い。Wizの投資家に対する贈賄疑惑の報道もあり、買収の裏側にも注目が集まっている。</p>
+<details>
+<summary>HNコメント（肯定的な意見 5件）</summary>
+<ul>
+<li>「Wizはクラウド非依存で成功した。Googleがそのまま維持すれば、AWSやAzureの顧客情報を得る戦略的窓になる」（StartupsWala）— 戦略的価値</li>
+<li>「AI時代のセキュリティ強化にはこの規模の投資が必要」（Wiz公式ブログ）— 時代の要請</li>
+<li>「買収プロセス中もWizのチームは開発を止めなかった。企業文化の強さ」（Wiz公式ブログ）— 開発継続</li>
+<li>「Google Cloudにとって大きな差別化要因になる」（複数ユーザー）— 競争優位性</li>
+<li>「クラウドセキュリティ市場の重要性を示す取引」（複数ユーザー）— 市場の認識</li>
+</ul>
+</details>
+<details>
+<summary>HNコメント（否定的・懐疑的な意見 5件）</summary>
+<ul>
+<li>「G-Wizと呼ぶのかな？」（sass_muffin）— ジョーク</li>
+<li>「5年後 — "GoogleがWizをシャットダウン"」（marijan_div）— Google製品廃止の歴史</li>
+<li>「Wiz投資家のGili Raananは、CISOへの贈賄疑惑で調査を受けている」（cbHXBY1D）— 倫理的懸念</li>
+<li>「買収額が大きすぎてイスラエルの為替レートに影響するレベル」（Illniyar）— 経済的影響</li>
+<li>「Googleがクラウド非依存性を維持しなければ、Wizの価値の根幹が崩れる」（StartupsWala）— 買収リスク</li>
+</ul>
+</details>
+<hr />
+<h2 id="用語集">用語集</h2>
+<table>
+  <thead>
+    <tr>
+      <th>用語</th>
+      <th>解説</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>LLM</strong></td>
+      <td>Large Language Model（大規模言語モデル）。ChatGPTやClaudeなどの基盤技術。大量のテキストデータから学習し、文章生成・質問応答などを行う</td>
+    </tr>
+    <tr>
+      <td><strong>SoC</strong></td>
+      <td>System on a Chip。CPU、GPU、メモリコントローラなど複数の機能を1つのチップに統合した半導体</td>
+    </tr>
+    <tr>
+      <td><strong>TC39</strong></td>
+      <td>JavaScriptの言語仕様（ECMAScript）を策定する技術委員会。提案はStage 0〜4の段階を経て標準化される</td>
+    </tr>
+    <tr>
+      <td><strong>WebAssembly (Wasm)</strong></td>
+      <td>ブラウザ上で高速に実行できるバイナリ形式のプログラム。C++やRustなどの言語からコンパイルできる</td>
+    </tr>
+    <tr>
+      <td><strong>SQLインジェクション</strong></td>
+      <td>Webアプリケーションの脆弱性を突き、データベースに不正なSQL文を実行させる攻撃手法</td>
+    </tr>
+    <tr>
+      <td><strong>RAG</strong></td>
+      <td>Retrieval-Augmented Generation。外部データベースから関連情報を検索し、AIの回答に組み込む手法</td>
+    </tr>
+    <tr>
+      <td><strong>量子化</strong></td>
+      <td>AIモデルの重み（パラメータ）の精度を下げてサイズを圧縮する技術。メモリ使用量と計算コストを削減できる</td>
+    </tr>
+    <tr>
+      <td><strong>グッドハートの法則</strong></td>
+      <td>「ある指標が目標になると、その指標としての有用性が失われる」という法則。論文数を目標にすれば論文の質が下がる</td>
+    </tr>
+    <tr>
+      <td><strong>不気味の谷</strong></td>
+      <td>人間に似ているが完全ではないロボットやCGに対して人間が感じる違和感・嫌悪感。1970年に森政弘が提唱</td>
+    </tr>
+    <tr>
+      <td><strong>貴族院 (House of Lords)</strong></td>
+      <td>英国議会の上院。非公選で、一代貴族・世襲貴族・聖職者で構成される。法案の審議・修正を行う</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<script>
+(function() {
+  const source = document.getElementById('source');
+  if (!source) return;
+
+  // ========== Date extraction from page title ==========
+  const pageTitle = source.getAttribute('data-title') || '';
+  const dateMatch = pageTitle.match(/(\d{4})-(\d{2})-(\d{2})/);
+  const dateStr = dateMatch
+    ? dateMatch[1] + '.' + dateMatch[2] + '.' + dateMatch[3]
+    : '';
+  const shortDate = dateMatch
+    ? parseInt(dateMatch[2]) + '/' + parseInt(dateMatch[3])
+    : '';
+
+  // ========== Parse source content ==========
+  const h1 = source.querySelector('h1');
+  const allH2s = Array.from(source.querySelectorAll('h2'));
+
+  // Intro paragraph (first <p> after h1)
+  let introText = '';
+  if (h1) {
+    let next = h1.nextElementSibling;
+    while (next && (next.tagName === 'HR' || next.tagName === 'BR')) {
+      next = next.nextElementSibling;
+    }
+    if (next && next.tagName === 'P') {
+      introText = next.textContent.trim();
+    }
+  }
+
+  // Collect sections: each h2 + all siblings until next h2
+  const sections = allH2s.map(h2 => {
+    const content = [];
+    let sib = h2.nextElementSibling;
+    while (sib && sib.tagName !== 'H2') {
+      if (sib.tagName !== 'HR') content.push(sib);
+      sib = sib.nextElementSibling;
+    }
+    return { heading: h2, content };
+  });
+
+  // Separate articles (h2 starts with digit) from glossary
+  const articles = sections.filter(s => /^\d/.test(s.heading.textContent.trim()));
+  const glossarySec = sections.find(s => s.heading.textContent.includes('用語集'));
+
+  // ========== Parse glossary terms ==========
+  const glossaryTerms = [];
+  if (glossarySec) {
+    const table = glossarySec.content.find(el => el.tagName === 'TABLE');
+    if (table) {
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 2) {
+          glossaryTerms.push({
+            name: cells[0].textContent.trim(),
+            desc: cells[1].textContent.trim()
+          });
+        }
+      });
+    }
+  }
+
+  // ========== Match glossary terms to articles ==========
+  function findRelevantTerms(contentElements) {
+    const text = contentElements.map(el => el.textContent).join(' ');
+    return glossaryTerms.filter(term => {
+      const baseName = term.name.replace(/（.*/, '').replace(/\(.*/, '').trim();
+      return text.includes(baseName);
+    });
+  }
+
+  // ========== Parse a single article ==========
+  function parseArticle(heading, contentElements) {
+    const fullText = contentElements.map(el => el.textContent).join('\n');
+    const headingText = heading.textContent.replace(/^\d+\.\s*/, '').trim();
+
+    // Metadata — extract via regex from full text (handles single-paragraph metadata)
+    let origTitle = '';
+    let m = fullText.match(/原題[:：]\s*(.+?)(?=\s*URL[:：]|\n|$)/);
+    if (m) origTitle = m[1].trim();
+
+    let url = '';
+    m = fullText.match(/URL[:：]\s*(https?:\/\/\S+)/);
+    if (m) url = m[1].trim();
+
+    let hnUrl = '';
+    m = fullText.match(/HN[:：]\s*(https?:\/\/\S+)/);
+    if (m) hnUrl = m[1].trim();
+
+    let score = '', comments = '', total = '';
+    m = fullText.match(/スコア[:：]\s*([\d,]+)/);
+    if (m) score = m[1].replace(/,/g, '');
+    m = fullText.match(/コメント[:：]\s*([\d,]+)件?/);
+    if (m) comments = m[1].replace(/,/g, '');
+    m = fullText.match(/合計[:：]\s*([\d,]+)/);
+    if (m) total = m[1].replace(/,/g, '');
+
+    // Section content — from paragraphs with known labels
+    let summary = '', detail = '', whyNotable = '';
+    contentElements.forEach(el => {
+      if (el.tagName !== 'P') return;
+      const strong = el.querySelector('strong');
+      if (!strong) return;
+      const label = strong.textContent.trim();
+      const afterLabel = el.textContent.replace(label, '').trim();
+      if (/^ざっくり/.test(label)) summary = afterLabel;
+      else if (/^もう少し/.test(label)) detail = afterLabel;
+      else if (/^なぜ注目/.test(label)) whyNotable = afterLabel;
+    });
+
+    // Details blocks (comment sections)
+    const detailsBlocks = contentElements.filter(el => el.tagName === 'DETAILS');
+
+    return { headingText, origTitle, url, hnUrl, score, comments, total,
+             summary, detail, whyNotable, detailsBlocks };
+  }
+
+  // ========== Escape HTML for safe insertion ==========
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ========== Build Carousel ==========
+  const carousel = document.getElementById('carousel');
+  const totalSlides = 1 + articles.length;
+
+  // --- Slide 0: Title ---
+  const titleSlide = document.createElement('div');
+  titleSlide.className = 'slide slide--title';
+  titleSlide.innerHTML =
+    '<div class="slide-inner">' +
+      (dateStr ? '<div class="date-badge">' + esc(dateStr) + '</div>' : '') +
+      '<h1>HN Digest<span> — ' + esc(shortDate) + '</span></h1>' +
+      '<p>' + esc(introText) + '</p>' +
+      '<div class="article-count">' + articles.length + ' articles</div>' +
+      '<div class="arrow-hint">&#8594; スワイプまたは矢印キーで次へ</div>' +
+    '</div>';
+  carousel.appendChild(titleSlide);
+
+  // --- Article Slides ---
+  articles.forEach((section, idx) => {
+    const art = parseArticle(section.heading, section.content);
+    const relevantTerms = findRelevantTerms(section.content);
+
+    const slide = document.createElement('div');
+    slide.className = 'slide slide--article';
+
+    // Details HTML (with open attribute + fix raw markdown lists)
+    const detailsHTML = art.detailsBlocks.map(el => {
+      const clone = el.cloneNode(true);
+      clone.setAttribute('open', '');
+      // If kramdown didn't convert markdown lists inside <details>,
+      // the content will be raw text with "- " prefixes. Fix it.
+      if (!clone.querySelector('ul') && !clone.querySelector('ol')) {
+        const summary = clone.querySelector('summary');
+        const summaryText = summary ? summary.textContent.trim() : '';
+        const rawText = clone.textContent.replace(summaryText, '').trim();
+        if (rawText.includes('- ') || rawText.includes('「')) {
+          const lines = rawText.split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
+          const items = lines.map(l => l.replace(/^[-–—]\s*/, ''));
+          const ul = document.createElement('ul');
+          items.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            ul.appendChild(li);
+          });
+          // Remove all content except summary, then append the list
+          while (clone.lastChild && clone.lastChild !== summary) {
+            clone.removeChild(clone.lastChild);
+          }
+          clone.appendChild(ul);
+        }
+      }
+      return clone.outerHTML;
+    }).join('\n');
+
+    // Sidebar glossary (desktop)
+    let sidebarHTML = '';
+    if (relevantTerms.length > 0) {
+      sidebarHTML =
+        '<aside class="article-sidebar">' +
+          '<div class="sidebar-label">用語</div>' +
+          relevantTerms.map(t =>
+            '<div class="sidebar-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+        '</aside>';
+    }
+
+    // Inline glossary (mobile)
+    let inlineGlossaryHTML = '';
+    if (relevantTerms.length > 0) {
+      inlineGlossaryHTML =
+        '<div class="inline-glossary">' +
+          '<div class="sidebar-label">関連用語</div>' +
+          '<div class="inline-terms">' +
+          relevantTerms.map(t =>
+            '<div class="inline-term">' +
+              '<div class="term-name">' + esc(t.name) + '</div>' +
+              '<div class="term-desc">' + esc(t.desc) + '</div>' +
+            '</div>'
+          ).join('') +
+          '</div>' +
+        '</div>';
+    }
+
+    // Links
+    const urlLink = art.url
+      ? '<a href="' + esc(art.url) + '" target="_blank" rel="noopener">元記事 &#8599;</a>'
+      : '';
+    const hnLink = art.hnUrl
+      ? '<a href="' + esc(art.hnUrl) + '" target="_blank" rel="noopener">HN &#8599;</a>'
+      : '';
+
+    // Build sections conditionally
+    let sectionsHTML = '';
+    if (art.summary) {
+      sectionsHTML +=
+        '<div class="section-label">ざっくり言うと</div>' +
+        '<p>' + esc(art.summary) + '</p>';
+    }
+    if (art.detail) {
+      sectionsHTML +=
+        '<div class="section-label">もう少し詳しく</div>' +
+        '<p>' + esc(art.detail) + '</p>';
+    }
+    if (art.whyNotable) {
+      sectionsHTML +=
+        '<div class="section-label">なぜ注目？</div>' +
+        '<p>' + esc(art.whyNotable) + '</p>';
+    }
+
+    const mainContent =
+      '<div class="article-main">' +
+        '<div class="article-number">ARTICLE ' + (idx + 1) + '</div>' +
+        '<h2>' + esc(art.headingText) + '</h2>' +
+        (art.origTitle ? '<div class="meta-row"><span>' + esc(art.origTitle) + '</span></div>' : '') +
+        '<div class="meta-row">' + urlLink + hnLink + '</div>' +
+        '<div class="stats">' +
+          (art.score ? '<div class="stat"><strong>' + esc(art.score) + '</strong> pts</div>' : '') +
+          (art.comments ? '<div class="stat"><strong>' + esc(art.comments) + '</strong> comments</div>' : '') +
+          (art.total ? '<div class="stat">Total <strong>' + esc(art.total) + '</strong></div>' : '') +
+        '</div>' +
+        sectionsHTML +
+        detailsHTML +
+        inlineGlossaryHTML +
+      '</div>';
+
+    slide.innerHTML =
+      '<div class="article-layout">' +
+        mainContent +
+        sidebarHTML +
+      '</div>';
+
+    carousel.appendChild(slide);
+  });
+
+  // ========== Navigation Dots ==========
+  const navDots = document.getElementById('navDots');
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'スライド ' + (i + 1) + ' へ');
+    dot.addEventListener('click', () => goToSlide(i));
+    navDots.appendChild(dot);
+  }
+
+  // ========== State & Navigation ==========
+  let currentSlide = 0;
+  const progressBar = document.getElementById('progressBar');
+  const miniHeader = document.getElementById('miniHeader');
+  const arrowLeft = document.getElementById('arrowLeft');
+  const arrowRight = document.getElementById('arrowRight');
+
+  function updateUI(index) {
+    currentSlide = index;
+    const progress = totalSlides > 1 ? (index / (totalSlides - 1)) * 100 : 100;
+    progressBar.style.width = progress + '%';
+    miniHeader.textContent = (index + 1) + ' / ' + totalSlides;
+
+    navDots.querySelectorAll('.nav-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === index);
+    });
+
+    arrowLeft.classList.toggle('hidden', index === 0);
+    arrowRight.classList.toggle('hidden', index === totalSlides - 1);
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides) return;
+    carousel.children[index].scrollIntoView({
+      behavior: 'smooth', block: 'nearest', inline: 'start'
+    });
+  }
+
+  // ========== Scroll Detection ==========
+  let scrollTimeout;
+  carousel.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const index = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+      updateUI(index);
+    }, 50);
+  }, { passive: true });
+
+  // ========== Arrow Buttons ==========
+  arrowLeft.addEventListener('click', () => goToSlide(currentSlide - 1));
+  arrowRight.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+  // ========== Keyboard Navigation ==========
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goToSlide(currentSlide - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goToSlide(currentSlide + 1); }
+  });
+
+  // ========== Initial State ==========
+  updateUI(0);
+})();
+</script>
+
+</body>
+</html>
